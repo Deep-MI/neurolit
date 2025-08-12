@@ -6,6 +6,7 @@ set -e
 RUN_FASTSURFER=false
 DILATE=0
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+PROJ_DIR=$(realpath $SCRIPT_DIR/../..)
 
 VERSION="$(python3 -c 'import LIT; print(LIT.__version__)')"
 VERSION="${VERSION/version = /}"
@@ -67,10 +68,9 @@ while [[ $# -gt 0 ]]; do
       usage
       ;;
     --version)
-      project_dir="$(dirname "${BASH_SOURCE[0]}")"
-      hash_file="$(dirname "${BASH_SOURCE[0]}")/git.hash"
-      if [[ -n "$(which git)" ]] && (git -C "$project_dir" rev-parse 2>/dev/null ) ; then
-        HASH="+$(git -C "$project_dir" rev-parse --short HEAD)"
+      hash_file="$PROJ_DIR/git.hash"
+      if [[ -n "$(which git)" ]] && (git -C "$PROJ_DIR" rev-parse 2>/dev/null ) ; then
+        HASH="+$(git -C "$PROJ_DIR" rev-parse --short HEAD)"
       elif [[ -e "$hash_file" ]] ; then
         HASH="+$(cat "$hash_file")"
       else
@@ -107,7 +107,7 @@ fi
 mkdir -p "$OUT_DIR"
 
 # Set up paths
-cd "$SCRIPT_DIR" || exit 1
+cd "$PROJ_DIR" || exit 1
 CKPT_CORONAL="$PWD/weights/model_coronal.pt"
 CKPT_AXIAL="$PWD/weights/model_axial.pt"
 CKPT_SAGITTAL="$PWD/weights/model_sagittal.pt"
@@ -126,7 +126,7 @@ if [ "$RUN_FASTSURFER" = true ]; then
     # Handle license file
     if [ -z "$fs_license" ]; then
         for license_path in \
-            "/fs_license/license.txt" \
+            "$PROJ_DIR/fs_license/license.txt" \
             "$FREESURFER_HOME/license.txt" \
             "$FREESURFER_HOME/.license"; do
             if [ -f "$license_path" ]; then
@@ -147,7 +147,7 @@ if [ ! -z "$MASK_IMAGE" ]; then
     echo "Running inpainting..."
     mkdir -p "$OUT_DIR/inpainting_volumes"
 
-    python3 lit/utils/download_checkpoints.py
+    python3 $PROJ_DIR/LIT/utils/download_checkpoints.py
 
     # Check for required model files
     for model in "$CKPT_CORONAL" "$CKPT_AXIAL" "$CKPT_SAGITTAL"; do
@@ -157,7 +157,7 @@ if [ ! -z "$MASK_IMAGE" ]; then
         fi
     done
     
-    python3 lit/inpaint_image.py \
+    python3 $PROJ_DIR/LIT/inpaint_image.py \
       --input_image "$INPUT_IMAGE" \
       --mask_image "$MASK_IMAGE" \
       --out_dir "$OUT_DIR" \
@@ -198,7 +198,7 @@ export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}$FASTSURFER_HOME/FastSurferCNN"
 # Run FastSurfer and post-processing
 if [ ! -f "$OUT_DIR/$S_DIR/scripts/recon-surf.done" ]; then
   eval "$fastsurfer_command"
-  cd "$SCRIPT_DIR"
+  cd "$PROJ_DIR"
 else
   echo "FastSurfer already ran"
 fi
