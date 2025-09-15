@@ -12,7 +12,8 @@ RUN curl https://zenodo.org/records/14510136/files/model_axial.pt -o /inpainting
     curl https://zenodo.org/records/14510136/files/model_coronal.pt -o /inpainting/weights/model_coronal.pt && \
     curl https://zenodo.org/records/14510136/files/model_sagittal.pt -o /inpainting/weights/model_sagittal.pt
 
-COPY lit run_lit.sh pyproject.toml git.hash /inpainting/
+COPY run_lit.sh pyproject.toml git.hash /inpainting/
+COPY lit /inpainting/lit
 
 ENV INPAINTING_DIR=/inpainting
 RUN mv /fastsurfer/run_fastsurfer.sh /fastsurfer/run_fastsurfer_segmentation.sh && \

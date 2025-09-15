@@ -99,6 +99,7 @@ def fallback_multiple_urls(checkpoint_name: str, urls: list[str], verbose: bool 
             check_and_download_ckpts(checkpoint_name, [url], verbose)
         except Exception as e:
             print(f"Tried downloading {checkpoint_name} from {url} but failed")
+            print(e)
 
 
 def main():

@@ -190,7 +190,6 @@ if [ "$USE_SINGULARITY" = true ]; then
     -B "${INPUT_IMAGE}":"${INPUT_IMAGE}":ro \
     -B "${MASK_IMAGE}":"${MASK_IMAGE}":ro \
     -B "${OUT_DIR}":"${OUT_DIR}" \
-    -B "$(pwd)":/inpainting \
     -B "${fs_license:-/dev/null}":/fs_license/license.txt:ro \
     ./containerization/deepmi_lit.simg \
     /inpainting/run_lit.sh -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" "${POSITIONAL_ARGS[@]}"
@@ -201,7 +200,6 @@ else
     -v "${MASK_IMAGE}":"${MASK_IMAGE}":ro \
     -v "${OUT_DIR}":"${OUT_DIR}" \
     -u "$(id -u):$(id -g)" \
-    -v "$(pwd)":/inpainting \
     -v "${fs_license:-/dev/null}":/fs_license/license.txt:ro \
     deepmi/lit:$VERSION -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" "${POSITIONAL_ARGS[@]}"
 fi
