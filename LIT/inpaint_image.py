@@ -33,22 +33,20 @@ import torch
 from generative.networks.schedulers import DDPMScheduler, DDIMScheduler
 from torch.amp import autocast # previous: from torch.cuda.amp import autocast
 import torch.nn.functional as F
-from networks.DiffusionUnet import DiffusionModelUNetVINN
+from LIT.networks.DiffusionUnet import DiffusionModelUNetVINN
 
-from data import conform
-from utils.plotting import plot_batch, plot_inpainting
-from inference import *
+from LIT.data import conform
+from LIT.utils.plotting import plot_batch, plot_inpainting
+from LIT.inference import *
 
 
 
 # use Agg backend on server
 if os.environ.get('DISPLAY','') == '':
-    
     #os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
     os.makedirs('/tmp/', exist_ok=True)
     os.environ['MPLCONFIGDIR'] = '/tmp'
     matplotlib.use('Agg')
-    
 
 
 # Custom types
@@ -61,26 +59,26 @@ AffineMatrix = NDArray[np.float64]
 
 def dilate_mask(mask: torch.Tensor, num_iterations: int, kernel_size: int = 3) -> torch.Tensor:
     """Dilate a binary mask multiple times using max pooling.
-    
+
     Args:
         mask: Input binary mask tensor
         num_iterations: Number of times to apply dilation
         kernel_size: Size of the dilation kernel (must be odd), defaults to 3
-        
+
     Returns:
         Dilated mask tensor of same shape as input
     """
     if kernel_size % 2 != 1:
         raise ValueError("Kernel size must be odd")
-        
+
     if not isinstance(mask, torch.Tensor):
         mask = torch.tensor(mask)
-    
+
     # Add batch and channel dimensions if needed
     orig_shape = mask.shape
     if len(mask.shape) == 3:
         mask = mask.unsqueeze(0).unsqueeze(0)
-    
+
     # Perform dilation multiple times
     dilated = mask
     padding = kernel_size // 2
@@ -91,11 +89,11 @@ def dilate_mask(mask: torch.Tensor, num_iterations: int, kernel_size: int = 3) -
             stride=1,
             padding=padding
         )
-    
+
     # Restore original shape
     if len(orig_shape) == 3:
         dilated = dilated.squeeze(0).squeeze(0)
-        
+
     return dilated
 
 
@@ -141,7 +139,7 @@ def inpaint_volume(
     val_image_nib: Optional[NiftiImage] = None
 ) -> torch.Tensor:
     """Inpaints a volume using trained diffusion models.
-    
+
     Args:
         models: Dictionary mapping view names to model instances
         val_image: Input image tensor of shape (B, C, H, W, D)
@@ -156,11 +154,11 @@ def inpaint_volume(
         device: Device to run inference on
         DDIM: Whether to use DDIM sampling
         val_image_nib: Original NIfTI image for header/affine info
-        
+
     Returns:
         Inpainted image tensor of same shape as input
     """
-    
+
     # Input validation with type checking
     if not isinstance(models, dict):
         raise TypeError("models must be a dictionary")
@@ -168,24 +166,24 @@ def inpaint_volume(
         raise TypeError("val_image must be a torch.Tensor")
     if not isinstance(mask, torch.Tensor):
         raise TypeError("mask must be a torch.Tensor")
-    
+
     # Validate inputs
     if not (mask > 0).any() or not (mask == 0).any():
         raise ValueError("Mask must have both zero and non-zero values")
 
     test_model = next(iter(models.values()))
     is_2d_model = test_model.conv_in.spatial_dims == 2
-    
+
     # Set up volume slicing
     volume_only_slice = (0, slice(None), slice(None), slice(None)) if is_2d_model else (0, 0, slice(None), slice(None), slice(None))
-    
+
     if not slice_input and is_2d_model:
         if slice_dim not in [0, 1, 2]:
             raise ValueError("slice_dim must be 0, 1 or 2 for 2D models with slice_input=False")
-    
+
     slice_dim = slice_dim or 0  # Default to first dimension
 
-    
+
     # Current mean calculation could fail with empty mask
     mask_indices = torch.where(mask[volume_only_slice].bool())
     if not mask_indices[0].numel():
@@ -195,7 +193,7 @@ def inpaint_volume(
     # Save intermediate results
     if SAVE_VOLUMES or SAVE_IMAGES:
         affine_header = (val_image_nib.affine, val_image_nib.header) if val_image_nib else (np.eye(4), None)
-        
+
         if SAVE_VOLUMES:
             os.makedirs(os.path.join(out_dir, 'inpainting_volumes'), exist_ok=True)
             for name, data in [('original_image', val_image), ('mask', mask), ('masked_image', val_image_masked)]:
@@ -234,7 +232,7 @@ def inpaint_volume(
         scheduler=scheduler,
         diffusion_model_dict=models
     )
-    
+
     #import pdb; pdb.set_trace()
     with torch.inference_mode(), autocast(enabled=True, device_type='cuda'):
         val_image_inpainted = Inpainter(
@@ -275,8 +273,8 @@ def inpaint_volume(
     print('Finished inpainting')
     return val_image_inpainted
 
-    
-if __name__ == "__main__":
+
+def main():
     SAVE_VOLUMES = True
     SAVE_IMAGES = True
 
@@ -307,8 +305,8 @@ if __name__ == "__main__":
         model_state_dicts['axial'] = torch.load(args.checkpoint_axial, weights_only=True)
     if args.checkpoint_sagittal is not None:
         model_state_dicts['sagittal'] = torch.load(args.checkpoint_sagittal, weights_only=True)
-        
-    
+
+
     # setup model
     device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
     SLICE_THICKNESS = 7
@@ -372,7 +370,7 @@ if __name__ == "__main__":
     else:
         sys.exit(f"ERROR: One or three checkpoints must be specified, but got {len(model_dict)}"
                  , file=sys.stderr)
-        
+
     assert(list(model_dict.values())[0].is_vinn)
 
     val_image_nib = nib.load(args.input_image)
@@ -395,7 +393,6 @@ if __name__ == "__main__":
     internal_res_mm = 256 / INTERNAL_SHAPE[0]
     scale_factor = internal_res_mm / zooms[0]
 
-    
     val_sample = {'image': val_image, 'mask': mask}
 
     if not os.path.exists(os.path.join(args.out_dir,'inpainting_images')) or not os.path.exists(os.path.join(args.out_dir,'inpainting_volumes')):
@@ -428,3 +425,5 @@ if __name__ == "__main__":
                    device=device, slice_input=False, slice_dim=DIM, val_image_nib=val_image_nib, DDIM=False)
 
 
+if __name__ == "__main__":
+    main()

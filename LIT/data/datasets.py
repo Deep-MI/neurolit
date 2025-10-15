@@ -3,7 +3,7 @@ import os
 from torch.utils.data import Dataset
 import numpy as np
 
-from data import conform
+from LIT.data import conform
 
 from monai.data import CacheDataset
 from monai import transforms

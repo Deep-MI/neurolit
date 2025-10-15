@@ -47,9 +47,12 @@ if [[ $# -eq 0 ]]; then
   exit 1
 fi
 
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+PROJ_DIR=$(realpath $SCRIPT_DIR/../..)
+
 POSITIONAL_ARGS=()
 
-VERSION="$(grep "^version\\s*=\\s*\"" "$(dirname "${BASH_SOURCE[0]}")/pyproject.toml")"
+VERSION="$(python3 -c 'import LIT; print(LIT.__version__)')"
 VERSION="${VERSION/version = /}"
 VERSION="${VERSION//\"/}"
 
@@ -90,10 +93,9 @@ while [[ $# -gt 0 ]]; do
       exit
       ;;
     --version)
-      project_dir="$(dirname "${BASH_SOURCE[0]}")"
-      hash_file="$(dirname "${BASH_SOURCE[0]}")/git.hash"
-      if [[ -n "$(which git)" ]] && (git -C "$project_dir" rev-parse 2>/dev/null ) ; then
-        HASH="+$(git -C "$project_dir" rev-parse --short HEAD)"
+      hash_file="$PROJ_DIR/git.hash"
+      if [[ -n "$(which git)" ]] && (git -C "$PROJ_DIR" rev-parse 2>/dev/null ) ; then
+        HASH="+$(git -C "$PROJ_DIR" rev-parse --short HEAD)"
       elif [[ -e "$hash_file" ]] ; then
         HASH="+$(cat "$hash_file")"
       else
@@ -155,7 +157,7 @@ fs_license=""
 if [ "$RUN_FASTSURFER" = true ]; then
   if [ -z "$fs_license" ]; then
     for license_path in \
-      "/fs_license/license.txt" \
+      "$PROJ_DIR/fs_license/license.txt" \
       "$FREESURFER_HOME/license.txt" \
       "$FREESURFER_HOME/.license"; do
       if [ -f "$license_path" ]; then
@@ -175,14 +177,14 @@ fi
 
 # Run command based on the containerization tool
 if [ "$USE_SINGULARITY" = true ]; then
-  if [ ! -f "containerization/deepmi_lit.simg" ]; then
+  if [ ! -f "$PROJ_DIR/containerization/deepmi_lit.simg" ]; then
     echo "=============== Downloading Singularity image... ==============="
-    wget https://zenodo.org/records/14497226/files/deepmi_lit.simg -O containerization/deepmi_lit_download.simg
-    mv containerization/deepmi_lit_download.simg containerization/deepmi_lit.simg
+    wget https://zenodo.org/records/14497226/files/deepmi_lit.simg -O $PROJ_DIR/containerization/deepmi_lit_download.simg
+    mv $PROJ_DIR/containerization/deepmi_lit_download.simg $PROJ_DIR/containerization/deepmi_lit.simg
   fi
 
-  if [ ! -f "containerization/deepmi_lit.simg" ]; then
-    echo "Error: Singularity image not found: containerization/deepmi_lit.simg"
+  if [ ! -f "$PROJ_DIR/containerization/deepmi_lit.simg" ]; then
+    echo "Error: Singularity image not found: $PROJ_DIR/containerization/deepmi_lit.simg"
     exit 1
   fi
 
@@ -191,8 +193,8 @@ if [ "$USE_SINGULARITY" = true ]; then
     -B "${MASK_IMAGE}":"${MASK_IMAGE}":ro \
     -B "${OUT_DIR}":"${OUT_DIR}" \
     -B "${fs_license:-/dev/null}":/fs_license/license.txt:ro \
-    ./containerization/deepmi_lit.simg \
-    /inpainting/run_lit.sh -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" "${POSITIONAL_ARGS[@]}"
+    $PROJ_DIR/containerization/deepmi_lit.simg \
+    /inpainting/LIT/scripts/run_lit.sh -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" "${POSITIONAL_ARGS[@]}"
 else
   docker run --gpus "device=$GPUS" -it --ipc=host \
     --ulimit memlock=-1 --ulimit stack=67108864 --rm \
