@@ -23,7 +23,7 @@ from generative.inferers import DiffusionInferer
 from tqdm import tqdm
 #from torch.amp import autocast # previous: from torch.cuda.amp import autocast
 
-from utils import *
+from LIT.utils import *
 
 
 

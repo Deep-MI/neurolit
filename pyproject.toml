@@ -3,14 +3,14 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "lit"
-version = "0.5.0"
+name = "lesion-inpainting-tool"
+version = "0.5.1"
 description = "Lesion Inpainting Tool"
 authors = [
-    {name = "Clemens Pollak, David, Kuegler, Martin Reuter, et al.", email = "clemens.pollak@dzne.de"}
+    {name = "Clemens Pollak, David Kuegler, Martin Reuter et al.", email = "clemens.pollak@dzne.de"}
 ]
 maintainers = [{name = 'FastSurfer Developers'}]
-license = {file = "LICENSE"}
+license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
@@ -37,7 +37,13 @@ keywords = [
 ]
 
 [tool.setuptools]
-packages = ["lit"]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-data]
+LIT = ["scripts/run_lit.sh"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"
@@ -46,8 +52,9 @@ testpaths = [
     "tests",
 ]
 
-
 [project.scripts]
-inpaint-image = "lit/inpaint_image.py"
+run-lit = "LIT.cli:run_lit"
+inpaint-image = "LIT.inpaint_image:main"
 
-
+[project.urls]
+Homepage = "https://github.com/Deep-MI/LIT"

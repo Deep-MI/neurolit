@@ -62,7 +62,7 @@ from monai.networks.blocks import Convolution, MLPBlock
 from monai.networks.layers.factories import Pool
 from monai.utils import ensure_tuple_rep
 
-from networks import interpolation_layer as il
+from LIT.networks import interpolation_layer as il
 
 # To install xformers, use pip install xformers==0.0.16rc401
 if importlib.util.find_spec("xformers") is not None:
