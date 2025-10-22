@@ -30,7 +30,7 @@ from numpy.typing import NDArray
 import nibabel as nib
 import nibabel.processing
 import torch
-from generative.networks.schedulers import DDPMScheduler, DDIMScheduler
+from monai.networks.schedulers import DDPMScheduler, DDIMScheduler
 from torch.amp import autocast # previous: from torch.cuda.amp import autocast
 import torch.nn.functional as F
 from LIT.networks.DiffusionUnet import DiffusionModelUNetVINN

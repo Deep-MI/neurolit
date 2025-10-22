@@ -17,13 +17,14 @@ dependencies = [
     "numpy>=1.21.0",
     "torch>=2.0.0",
     "nibabel>=4.0.0",
-    "monai==1.2.0",
+    "monai>=1.4.0",
     "matplotlib>=3.5.0",
     "tqdm>=4.65.0",
     "pillow>=9.0.0",
     "pyyaml>=6.0.0",
     "filelock>=3.0.0",
     "typing-extensions>=4.0.0",
+    "platformdirs>=3.0.0",
 ]
 keywords = [
     "brain",
@@ -41,6 +42,7 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
+exclude = ["build*", "dist*", "*.egg-info", "tests*", "doc*", "containerization*"]
 
 [tool.setuptools.package-data]
 LIT = ["scripts/run_lit.sh"]
@@ -55,6 +57,7 @@ testpaths = [
 [project.scripts]
 run-lit = "LIT.cli:run_lit"
 inpaint-image = "LIT.inpaint_image:main"
+lit-download-models = "LIT.utils.download_checkpoints:main"
 
 [project.urls]
 Homepage = "https://github.com/Deep-MI/LIT"

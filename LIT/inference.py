@@ -13,18 +13,16 @@
 # limitations under the License.
 
 
-from typing import Callable
 import math
+from typing import Callable
 
 import monai
-import torch
 import numpy as np
-from generative.inferers import DiffusionInferer
+import torch
+from monai.inferers import DiffusionInferer
 from tqdm import tqdm
-#from torch.amp import autocast # previous: from torch.cuda.amp import autocast
 
 from LIT.utils import *
-
 
 
 class InpaintingInferer():

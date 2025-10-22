@@ -6,6 +6,9 @@ set -e
 RUN_FASTSURFER=false
 DILATE=0
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+
+# Get project directory for git hash (if available)
+# This works for git clones; for pip installs it points to site-packages
 PROJ_DIR=$(realpath $SCRIPT_DIR/../..)
 
 VERSION="$(python3 -c 'import LIT; print(LIT.__version__)')"
@@ -106,11 +109,12 @@ fi
 # Create output directory if it doesn't exist
 mkdir -p "$OUT_DIR"
 
-# Set up paths
-cd "$PROJ_DIR" || exit 1
-CKPT_CORONAL="$PWD/weights/model_coronal.pt"
-CKPT_AXIAL="$PWD/weights/model_axial.pt"
-CKPT_SAGITTAL="$PWD/weights/model_sagittal.pt"
+# Set up paths - use platformdirs for consistent location across all installations
+WEIGHTS_DIR=$(python3 -c "from platformdirs import user_data_dir; from pathlib import Path; print(Path(user_data_dir('LIT', 'Deep-MI')) / 'weights')")
+
+CKPT_CORONAL="$WEIGHTS_DIR/model_coronal.pt"
+CKPT_AXIAL="$WEIGHTS_DIR/model_axial.pt"
+CKPT_SAGITTAL="$WEIGHTS_DIR/model_sagittal.pt"
 INPAINTED_IMG="$OUT_DIR/inpainting_volumes/inpainting_result.nii.gz"
 
 
@@ -147,7 +151,8 @@ if [ ! -z "$MASK_IMAGE" ]; then
     echo "Running inpainting..."
     mkdir -p "$OUT_DIR/inpainting_volumes"
 
-    python3 $PROJ_DIR/LIT/utils/download_checkpoints.py
+    # Download checkpoints (uses platformdirs for consistent location)
+    python3 -m LIT.utils.download_checkpoints
 
     # Check for required model files
     for model in "$CKPT_CORONAL" "$CKPT_AXIAL" "$CKPT_SAGITTAL"; do
@@ -156,15 +161,24 @@ if [ ! -z "$MASK_IMAGE" ]; then
             exit 1
         fi
     done
+
     
-    python3 $PROJ_DIR/LIT/inpaint_image.py \
-      --input_image "$INPUT_IMAGE" \
-      --mask_image "$MASK_IMAGE" \
-      --out_dir "$OUT_DIR" \
-      --checkpoint_axial "$CKPT_AXIAL" \
-      --checkpoint_sagittal "$CKPT_SAGITTAL" \
-      --checkpoint_coronal "$CKPT_CORONAL" \
-      --dilate "$DILATE"
+    # Assemble inpainting command
+    inpainting_command="python3 -m LIT.inpaint_image \
+--input_image \"$INPUT_IMAGE\" \
+--mask_image \"$MASK_IMAGE\" \
+--out_dir \"$OUT_DIR\" \
+--checkpoint_axial \"$CKPT_AXIAL\" \
+--checkpoint_sagittal \"$CKPT_SAGITTAL\" \
+--checkpoint_coronal \"$CKPT_CORONAL\" \
+--dilate \"$DILATE\""
+
+    # Print command
+    echo "Running command:"
+    echo "$inpainting_command"
+
+    # Execute command
+    eval "$inpainting_command"
   else
     echo "Inpainted image already exists: $INPAINTED_IMG"
   fi
@@ -187,7 +201,7 @@ if [ ! -f "$INPAINTED_IMG" ]; then
 fi
 
 # Run FastSurfer
-fastsurfer_command="$FASTSURFER_HOME/run_fastsurfer_segmentation.sh --sid $S_DIR --sd $OUT_DIR"
+fastsurfer_command="$FASTSURFER_HOME/run_fastsurfer.sh --sid $S_DIR --sd $OUT_DIR"
 [ ! -z "$fs_license" ] && fastsurfer_command="$fastsurfer_command --fs_license $fs_license"
 fastsurfer_command="$fastsurfer_command --t1 ${MASK_IMAGE:+$INPAINTED_IMG}"
 fastsurfer_command="$fastsurfer_command ${POSITIONAL_ARGS[*]}"

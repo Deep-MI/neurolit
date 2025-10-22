@@ -1,22 +1,11 @@
 # Lesion Inpainting Tool (LIT) 🔥
 
 ## Overview
-This repository containes sourcecode and documentation related to our publication **FastSurfer-LIT: Lesion Inpainting Tool for Whole Brain MRI Segmentation With Tumors,
-Cavities and Abnormalities** (doi pending).
+This repository contains sourcecode and documentation related to our publication [**FastSurfer-LIT: Lesion Inpainting Tool for Whole Brain MRI Segmentation With Tumors,
+Cavities and Abnormalities**](https://doi.org/10.1162/imag_a_00446).
 This tool can inpaint lesions independent of their shape or appearance for further downstream analysis. The tool can be run standalone and in conjuction with FastSurfer for whole brain segmentation and cortical surface reconstruction. It can also mask tumor regions in the FastSurfer outputs.
 
 ## Quickstart
-
-### Installation from PyPI
-
-```bash
-pip install lesion-inpainting-tool
-```
-
-After this, the cli commands `inpaint-image` (running `LIT/inpaint_image.py`)
-and `run-lit` (running the un-containerized `LIT/scripts/run_lit.sh`) are available.
-
-### Installation from GitHub
 
 ```bash
 git clone https://github.com/Deep-MI/LIT.git && cd LIT
@@ -28,6 +17,7 @@ git clone https://github.com/Deep-MI/LIT.git && cd LIT
 
 We recommend using containerization in combination with the [LIT/scripts/run_lit_containerized.sh](LIT/scripts/run_lit_containerized.sh) wrapper script.
 This will automatically build the docker image from [dockerhub](https://hub.docker.com/r/deepmi/lit) and singularity image and run the LIT and optionally FastSurfer.
+We also have a pip release of LIT, currently in a beta version on Test pypi (see below)
 
 
 ### Running LIT (only)
@@ -53,6 +43,24 @@ We recommend performing dilation, since undersegmentation can negatively impact 
 
 
 If the source image was isotropic, the output images should have the same resolution as the input image and the area outside of the lesion mask should be preversed, except for a robust rescaling of the intensity values.
+
+
+#### Installation from PyPI
+
+The same interface as above can be accessed from pypi (currently on test-pypi)
+
+```bash
+# Install the package
+pip install -i https://test.pypi.org/simple/ lesion-inpainting-tool
+
+# Download model checkpoints (recommended - download once, ~500MB)
+lit-download-models
+
+# Run LIT
+run-lit --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output_directory output_directory --dilate 2
+```
+
+**Note:** If you skip the `lit-download-models` step, models will be automatically downloaded on first use.
 
 
 ### Running LIT in combination with FastSurfer
