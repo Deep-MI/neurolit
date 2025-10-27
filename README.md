@@ -1,5 +1,7 @@
 # Lesion Inpainting Tool (LIT) 🔥
 
+![teaser](https://github.com/ClePol/LIT/blob/dev/docs/overview.png?raw=true)
+
 ## Overview
 This repository contains sourcecode and documentation related to our publication [**FastSurfer-LIT: Lesion Inpainting Tool for Whole Brain MRI Segmentation With Tumors,
 Cavities and Abnormalities**](https://doi.org/10.1162/imag_a_00446).
@@ -111,6 +113,29 @@ Useful FastSurfer flags:
 ## Training
 
 The training script can be found [here](lit/train_ddpm.py). The same docker image can be used for training, but you need to mount the training data directory using the `-v` flag. Note that training data are excpected to be conformed (with the script [conform.py](lit/data/conform.py)).
+
+## Documentation
+
+Comprehensive documentation is available in the `docs/` directory. To build and view:
+
+```bash
+# Install documentation dependencies
+pip install -r docs/requirements.txt
+
+# Build HTML documentation
+cd docs && make html
+
+# View in browser
+firefox _build/html/index.html  # Or your preferred browser
+```
+
+Documentation includes:
+- Installation guides
+- Usage tutorials
+- API reference
+- FastSurfer integration guide
+- Training instructions
+- Contributing guidelines
 
 ## References
 

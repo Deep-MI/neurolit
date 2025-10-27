@@ -1,0 +1,281 @@
+Usage Guide
+===========
+
+This guide covers the basic and advanced usage of LIT.
+
+Basic Usage
+-----------
+
+Running LIT with Containerization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The most straightforward way to run LIT is using the containerized wrapper script:
+
+.. code-block:: bash
+
+   ./LIT/scripts/run_lit_containerized.sh \\
+       --input_image T1w.nii.gz \\
+       --mask_image lesion_mask.nii.gz \\
+       --output_directory output_directory \\
+       --dilate 2
+
+**Key Parameters:**
+
+* ``--input_image``: Path to the T1-weighted MRI image
+* ``--mask_image``: Path to the lesion mask (binary or multi-class)
+* ``--output_directory``: Directory where outputs will be saved
+* ``--dilate``: Number of times to dilate the lesion mask (default: 0)
+
+Running LIT from PyPI
+~~~~~~~~~~~~~~~~~~~~~
+
+If you installed via pip:
+
+.. code-block:: bash
+
+   run-lit \\
+       --input_image T1w.nii.gz \\
+       --mask_image lesion_mask.nii.gz \\
+       --output_directory output_directory \\
+       --dilate 2
+
+Understanding the Outputs
+--------------------------
+
+LIT produces several output files in the ``inpainting_volumes`` subdirectory:
+
+Output Files
+~~~~~~~~~~~~
+
+* **Inpainted T1w image:** The main output with lesions inpainted
+* **Inpainting mask:** The (dilated) mask used for inpainting in the same space as the input
+* **Cropped inpainted image:** The inpainted T1w where the lesion is cropped out
+
+File Structure
+~~~~~~~~~~~~~~
+
+.. code-block:: text
+
+   output_directory/
+   └── inpainting_volumes/
+       ├── T1w_inpainted.nii.gz
+       ├── inpainting_mask.nii.gz
+       └── T1w_inpainted_cropped.nii.gz
+
+.. note::
+   If the source image was isotropic, the output images will have the same resolution as the input image. The area outside of the lesion mask is preserved, except for robust rescaling of intensity values.
+
+Advanced Usage
+--------------
+
+Mask Dilation
+~~~~~~~~~~~~~
+
+We recommend performing mask dilation to account for potential undersegmentation:
+
+.. code-block:: bash
+
+   run-lit --input_image T1w.nii.gz \\
+          --mask_image lesion_mask.nii.gz \\
+          --output_directory output \\
+          --dilate 3  # Dilate mask by 3 voxels
+
+**When to use dilation:**
+
+* **Undersegmentation:** Increase dilation (2-5 voxels)
+* **Oversegmentation:** Use less or no dilation
+* **Uncertain boundaries:** Use moderate dilation (2-3 voxels)
+
+Direct Inpainting (Python API)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For programmatic access, use the direct inpainting function:
+
+.. code-block:: python
+
+   from LIT.inpaint_image import main as inpaint
+   import argparse
+   
+   # Prepare arguments
+   args = argparse.Namespace(
+       input_image='T1w.nii.gz',
+       mask_image='lesion_mask.nii.gz',
+       out_dir='output',
+       device='cuda',  # or 'cpu'
+       batch_size=16,
+       num_samples=100
+   )
+   
+   # Run inpainting
+   inpaint(args)
+
+GPU vs CPU
+~~~~~~~~~~
+
+By default, LIT uses GPU if available. To force CPU mode:
+
+.. code-block:: bash
+
+   run-lit --input_image T1w.nii.gz \\
+          --mask_image lesion_mask.nii.gz \\
+          --output_directory output \\
+          --device cpu
+
+.. warning::
+   CPU mode is significantly slower than GPU mode (10-20x slower).
+
+Batch Processing
+----------------
+
+For processing multiple subjects, create a simple loop:
+
+.. code-block:: bash
+
+   #!/bin/bash
+   
+   # List of subjects
+   subjects=("sub-01" "sub-02" "sub-03")
+   
+   for sub in "${subjects[@]}"; do
+       echo "Processing $sub..."
+       run-lit \\
+           --input_image data/${sub}/T1w.nii.gz \\
+           --mask_image data/${sub}/lesion_mask.nii.gz \\
+           --output_directory output/${sub} \\
+           --dilate 2
+   done
+
+Or using Python:
+
+.. code-block:: python
+
+   import subprocess
+   from pathlib import Path
+   
+   data_dir = Path("data")
+   subjects = ["sub-01", "sub-02", "sub-03"]
+   
+   for subject in subjects:
+       print(f"Processing {subject}...")
+       cmd = [
+           "run-lit",
+           "--input_image", str(data_dir / subject / "T1w.nii.gz"),
+           "--mask_image", str(data_dir / subject / "lesion_mask.nii.gz"),
+           "--output_directory", f"output/{subject}",
+           "--dilate", "2"
+       ]
+       subprocess.run(cmd, check=True)
+
+Command-Line Interface Reference
+---------------------------------
+
+run-lit
+~~~~~~~
+
+Main command to run the full LIT pipeline.
+
+.. code-block:: text
+
+   run-lit [OPTIONS]
+
+Options:
+   --input_image PATH        Path to input T1w image [required]
+   --mask_image PATH         Path to lesion mask [required]
+   --output_directory PATH   Output directory [required]
+   --dilate INTEGER          Number of dilation iterations [default: 0]
+   --device TEXT            Device to use (cuda/cpu) [default: cuda]
+   --help                   Show this message and exit
+
+inpaint-image
+~~~~~~~~~~~~~
+
+Direct access to core inpainting functionality.
+
+.. code-block:: text
+
+   inpaint-image [OPTIONS]
+
+Options:
+   --input_image PATH        Path to input T1w image [required]
+   --mask_image PATH         Path to lesion mask [required]
+   --out_dir PATH           Output directory [required]
+   --device TEXT            Device to use (cuda/cpu) [default: cuda]
+   --batch_size INTEGER     Batch size for processing [default: 16]
+   --num_samples INTEGER    Number of diffusion samples [default: 100]
+   --help                   Show this message and exit
+
+lit-download-models
+~~~~~~~~~~~~~~~~~~~
+
+Download required model checkpoints.
+
+.. code-block:: text
+
+   lit-download-models [OPTIONS]
+
+Options:
+   --force                  Force re-download even if models exist
+   --help                   Show this message and exit
+
+Best Practices
+--------------
+
+Input Data
+~~~~~~~~~~
+
+1. **Image Format:** NIfTI format (.nii.gz or .nii) is recommended
+2. **Image Quality:** Use high-quality T1-weighted images (1mm isotropic preferred)
+3. **Mask Quality:** Ensure lesion masks are accurate; undersegmentation is better than oversegmentation
+4. **Preprocessing:** Skull-stripping is not required but can improve results
+
+Performance
+~~~~~~~~~~~
+
+1. **GPU Usage:** Always use GPU when available for significant speedup
+2. **Batch Size:** Increase batch size on high-memory GPUs (default: 16)
+3. **Dilation:** Use 2-3 voxels of dilation for most cases
+
+Quality Control
+~~~~~~~~~~~~~~~
+
+1. **Visual Inspection:** Always visually inspect inpainting results
+2. **Boundary Check:** Pay attention to lesion boundaries
+3. **Intensity Matching:** Verify that inpainted regions match surrounding tissue
+
+Common Issues
+-------------
+
+Poor Inpainting Quality
+~~~~~~~~~~~~~~~~~~~~~~~
+
+**Problem:** Inpainted regions don't look realistic
+
+**Solutions:**
+
+* Increase mask dilation (try 3-5 voxels)
+* Check input image quality
+* Ensure mask accurately covers the entire lesion
+* Verify that the input is a T1-weighted image
+
+Mask Not Applied Correctly
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Problem:** Output doesn't show inpainting in expected regions
+
+**Solutions:**
+
+* Verify mask and image are in the same space
+* Check mask file is binary or has correct labels
+* Ensure mask and image have compatible dimensions
+
+Out of Memory Errors
+~~~~~~~~~~~~~~~~~~~~
+
+**Problem:** CUDA out of memory error
+
+**Solutions:**
+
+* Reduce batch size: ``--batch_size 8`` or ``--batch_size 4``
+* Use CPU mode (slower): ``--device cpu``
+* Process on a machine with more GPU memory
+
