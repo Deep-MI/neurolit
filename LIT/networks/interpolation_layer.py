@@ -15,7 +15,6 @@
 # IMPORTS
 import typing as _T
 from numbers import Number
-from typing import Any
 
 import numpy as np
 import torch
@@ -220,7 +219,7 @@ class _ZoomNd(nn.Module):
                             f"scale factors, but only 1 or {self._N} are valid: {sf}."
                         )
 
-                if last_sf is not None and any(l != t for l, t in zip(last_sf, sf)):
+                if last_sf is not None and any(last != t for last, t in zip(last_sf, sf)):
                     yield last_sf, num
                     # reset the counter
                     num = 0

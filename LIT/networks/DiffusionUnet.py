@@ -74,7 +74,7 @@ else:
     xformers = None
     has_xformers = False
 
-__all__ = ["DiffusionModelUNet"]
+__all__ = ["DiffusionModelUNetVINN"]
 
 def zero_module(module: nn.Module) -> nn.Module:
     """

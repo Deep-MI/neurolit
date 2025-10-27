@@ -42,7 +42,7 @@ from tqdm import tqdm
 from monai.networks.schedulers import DDPMScheduler
 from LIT.networks.DiffusionUnet import DiffusionModelUNetVINN
 from LIT.inference import DiffusionInfererVINN
-from LIT.utils import plot_batch, plot_scheduler
+from LIT.utils import plot_batch
 from LIT.data.datasets import get_base_dataset, SlicedDataset
 
 
@@ -251,11 +251,7 @@ if __name__ == "__main__":
                     else:
                         noise_pred = inferer(inputs=images, diffusion_model=model, noise=noise, timesteps=timesteps, scale_factors=scale_factors)
 
-                    try:
-                        val_loss = F.mse_loss(noise_pred.float(), noise.float())
-                    except Exception as e:
-                        print(e)
-                        import pdb; pdb.set_trace()
+                    val_loss = F.mse_loss(noise_pred.float(), noise.float())
 
                 val_epoch_loss += val_loss.item()
                 if TQDM_ENABLED: progress_bar.set_postfix({"val_loss": val_epoch_loss / (step + 1)})
@@ -280,4 +276,4 @@ if __name__ == "__main__":
     total_time = time.time() - total_start
     print(f"train completed, total time: {total_time}.")
 
-    torch.save(model, os.path.join(args.out_dir,f'model_final.pth'))
+    torch.save(model, os.path.join(args.out_dir,'model_final.pth'))

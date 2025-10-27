@@ -12,34 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import argparse
+import os
 import sys
-from typing import Dict, Tuple, Optional, List, Union
 from pathlib import Path
-# Suppress FutureWarning about torch.cuda.amp.autocast deprecation (comes from monai-generative)
-import warnings
-warnings.filterwarnings('ignore', category=FutureWarning, message='`torch.cuda.amp.autocast\\(args...\\)` is deprecated')
-
+from typing import Dict, List, Optional, Tuple, Union
 
 # supress warning on loading matplotlib
 import matplotlib
-from monai import transforms
-import numpy as np
-from numpy.typing import NDArray
 import nibabel as nib
 import nibabel.processing
+import numpy as np
 import torch
-from monai.networks.schedulers import DDPMScheduler, DDIMScheduler
-from torch.amp import autocast # previous: from torch.cuda.amp import autocast
 import torch.nn.functional as F
-from LIT.networks.DiffusionUnet import DiffusionModelUNetVINN
+from monai import transforms
+from monai.networks.schedulers import DDIMScheduler, DDPMScheduler
+from numpy.typing import NDArray
+from torch.amp import autocast  # previous: from torch.cuda.amp import autocast
 
 from LIT.data import conform
+from LIT.inference import OffsetTwoAndHalfDInpaintingInferer
+from LIT.networks.DiffusionUnet import DiffusionModelUNetVINN
 from LIT.utils.plotting import plot_batch, plot_inpainting
-from LIT.inference import *
-
-
 
 # use Agg backend on server
 if os.environ.get('DISPLAY','') == '':
@@ -361,12 +355,8 @@ def main():
         sys.exit("ERROR: At least one checkpoint must be specified", file=sys.stderr)
     elif len(model_dict) == 1:
         DIM = model_to_dim[list(model_dict.keys())[0]]
-        VIEW_AGG = False
-        IS_2D = list(model_dict.values())[0].conv_in.spatial_dims == 2
     elif len(model_dict) == 3:
         DIM = 0
-        VIEW_AGG = True
-        IS_2D = True
     else:
         sys.exit(f"ERROR: One or three checkpoints must be specified, but got {len(model_dict)}"
                  , file=sys.stderr)

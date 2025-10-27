@@ -22,8 +22,6 @@ import torch
 from monai.inferers import DiffusionInferer
 from tqdm import tqdm
 
-from LIT.utils import *
-
 
 class InpaintingInferer():
 
@@ -103,15 +101,6 @@ class InpaintingInferer():
             return image_inpainted, intermediates
         else:
             return image_inpainted
-        
-    def inpainting_step(self, image_masked, mask, t):
-        image_inpainted_backward_known = self.sample_forward_diffusion(image_masked, t-1)
-        image_backward_forward_unknown = self.diffusion_backward(image_inpainted, t)
-        # fuse known and unknown regions
-        image_inpainted = torch.where(
-            mask == 0, image_inpainted_backward_known, image_backward_forward_unknown
-        )
-        return image_inpainted
 
     def sample_forward_diffusion(self, image, t): # add noise at 
         noise = torch.randn((image.shape), device=image.device)
