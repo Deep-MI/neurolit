@@ -143,10 +143,9 @@ def main():
     # Ensure weights directory exists
     weights_dir.mkdir(parents=True, exist_ok=True)
     
-    print(f"LIT Model Download Utility")
-    print(f"=" * 60)
+    print("=" * 60)
     print(f"Download location: {weights_dir}")
-    print(f"=" * 60)
+    
     
     # Model URLs
     models = {
@@ -165,19 +164,15 @@ def main():
         else:
             missing_models.append(model_name)
     
-    if existing_models:
-        print(f"\nModels already downloaded ({len(existing_models)}/{len(models)}):")
-        for model in existing_models:
-            print(f"  ✓ {model}")
     
     if not missing_models:
-        print("\n✓ All models are already downloaded!")
-        print(f"\nModels location: {weights_dir}")
+        print("\nAll models are already downloaded!")
+        print("=" * 60)
         return
     
     print(f"\nModels to download ({len(missing_models)}/{len(models)}):")
     for model in missing_models:
-        print(f"  • {model}")
+        print(f"{model}")
     
     print("\nDownloading models (this may take several minutes)...")
     print()  # Empty line before progress bars
@@ -191,14 +186,14 @@ def main():
         try:
             fallback_multiple_urls(str(model_path), urls=[url], verbose=False, show_progress=True)
         except Exception as e:
-            print(f"\n✗ Download failed for {model_name}: {e}")
+            print(f"\nDownload failed for {model_name}: {e}")
             success = False
     
     if not success:
+        print("=" * 30 + " exiting with errors" + "=" * 30)
         sys.exit(1)
     
-    print(f"\n{'=' * 60}")
-    print(f"✓ All models downloaded successfully!")
+    print("All models downloaded successfully!")
     print(f"Models location: {weights_dir}")
     print(f"{'=' * 60}")
 

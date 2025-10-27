@@ -61,3 +61,10 @@ lit-download-models = "LIT.utils.download_checkpoints:main"
 
 [project.urls]
 Homepage = "https://github.com/Deep-MI/LIT"
+
+[tool.ruff]
+# Ignore specific rules
+ignore = [
+    "E701",  # Multiple statements on one line (colon)
+    "E731",  # Do not assign a lambda expression, use a def
+]

@@ -134,6 +134,7 @@ def plot_inpainting(val_image: torch.Tensor, val_image_masked: torch.Tensor,
 
     slicing = [0, slice(None), slice(None), slice(None)]
     slicing[cut_dim+1] = SLICE_CUT[cut_dim].item()
+    slicing = tuple(slicing)  # Convert to tuple for PyTorch 2.9+ compatibility
 
     fig, axs = plt.subplots(1, 3, figsize=(12, 4))
     axs[0].imshow(val_image[slicing].cpu(), cmap="gray")
