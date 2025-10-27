@@ -78,13 +78,13 @@ def options_parse():
     return options
 
 
-def get_adjM(trias: npt.NDArray[int], n: int):
+def get_adjM(trias: npt.NDArray[np.integer], n: int):
     """
     Create symmetric sparse adjacency matrix of triangle mesh.
 
     Parameters
     ----------
-    trias : npt.NDArray[int](m, 3)
+    trias : npt.NDArray[np.integer](m, 3)
         Triangle mesh matrix.
         
     n : int
@@ -129,10 +129,10 @@ def bincount2D_vectorized(a: npt.NDArray) -> np.ndarray:
 
 def mode_filter(
         adjM: sparse.csr_matrix,
-        labels: npt.NDArray[str],
+        labels: npt.NDArray[np.integer],
         fillonlylabel = None,
         novote: npt.ArrayLike = []
-) -> npt.NDArray[int]:
+) -> npt.NDArray[np.integer]:
     """
     Apply mode filter (smoothing) to integer labels on mesh vertices.
 
@@ -143,7 +143,7 @@ def mode_filter(
         this determines what edges can vote so usually one adds the
         identity to the adjacency matrix so that each vertex is included
         in its own vote.
-    labels : npt.NDArray[int]
+    labels : npt.NDArray[np.integer]
         List of integer labels at each vertex of the mesh.
     fillonlylabel : int
         Label to fill exclusively. Defaults to None to smooth all labels.
@@ -152,7 +152,7 @@ def mode_filter(
 
     Returns
     -------
-    labels_new : npt.NDArray[int]
+    labels_new : npt.NDArray[np.integer]
         New smoothed labels.
     """
     # make sure labels lengths equals adjM dimension
@@ -199,9 +199,9 @@ def mode_filter(
     # check if we have neighbors with -1 or 0
     # this could produce problems in the loop below, so lets stop for now:
     nlabels = labels[JJ]
-    if any(nlabels == -1) or any(nlabels == 0):
-        print('WARNING: neighbors have -1 or 0 labels!')
-        #sys.exit("there are -1 or 0 labels in neighbors!")
+    # if any(nlabels == -1) or any(nlabels == 0):
+    #     print('WARNING: neighbors have -1 or 0 labels!')
+    #     #sys.exit("there are -1 or 0 labels in neighbors!")
     # create sparse matrix with labels at neighbors
     nlabels = sparse.csr_matrix((labels[JJ], (II, JJ)))
     # print("nlabels: {}".format(nlabels))
@@ -213,13 +213,16 @@ def mode_filter(
     # get rid of rows that have uniform vote (or are empty)
     # for this to work no negative numbers should exist
     # get row counts, max and sums
-    rmax = nlabels.max(1).A.squeeze()
-    sums = nlabels.sum(axis=1).A1
+    # rmax = nlabels.max(1).A.squeeze()
+    # sums = nlabels.sum(axis=1).A1
+    # Convert sparse matrix operations to dense arrays for compatibility
+    rmax = np.array(nlabels.max(1).todense()).flatten()
+    sums = np.array(nlabels.sum(axis=1)).flatten()
     counts = np.diff(nlabels.indptr)
     # then keep rows where max*counts differs from sums
     rmax = np.multiply(rmax, counts)
     rows = np.where(rmax != sums)[0]
-    print("rows: " + str(nlabels.shape[0]) + "  reduced to " + str(rows.size))
+    # print("rows: " + str(nlabels.shape[0]) + "  reduced to " + str(rows.size))
     # Only after fixing the rows above, we can
     # get rid of entries that should not vote
     # since we have only rows that were non-uniform, they should not become empty

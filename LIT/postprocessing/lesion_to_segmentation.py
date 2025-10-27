@@ -26,6 +26,10 @@ def mask_lesion(to_mask_path, mask_path):
     tumor_mask_img = nib.load(mask_path)
     
     orig_img = nib.load(to_mask_path)
+    
+    # Get the original data type to preserve it
+    orig_dtype = orig_img.get_data_dtype()
+    
     resampled_tumor_mask = nibabel.processing.resample_from_to(tumor_mask_img, orig_img, order=0, mode='constant', cval=0)
     #nib.save(resampled_tumor_mask, os.path.join(subj_output_dir, 'tumor_mask_conf.mgz'))
 
@@ -34,7 +38,10 @@ def mask_lesion(to_mask_path, mask_path):
         return orig_img
     elif (resampled_tumor_mask.get_fdata() > 0).all():
         print('Tumor mask is greater than 0 everywhere, returning all zeros')
-        return nib.Nifti1Image(np.zeros(orig_img.shape), orig_img.affine, orig_img.header)
+        zeros_data = np.zeros(orig_img.shape, dtype=orig_dtype)
+        # Use the same image class as input with original header (like reference script)
+        zeros_img = orig_img.__class__(zeros_data, orig_img.affine, orig_img.header)
+        return zeros_img
 
     #mask_volume
     assert(resampled_tumor_mask.shape == orig_img.shape), 'Shape mismatch between tumor mask and orig image ' + str(resampled_tumor_mask.shape) + ' vs ' + str(orig_img.shape)
@@ -42,15 +49,22 @@ def mask_lesion(to_mask_path, mask_path):
     #assert((np.unique(resampled_tumor_mask.get_fdata()) == [0,1]).all()), 'Tumor mask should be binary, but has values: ' + str(np.unique(resampled_tumor_mask.get_fdata()))
     #masked_orig = orig_img.get_fdata() * (resampled_tumor_mask.get_fdata() == 0).astype(int) # invert and mask
     
-    # set tumor area to 99
-    masked_orig = orig_img.get_fdata()
+    # Load data with np.asanyarray (preserves dtype) and modify
+    # Pattern from FastSurfer's paint_cc_into_pred.py
+    masked_orig = np.asanyarray(orig_img.dataobj).copy()
     masked_orig[resampled_tumor_mask.get_fdata() > 0] = 99
+    
+    # Ensure the output maintains the original data type
+    masked_orig = masked_orig.astype(orig_dtype)
 
-    return nib.Nifti1Image(masked_orig, orig_img.affine, orig_img.header)
+    # Use the same image class as input with original affine and header
+    # This pattern preserves the dtype from the original file
+    new_img = orig_img.__class__(masked_orig, orig_img.affine, orig_img.header)
+    
+    return new_img
 
 
 def main():
-    print('running')
     parser = argparse.ArgumentParser(description='Mask tumor from a volume')
     parser.add_argument('-i','--image', help='Path to volume to mask', type=str, required=True)
     parser.add_argument('-m','--mask', help='Path to tumor mask', type=str, required=True)
