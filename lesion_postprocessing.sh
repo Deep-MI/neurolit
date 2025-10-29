@@ -223,12 +223,11 @@ for hemisphere in lh rh; do
             --inseg "$SUBJECTS_DIR/$SID/inpainting_volumes/inpainting_mask.nii.gz" \
             --insurf "$SUBJECTS_DIR/$SID/surf/$hemisphere.white.preaparc" \
             --incort "$SUBJECTS_DIR/$SID/label/$hemisphere.cortex.label" \
-            --outaparc "$SUBJECTS_DIR/$SID/label/$hemisphere.lesion.annot" \
+            --out_annot "$SUBJECTS_DIR/$SID/label/$hemisphere.lesion.annot" \
             --surflut "$LIT_PATH/LIT/postprocessing/DKTatlaslookup_lesion.txt" \
             --seglut "$LIT_PATH/LIT/postprocessing/hemi.DKTatlaslookup_lesion.txt" \
             --projmm 0 \
             --radius 0 \
-            --single_label \
             --to_annot "$SUBJECTS_DIR/$SID/label/$hemisphere.aparc.DKTatlas.annot"
     else
         docker run -u $(id -u):$(id -g) --rm -v "$SUBJECTS_DIR/$SID/:/fastsurfer_output/" --entrypoint "/bin/bash" deepmi/lit:$DOCKER_VERSION -c \
@@ -236,12 +235,11 @@ for hemisphere in lh rh; do
             --inseg '/fastsurfer_output/inpainting_volumes/inpainting_mask.nii.gz' \
             --insurf '/fastsurfer_output/surf/$hemisphere.white.preaparc' \
             --incort '/fastsurfer_output/label/$hemisphere.cortex.label' \
-            --outaparc '/fastsurfer_output/label/$hemisphere.lesion.label' \
+            --out_annot '/fastsurfer_output/label/$hemisphere.lesion.annot' \
             --surflut 'postprocessing/DKTatlaslookup_lesion.txt' \
             --seglut 'postprocessing/hemi.DKTatlaslookup_lesion.txt' \
             --projmm 0 \
             --radius 0 \
-            --single_label \
             --to_annot '/fastsurfer_output/label/$hemisphere.aparc.DKTatlas.annot'"
     fi
     

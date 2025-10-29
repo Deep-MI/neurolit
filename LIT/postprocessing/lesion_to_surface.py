@@ -18,17 +18,15 @@
 
 # IMPORTS
 import optparse
-import sys
 
 import numpy as np
 import nibabel.freesurfer.io as fs
 import nibabel as nib
 from scipy import sparse
 from scipy.ndimage import binary_dilation
-from scipy.sparse.csgraph import connected_components
 from lapy import TriaMesh
 
-from smooth_aparc import smooth_aparc, mode_filter, get_adjM
+import numpy.typing as npt
 
 
 HELPTEXT = """
@@ -37,35 +35,25 @@ Script to sample labels from image to surface and clean up.
 USAGE:
 sample_parc --inseg <segimg> --insurf <surf> --incort <cortex.label>
             --seglut <seglut> --surflut <surflut> --outaparc <out_aparc>
-            --projmm <float> --radius <float>
+            --projmm <float> --radius <float> --to_annot <annot>
+            --dilation <int>
 
-
-Dependencies:
-    Python 3.8
-
-    Numpy
-    http://www.numpy.org
-
-    Nibabel to read and write FreeSurfer surface meshes
-    http://nipy.org/nibabel/
-
-
-Original Author: Martin Reuter
-Date: Dec-18-2023
+Author: Clemens Pollak
+Date: October 29, 2025
+Based on FastSurfer's sample_parc.py and smooth_aparc.py by Martin Reuter (Dec-18-2023)
 
 """
 
 h_inseg = "path to input segmentation image"
 h_incort = "path to input cortex label mask"
 h_insurf = "path to input surface"
-h_outaparc = "path to output aparc"
+h_out_annot = "path to output annot"
 h_surflut = "FreeSurfer look-up-table for values on surface"
-h_seglut = "Look-up-table for values in segmentation image (rows need to correspond to surflut)"
+h_seglut = "Look-up-table for values in segmentation image (rows need to correspond to surflut). Label ID is the value of the label in the binarysegmentation image."
 h_projmm = "Sample along normal at projmm distance (in mm), default 0"
 h_radius = "Search around sample location at radius (in mm) for label if 'unknown', default None"
-h_single_label = "Sample only a single label, default False"
-h_to_annot = "Replace annotations in existing annot file, when using --single_label."
-
+h_to_annot = "Replace annotations in existing annot file."
+h_dilation = "Dilation radius for the lesion segmentation mask, default 3"
 
 def options_parse():
     """
@@ -76,105 +64,177 @@ def options_parse():
     options : argparse.Namespace
         Namespace object holding options.
     """
-    parser = optparse.OptionParser(
-        version="$Id: smooth_aparc,v 1.0 2018/06/24 11:34:08 mreuter Exp $",
-        usage=HELPTEXT,
-    )
+    parser = optparse.OptionParser(usage=HELPTEXT)
     parser.add_option("--inseg", dest="inseg", help=h_inseg)
     parser.add_option("--insurf", dest="insurf", help=h_insurf)
     parser.add_option("--incort", dest="incort", help=h_incort)
     parser.add_option("--surflut", dest="surflut", help=h_surflut)
     parser.add_option("--seglut", dest="seglut", help=h_seglut)
-    parser.add_option("--outaparc", dest="outaparc", help=h_outaparc)
+    parser.add_option("--out_annot", dest="out_annot", help=h_out_annot)
     parser.add_option("--projmm", dest="projmm", help=h_projmm, default=0.0, type="float")
     parser.add_option("--radius", dest="radius", help=h_radius, default=None, type="float")
-    parser.add_option("--single_label", dest="single_label", action="store_true", default=False, help=h_single_label)
     parser.add_option("--to_annot", dest="to_annot", help=h_to_annot)
+    parser.add_option("--dilation", dest="dilation", help=h_dilation, default=3, type="int")
     (options, args) = parser.parse_args()
-
-    if options.insurf is None or options.inseg is None or options.outaparc is None:
-        sys.exit("ERROR: Please specify input surface, input image and output aparc!")
-
-    if options.surflut is None or options.seglut is None:
-        sys.exit("ERROR: Please specify surface and segmentation image LUT!")
-
-    # maybe later add functionality, to not have a cortex label, e.g. 
-    # like FreeSurfer find largest connected component and fill only
-    # the other unknown regions
-    if options.incort is None:
-        sys.exit("ERROR: Please specify surface cortex label!")
-
     return options
 
-def construct_adj_cluster(tria, annot):
+
+def mode_filter(
+        adjM: sparse.csr_matrix,
+        labels: npt.NDArray[np.integer],
+        fillonlylabel = None,
+        novote: npt.ArrayLike = []
+) -> npt.NDArray[np.integer]:
     """
-    Compute adjacency matrix of edges from same annotation label only.
-
-    Operates only on triangles and removes edges that cross annotation
-    label boundaries.
-
-    Returns
-    -------
-    csc_matrix
-        The non-directed adjacency matrix
-        will be symmetric. Each inner edge (i,j) will have
-        the number of triangles that contain this edge.
-        Inner edges usually 2, boundary edges 1. Higher
-        numbers can occur when there are non-manifold triangles.
-        The sparse matrix can be binarized via:
-        adj.data = np.ones(adj.data.shape).
-     """
-    t0 = tria[:, 0]
-    t1 = tria[:, 1]
-    t2 = tria[:, 2]
-    i = np.column_stack((t0, t1, t1, t2, t2, t0)).reshape(-1)
-    j = np.column_stack((t1, t0, t2, t1, t0, t2)).reshape(-1)
-    ia = annot[i]
-    ja = annot[j]
-    keep_edges = (ia == ja)
-    i = i[keep_edges]
-    j = j[keep_edges]
-    dat = np.ones(i.shape)
-    n = annot.shape[0]
-    return sparse.csc_matrix((dat, (i, j)), shape=(n, n))
-
-def find_all_islands(surf, annot):
-    """
-    Find vertices in disconnected islands for all labels in surface annotation.
+    Apply mode filter (smoothing) to integer labels on mesh vertices.
 
     Parameters
     ----------
-    surf : tuple
-        Surface as returned by nibabel fs.read_geometry, where:
-        surf[0] is the np.array of (n, 3) vertex coordinates and
-        surf[1] is the np.array of (m, 3) triangle indices.
-    annot : np.ndarray
-        Annotation as an int array of (n,) with label ids for each vertex.
-        This is for example the first element of the tupel returned by
-        nibabel fs.read_annot.
+    adjM : sparse.csr_matrix[bool]
+        Symmetric adjacency matrix defining edges between vertices,
+        this determines what edges can vote so usually one adds the
+        identity to the adjacency matrix so that each vertex is included
+        in its own vote.
+    labels : npt.NDArray[np.integer]
+        List of integer labels at each vertex of the mesh.
+    fillonlylabel : int
+        Label to fill exclusively. Defaults to None to smooth all labels.
+    novote : npt.ArrayLike
+        Label ids that should not vote. Defaults to [].
 
     Returns
     -------
-    vidx : np.ndarray (i,)
-        Arrray listing vertex indices of island vertices, empty if no islands
-        (components disconnetcted from largest label region) are found.
+    labels_new : npt.NDArray[np.integer]
+        New smoothed labels.
     """
-    # construct adjaceny matrix without edges across regions:
-    adjM = construct_adj_cluster(surf[1], annot)
-    # compute disconnected components
-    n_comp, labels = connected_components(csgraph=adjM, directed=False, return_labels=True)
-    # for each label, get islands that are not connected to main component
-    lids = np.unique(annot)
-    vidx = np.array([], dtype = np.int32)
-    for lid in lids:
-        ll = labels[annot==lid]
-        lidx = np.arange(labels.size)[annot==lid]
-        lmax = np.bincount(ll).argmax()
-        v = lidx[(ll != lmax)]
-        if v.size > 0:
-            print("Found disconnected islands ({} vertices total) for label {}!".format(v.size, lid))
-        vidx = np.concatenate((vidx,v))
-    return vidx
+    # make sure labels lengths equals adjM dimension
+    n = labels.shape[0]
+    if n != adjM.shape[0] or n != adjM.shape[1]:
+        raise ValueError(
+            "ERROR mode_filter: adjM size "
+            + format(adjM.shape)
+            + " does not match label length "
+            + format(labels.shape)
+        )
+    # remove rows with only a single entry from adjM
+    # if we removed some triangles, we may have isolated vertices
+    # adding the eye to adjM will produce these entries
+    # since they are neighbors to themselves, this adds
+    # values to nlabels below that we don't want
+    counts = np.diff(adjM.indptr)
+    rows = np.where(counts == 1)
+    pos = adjM.indptr[rows]
+    adjM.data[pos] = 0
+    adjM.eliminate_zeros()
+    # for num rings exponentiate adjM and add adjM from step before
+    # we currently do this outside of mode_filter
+    # new labels will be the same as old almost everywhere
+    labels_new = labels
+    # find vertices to fill
+    # if fillonlylabels empty, fill all
+    if not fillonlylabel:
+        ids = np.arange(0, n)
+    else:
+        # select the ones with the labels
+        ids = np.where(labels == fillonlylabel)[0]
+        if ids.size == 0:
+            print(
+                "WARNING: No ids found with idx "
+                + str(fillonlylabel)
+                + "  ... continue"
+            )
+            return labels
+    # of all ids to fill, find neighbors
+    nbrs = adjM[ids, :]
+    # get vertex ids (I, J ) of each edge in nbrs
+    [II, JJ, VV] = sparse.find(nbrs)
+    # check if we have neighbors with -1 or 0
+    # this could produce problems in the loop below, so lets stop for now:
+    nlabels = labels[JJ]
+    # if any(nlabels == -1) or any(nlabels == 0):
+    #     print('WARNING: neighbors have -1 or 0 labels!')
+    #     #sys.exit("there are -1 or 0 labels in neighbors!")
+    # create sparse matrix with labels at neighbors
+    nlabels = sparse.csr_matrix((labels[JJ], (II, JJ)))
+    # print("nlabels: {}".format(nlabels))
+    from scipy.stats import mode
+
+    if not isinstance(nlabels, sparse.csr_matrix):
+        raise ValueError("Matrix must be CSR format.")
+    # novote = [-1,0,fillonlylabel]
+    # get rid of rows that have uniform vote (or are empty)
+    # for this to work no negative numbers should exist
+    # get row counts, max and sums
+    # rmax = nlabels.max(1).A.squeeze()
+    # sums = nlabels.sum(axis=1).A1
+    # Convert sparse matrix operations to dense arrays for compatibility
+    rmax = np.array(nlabels.max(1).todense()).flatten()
+    sums = np.array(nlabels.sum(axis=1)).flatten()
+    counts = np.diff(nlabels.indptr)
+    # then keep rows where max*counts differs from sums
+    rmax = np.multiply(rmax, counts)
+    rows = np.where(rmax != sums)[0]
+    # print("rows: " + str(nlabels.shape[0]) + "  reduced to " + str(rows.size))
+    # Only after fixing the rows above, we can
+    # get rid of entries that should not vote
+    # since we have only rows that were non-uniform, they should not become empty
+    # rows may become unform: we still need to vote below to update this label
+    if novote:
+        rr = np.in1d(nlabels.data, novote)
+        nlabels.data[rr] = 0
+        nlabels.eliminate_zeros()
+    # run over all rows and compute mode (maybe vectorize later)
+    rempty = 0
+    for row in rows:
+        rvals = nlabels.data[nlabels.indptr[row] : nlabels.indptr[row + 1]]
+        if rvals.size == 0:
+            rempty += 1
+            continue
+        # print(str(rvals))
+        mvals = mode(rvals, keepdims=True)[0]
+        # print(str(mvals))
+        if mvals.size != 0:
+            # print(str(row)+' '+str(ids[row])+' '+str(mvals[0]))
+            labels_new[ids[row]] = mvals[0]
+    if rempty > 0:
+        # should not happen
+        print("WARNING: row empty: " + str(rempty))
+    # nbrs=np.squeeze(np.asarray(nbrs.todense())) # sparse matrix to dense matrix to np.array
+    # nlabels=labels[nbrs]
+    # counts = np.bincount(nlabels)
+    # vote=np.argmax(counts)
+    return labels_new
+
+
+def get_adjM(trias: npt.NDArray[np.integer], n: int):
+    """
+    Create symmetric sparse adjacency matrix of triangle mesh.
+
+    Parameters
+    ----------
+    trias : npt.NDArray[np.integer](m, 3)
+        Triangle mesh matrix.
+        
+    n : int
+        Shape of output (n,n) adjaceny matrix, where n>=m.
+
+    Returns
+    -------
+    adjM : np.ndarray (bool) shape (n,n)
+        Symmetric sparse CSR adjacency matrix, true corresponds to an edge.
+    """
+    T = trias
+    J = T[:, [1, 2, 0]]
+    # flatten
+    T = T.flatten()
+    J = J.flatten()
+    adj = sparse.csr_matrix((np.ones(T.shape, dtype=bool), (T, J)), shape=(n, n))
+    # if max adj is > 1 we have non manifold or mesh trias are not oriented
+    # if matrix is not symmetric, we have a boundary
+    # in case we have boundary, make sure this is a symmetric matrix
+    adjM = (adj + adj.transpose()).astype(bool)
+    return adjM
+
 
 def sample_nearest_nonzero(img, vox_coords, radius=3.0):
     """
@@ -376,9 +436,9 @@ def replace_labels(img_labels, img_lut, surf_lut):
     return surf_labels, surf_ctab, surf_names
 
 
-def sample_single_label(surf, seg, imglut, surflut, cortex=None, projmm=0.0, dilation=3, radius=None):
+def sample_label_to_surface(surf, seg, imglut, surflut, cortex=None, projmm=0.0, dilation=3, radius=None):
     """
-    Sample labels from image to surface and smooth.
+    Sample label from image to surface and smooth. Label ID is the value of the label in the segmentation image.
 
     Parameters
     ----------
@@ -448,100 +508,43 @@ def sample_single_label(surf, seg, imglut, surflut, cortex=None, projmm=0.0, dil
     #fs.write_annot(outaparc, labels, ctab=surfctab, names=surfnames)
     return labels, surfctab, surfnames
 
-def sample_parc(surf, seg, imglut, surflut, cortex=None, projmm=0.0, radius=None):
-    """
-    Sample cortical GM labels from image to surface and smooth.
-
-    Parameters
-    ----------
-    surf : tuple | str
-        Surface as returned by nibabel fs.read_geometry, where:
-        surf[0] is the np.array of (n, 3) vertex coordinates and
-        surf[1] is the np.array of (m, 3) triangle indices.
-        If type is str, read surface from file.
-    seg : nibabel.image | str
-        Image to sample.
-        If type is str, read image from file.
-    imglut : str
-        Filename for image label look up table.
-    surflut : str
-        Filename for surface label look up table.
-    outaparc : str
-        Filename for output surface parcellation.
-    cortex : np.ndarray | str
-        Filename of cortex label or np.ndarray with cortex indices.
-    projmm : float
-        Sample projmm mm along the surface vertex normals (default=0).
-    radius : float, optional
-        If given and if the sample is equal to zero, then consider
-        all voxels inside this radius to find a non-zero value.
-    """
-    if isinstance(cortex, str):
-        cortex = fs.read_label(cortex)
-    if isinstance(surf, str):
-        surf = fs.read_geometry(surf, read_metadata=True)
-    if isinstance(seg, str):
-        seg = nib.load(seg)
-    # get rid of unknown labels first and translate the rest (avoids too much filling
-    # later as sampling will search around sample point if label is zero)
-    segdata, surfctab, surfnames = replace_labels(np.asarray(seg.dataobj, int), imglut, surflut)
-    # create img with new data (needed by sample img)
-    seg2 = nib.MGHImage(segdata, seg.affine, seg.header)
-    # sample from image to surface (and search if zero label)
-    surfsamples = sample_img(surf, seg2, cortex, projmm, radius)
-    # find label islands
-    vidx = find_all_islands(surf, surfsamples)
-    # set islands to zero (to ensure they get smoothed away later)
-    surfsamples[vidx] = 0
-    # smooth boundaries and remove islands inside cortex region
-    smooths = smooth_aparc(surf, surfsamples, cortex)
-    # write annotation
-    #fs.write_annot(outaparc, smooths, ctab=surfctab, names=surfnames)
-    
-    return smooths, surfctab, surfnames
-
 
 if __name__ == "__main__":
     # Command Line options are error checking done here
     options = options_parse()
+    labels, surfctab, surfnames = sample_label_to_surface(surf=options.insurf, seg=options.inseg, imglut=options.seglut, 
+                                                        surflut=options.surflut, cortex=options.incort, 
+                                                        projmm=options.projmm, dilation=options.dilation, radius=options.radius)
     
-    if options.single_label: # sample single label onto surface
-        labels, surfctab, surfnames = sample_single_label(surf=options.insurf, seg=options.inseg, imglut=options.seglut, 
-                                                          surflut=options.surflut, cortex=options.incort, 
-                                                          projmm=options.projmm, dilation=3, radius=options.radius)
+    if options.to_annot:
+        existing_labels, existing_surfctab, existing_surfnames = fs.read_annot(options.to_annot) # file corrupt?
+        assert labels.shape == existing_labels.shape, "New labels shape does not match existing labels shape."
         
-        if options.to_annot:
-            existing_labels, existing_surfctab, existing_surfnames = fs.read_annot(options.to_annot) # file corrupt?
-            assert labels.shape == existing_labels.shape, "New labels shape does not match existing labels shape."
-            
-            labels_in_surf = np.unique(labels)
-            
-            if len(labels_in_surf) == 2:
-                label_value = labels_in_surf[1]
-            
-                if label_value in existing_labels:
-                    print("Label value already exists, leaving LUT unchanged.")
-                    surfctab = existing_surfctab
-                    surfnames = existing_surfnames
-                else:
-                    # append label to surfctab and surfnames
-                    surfctab = np.loadtxt(options.surflut, usecols=(0,2,3,4,5), dtype="int") # reload ctab because IDs are lost in "replace labels"
-                    surfctab = np.vstack((existing_surfctab, surfctab[-1,[1,2,3,4,0]]))
-                    surfnames = existing_surfnames + [str.encode(surfnames[-1])]
-                    
-                new_labels = existing_labels
-                new_labels[labels == label_value] = np.max(existing_labels) + 1
-                labels = new_labels
-            elif len(labels_in_surf) > 2:
-                raise ValueError("More than one label in surface, cannot append to existing annot file.")
-            elif len(labels_in_surf) == 1:
-                print('No label found in surface, leaving LUT and outvolume unchanged.')
-                labels = existing_labels
+        labels_in_surf = np.unique(labels)
+        
+        if len(labels_in_surf) == 2:
+            label_value = labels_in_surf[1]
+        
+            if label_value in existing_labels:
+                print("Label value already exists, leaving LUT unchanged.")
                 surfctab = existing_surfctab
                 surfnames = existing_surfnames
+            else:
+                # append label to surfctab and surfnames
+                surfctab = np.loadtxt(options.surflut, usecols=(0,2,3,4,5), dtype="int") # reload ctab because IDs are lost in "replace labels"
+                surfctab = np.vstack((existing_surfctab, surfctab[-1,[1,2,3,4,0]]))
+                surfnames = existing_surfnames + [str.encode(surfnames[-1])]
                 
-    else: # sample cortical GM labels onto surface
-        labels, surfctab, surfnames = sample_parc(options.insurf, options.inseg, options.seglut, options.surflut, options.incort, options.projmm, options.radius)
+            new_labels = existing_labels
+            new_labels[labels == label_value] = np.max(existing_labels) + 1
+            labels = new_labels
+        elif len(labels_in_surf) > 2:
+            raise ValueError("More than one label in surface, cannot append to existing annot file.")
+        elif len(labels_in_surf) == 1:
+            print('No label found in surface, leaving LUT and outvolume unchanged.')
+            labels = existing_labels
+            surfctab = existing_surfctab
+            surfnames = existing_surfnames
         
-    fs.write_annot(options.outaparc, labels, ctab=surfctab, names=surfnames)
+    fs.write_annot(options.out_annot, labels, ctab=surfctab, names=surfnames)
 
