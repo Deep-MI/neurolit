@@ -4,6 +4,7 @@
 # Usage: ./test_volumestats.sh -sid SUBJECT_ID -sd SUBJECTS_DIR [--local]
 
 set -e
+set -x
 
 # Default values
 SUBJECTS_DIR=""
@@ -90,7 +91,7 @@ if [[ "$LOCAL_MODE" == true ]]; then
             LIT_PATH="$SCRIPT_DIR"
             echo "Auto-detected LIT installation: $LIT_PATH"
         elif [[ -f "$SCRIPT_DIR/postprocessing/lesion_to_segmentation.py" ]]; then
-            LIT_PATH="$SCRIPT_DIR"
+            LIT_PATH="$(dirname "$SCRIPT_DIR")"
             echo "Auto-detected LIT installation: $LIT_PATH"
         else
             echo "Could not auto-detect LIT installation"
@@ -123,15 +124,6 @@ if [[ "$LOCAL_MODE" == true ]]; then
     
     if [[ ! -d "$FASTSURFER_PATH" ]]; then
         echo "Error: FastSurfer path not found: $FASTSURFER_PATH"
-        exit 1
-    fi
-    
-    # Check for required scripts
-    if [[ ! -f "$LIT_PATH/postprocessing/lesion_to_segmentation.py" ]] && [[ ! -f "$LIT_PATH/LIT/postprocessing/lesion_to_segmentation.py" ]]; then
-        echo " Error: lesion_to_segmentation.py not found in LIT path: $LIT_PATH"
-        echo "  Checked:"
-        echo "    - $LIT_PATH/postprocessing/lesion_to_segmentation.py"
-        echo "    - $LIT_PATH/LIT/postprocessing/lesion_to_segmentation.py"
         exit 1
     fi
     
@@ -172,14 +164,7 @@ mkdir -p "$SUBJECTS_DIR/$SID/stats"
 # Run lesion to segmentation
 echo "Running lesion to segmentation..."
 if [[ "$LOCAL_MODE" == true ]]; then
-    # Determine the correct path for lesion_to_segmentation.py
-    if [[ -f "$LIT_PATH/LIT/postprocessing/lesion_to_segmentation.py" ]]; then
-        LESION_TO_SEG_SCRIPT="$LIT_PATH/LIT/postprocessing/lesion_to_segmentation.py"
-    else
-        LESION_TO_SEG_SCRIPT="$LIT_PATH/postprocessing/lesion_to_segmentation.py"
-    fi
-    
-    python3 "$LESION_TO_SEG_SCRIPT" \
+    python3 "$LIT_PATH/LIT/postprocessing/lesion_to_segmentation.py" \
         -i "$SUBJECTS_DIR/$SID/mri/aparc.DKTatlas+aseg.deep.mgz" \
         -m "$SUBJECTS_DIR/$SID/inpainting_volumes/inpainting_mask.nii.gz" \
         -o "$SUBJECTS_DIR/$SID/mri/aparc.DKTatlas+aseg+lesion.deep.mgz"
@@ -234,29 +219,13 @@ for hemisphere in lh rh; do
     echo "Processing hemisphere: $hemisphere"
     
     if [[ "$LOCAL_MODE" == true ]]; then
-        # Determine the correct path for lesion_to_surface.py
-        if [[ -f "$LIT_PATH/LIT/postprocessing/lesion_to_surface.py" ]]; then
-            LESION_TO_SURF_SCRIPT="$LIT_PATH/LIT/postprocessing/lesion_to_surface.py"
-        else
-            LESION_TO_SURF_SCRIPT="$LIT_PATH/postprocessing/lesion_to_surface.py"
-        fi
-        
-        # Determine lookup table paths
-        if [[ -f "$LIT_PATH/LIT/postprocessing/DKTatlaslookup_lesion.txt" ]]; then
-            SURFLUT="$LIT_PATH/LIT/postprocessing/DKTatlaslookup_lesion.txt"
-            SEGLUT="$LIT_PATH/LIT/postprocessing/hemi.DKTatlaslookup_lesion.txt"
-        else
-            SURFLUT="$LIT_PATH/postprocessing/DKTatlaslookup_lesion.txt"
-            SEGLUT="$LIT_PATH/postprocessing/hemi.DKTatlaslookup_lesion.txt"
-        fi
-        
-        python3 "$LESION_TO_SURF_SCRIPT" \
+        python3 "$LIT_PATH/LIT/postprocessing/lesion_to_surface.py" \
             --inseg "$SUBJECTS_DIR/$SID/inpainting_volumes/inpainting_mask.nii.gz" \
             --insurf "$SUBJECTS_DIR/$SID/surf/$hemisphere.white.preaparc" \
             --incort "$SUBJECTS_DIR/$SID/label/$hemisphere.cortex.label" \
-            --outaparc "$SUBJECTS_DIR/$SID/label/$hemisphere.lesion.label" \
-            --surflut "$SURFLUT" \
-            --seglut "$SEGLUT" \
+            --outaparc "$SUBJECTS_DIR/$SID/label/$hemisphere.lesion.annot" \
+            --surflut "$LIT_PATH/LIT/postprocessing/DKTatlaslookup_lesion.txt" \
+            --seglut "$LIT_PATH/LIT/postprocessing/hemi.DKTatlaslookup_lesion.txt" \
             --projmm 0 \
             --radius 0 \
             --single_label \
