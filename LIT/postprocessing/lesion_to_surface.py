@@ -509,15 +509,48 @@ def sample_label_to_surface(surf, seg, imglut, surflut, cortex=None, projmm=0.0,
     return labels, surfctab, surfnames
 
 
-if __name__ == "__main__":
-    # Command Line options are error checking done here
-    options = options_parse()
-    labels, surfctab, surfnames = sample_label_to_surface(surf=options.insurf, seg=options.inseg, imglut=options.seglut, 
-                                                        surflut=options.surflut, cortex=options.incort, 
-                                                        projmm=options.projmm, dilation=options.dilation, radius=options.radius)
+def main(insurf: str, inseg: str, incort: str, surflut: str, seglut: str, 
+         out_annot: str, projmm: float = 0.0, radius: float = None, 
+         to_annot: str = None, dilation: int = 3) -> None:
+    """
+    Main function to sample labels from segmentation to surface.
     
-    if options.to_annot:
-        existing_labels, existing_surfctab, existing_surfnames = fs.read_annot(options.to_annot) # file corrupt?
+    Parameters
+    ----------
+    insurf : str
+        Path to input surface
+    inseg : str
+        Path to input segmentation image
+    incort : str
+        Path to input cortex label mask
+    surflut : str
+        FreeSurfer look-up-table for values on surface
+    seglut : str
+        Look-up-table for values in segmentation image
+    out_annot : str
+        Path to output annotation file
+    projmm : float, optional
+        Sample along normal at projmm distance (in mm), default 0
+    radius : float, optional
+        Search around sample location at radius (in mm) for label if 'unknown', default None
+    to_annot : str, optional
+        Replace annotations in existing annot file
+    dilation : int, optional
+        Dilation radius for the lesion segmentation mask, default 3
+    """
+    labels, surfctab, surfnames = sample_label_to_surface(
+        surf=insurf, 
+        seg=inseg, 
+        imglut=seglut, 
+        surflut=surflut, 
+        cortex=incort, 
+        projmm=projmm, 
+        dilation=dilation, 
+        radius=radius
+    )
+    
+    if to_annot:
+        existing_labels, existing_surfctab, existing_surfnames = fs.read_annot(to_annot)
         assert labels.shape == existing_labels.shape, "New labels shape does not match existing labels shape."
         
         labels_in_surf = np.unique(labels)
@@ -531,7 +564,7 @@ if __name__ == "__main__":
                 surfnames = existing_surfnames
             else:
                 # append label to surfctab and surfnames
-                surfctab = np.loadtxt(options.surflut, usecols=(0,2,3,4,5), dtype="int") # reload ctab because IDs are lost in "replace labels"
+                surfctab = np.loadtxt(surflut, usecols=(0,2,3,4,5), dtype="int")
                 surfctab = np.vstack((existing_surfctab, surfctab[-1,[1,2,3,4,0]]))
                 surfnames = existing_surfnames + [str.encode(surfnames[-1])]
                 
@@ -546,5 +579,22 @@ if __name__ == "__main__":
             surfctab = existing_surfctab
             surfnames = existing_surfnames
         
-    fs.write_annot(options.out_annot, labels, ctab=surfctab, names=surfnames)
+    fs.write_annot(out_annot, labels, ctab=surfctab, names=surfnames)
+
+
+if __name__ == "__main__":
+    # Command Line options are error checking done here
+    options = options_parse()
+    main(
+        insurf=options.insurf,
+        inseg=options.inseg,
+        incort=options.incort,
+        surflut=options.surflut,
+        seglut=options.seglut,
+        out_annot=options.out_annot,
+        projmm=options.projmm,
+        radius=options.radius,
+        to_annot=options.to_annot,
+        dilation=options.dilation
+    )
 

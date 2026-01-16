@@ -70,40 +70,84 @@ run-lit --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output_direct
 Currently, LIT is still being integrated into FastSurfer. Until then, you can run LIT first and then run FastSurfer on the inpainted image.
 The FastSurfer [repository](https://github.com/deep-mi/FastSurfer) for more information.
 
-If you want to mask the FastSurfer outputs, please use the python scripts [lit/postprocessing/lesion_to_segmentation.py](lit/postprocessing/lesion_to_segmentation.py) and [lit/postprocessing/lesion_to_surfaces.py](lit/postprocessing/lesion_to_surfaces.py) as shown below:
+If you want to mask the FastSurfer outputs, please use the postprocessing scripts as shown below.
 
+### Postprocessing Tools
 
+LIT provides postprocessing scripts for integrating lesions into FastSurfer/FreeSurfer outputs. We recommend using the unified script which handles multiple segmentations and statistics calls automatically.
 
-Masking segmentation files:
+#### 1. Unified Postprocessing Script (Recommended)
+
+The `lesion_postprocessing.py` script provides a high-level interface to map lesions into multiple FastSurfer outputs and run volume/surface statistics.
+
+```bash
+# Setup paths
+export FASTSURFER_HOME=/path/to/FastSurfer
+export FREESURFER_HOME=/path/to/freesurfer
+source $FREESURFER_HOME/SetUpFreeSurfer.sh
+
+# Run unified postprocessing
+python3 lesion_postprocessing.py \
+    -sid SUBJECT_ID \
+    -sd /path/to/subjects_dir
+```
+
+**Key Features:**
+- **Validation**: Automatically checks for FastSurfer/FreeSurfer installations.
+- **Dynamic Configuration**: Uses `segstats_config.json` to define which files to process.
+- **Support for All Outputs**: Maps lesions to all relevant `.mgz` files and runs `segstats`.
+- **Surface Masking**: Automatically runs surface masking for both hemispheres.
+- **Flexible**: Flags like `--skip-segstats` or `--skip-surface-masking` allow fine-grained control.
+
+#### 2. Individual Postprocessing Scripts
+
+For more granular control, individual scripts are available:
+
+1. **`lesion_to_segmentation.py`** - Insert lesion label into volumetric segmentation
+2. **`lesion_to_surface.py`** - Project lesion onto cortical surfaces
+3. **`find_adjacent_labels.py`** - Identify brain regions adjacent to lesions
+
+##### Masking Segmentation Files
 
 ```bash
 # Replace /fastsurfer_output and /inpainting_output with the actual paths
-python lit/postprocessing/lesion_to_segmentation.py \
--i "/fastsurfer_output/mri/aparc+aseg.mgz" \
--m "/inpainting_output/inpainting_volumes/inpainting_mask.nii.gz" \
--o "/fastsurfer_output/mri/aparc+aseg+lesion.mgz"
+python LIT/postprocessing/lesion_to_segmentation.py \
+    -i "/fastsurfer_output/mri/aparc+aseg.mgz" \
+    -m "/inpainting_output/inpainting_volumes/inpainting_mask.nii.gz" \
+    -o "/fastsurfer_output/mri/aparc+aseg+lesion.mgz"
 ```
 
-
-Masking surfaces:
+##### Masking Surfaces
 
 ```bash
 # Replace /fastsurfer_output and /inpainting_output with the actual paths
 hemisphere="lh"
-python lit/postprocessing/lesion_to_surface.py \
+python LIT/postprocessing/lesion_to_surface.py \
     --inseg "/inpainting_output/inpainting_volumes/inpainting_mask.nii.gz" \
     --insurf "/fastsurfer_output/surf/$hemisphere.white.preaparc" \
     --incort "/fastsurfer_output/label/$hemisphere.cortex.label" \
-    --outaparc "/fastsurfer_output/label/$hemisphere.lesion.label" \
-    --surflut "lit/postprocessing/DKTatlaslookup_lesion.txt" \  # both lookup files are in the repository
-    --seglut "lit/postprocessing/hemi.DKTatlaslookup_lesion.txt" \ 
+    --out_annot "/fastsurfer_output/label/$hemisphere.lesion.annot" \
+    --surflut "LIT/postprocessing/DKTatlaslookup_lesion.txt" \
+    --seglut "LIT/postprocessing/hemi.DKTatlaslookup_lesion.txt" \
     --projmm 0 \
-    --radius 0 \
-    --single_label \
-    --to_annot "/fastsurfer_output/labe/$hemisphere.aparc.DKTatlas.annot"
+    --dilation 3 \
+    --to_annot "/fastsurfer_output/label/$hemisphere.aparc.DKTatlas.annot"
 ```
 
-Useful FastSurfer flags:
+##### Finding Adjacent Brain Regions
+
+```bash
+# Find which brain regions are adjacent to the lesion (label 99)
+python LIT/postprocessing/find_adjacent_labels.py \
+    -i "/fastsurfer_output/mri/aparc+aseg+lesion.mgz" \
+    -t 99 \
+    -l "$FREESURFER_HOME/FreeSurferColorLUT.txt" \
+    -o "/fastsurfer_output/mri/lesion_adjacent_regions.txt"
+```
+
+See [ADJACENT_LABELS_TOOL.md](ADJACENT_LABELS_TOOL.md) for detailed documentation.
+
+**Useful FastSurfer flags:**
 - `--seg_only` skip cortical surface reconstruction (much faster!)
 - `--fs_license` has to be set to a valid FreeSurfer license file
 - `--threads 2` accelerate cortical surface reconstruction by processing both hemispheres in parallel

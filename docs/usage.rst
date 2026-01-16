@@ -242,6 +242,46 @@ Quality Control
 2. **Boundary Check:** Pay attention to lesion boundaries
 3. **Intensity Matching:** Verify that inpainted regions match surrounding tissue
 
+Postprocessing
+--------------
+
+LIT provides tools to integrate lesion masks into FastSurfer/FreeSurfer segmentation and surface outputs.
+
+Unified Postprocessing Script
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The recommended way to run postprocessing is using the unified ``lesion_postprocessing.py`` script. This script handles mapping the lesion mask to multiple segmentation files, running volume statistics (segstats), and performing surface masking.
+
+.. code-block:: bash
+
+   # Setup environment
+   export FASTSURFER_HOME=/path/to/FastSurfer
+   export FREESURFER_HOME=/path/to/freesurfer
+   source $FREESURFER_HOME/SetUpFreeSurfer.sh
+
+   # Run unified postprocessing
+   python3 lesion_postprocessing.py \\
+       --subject-id SUBJECT_ID \\
+       --subjects-dir /path/to/subjects_dir
+
+**Features:**
+
+* **Installation Validation:** Automatically checks for FastSurfer or FreeSurfer.
+* **Dynamic Configuration:** Uses ``segstats_config.json`` to define processing steps.
+* **Surface Masking:** Automatically processes both hemispheres.
+* **Fine-grained Control:** Flags like ``--skip-segstats`` or ``--skip-surface-masking`` are available.
+
+Individual Postprocessing Tools
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For granular control, you can run individual scripts:
+
+1. **lesion_to_segmentation.py**: Inserts lesion labels into volumetric segmentation.
+2. **lesion_to_surface.py**: Projects lesion masks onto cortical surfaces.
+3. **find_adjacent_labels.py**: Identifies brain regions adjacent to the lesion.
+
+See the :doc:`integration` guide for detailed examples of using these individual tools.
+
 Common Issues
 -------------
 

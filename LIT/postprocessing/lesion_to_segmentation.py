@@ -64,15 +64,28 @@ def mask_lesion(to_mask_path, mask_path):
     return new_img
 
 
-def main():
+def main(image: str, mask: str, output: str) -> None:
+    """
+    Main function to mask lesion in segmentation.
+    
+    Parameters
+    ----------
+    image : str
+        Path to volume to mask
+    mask : str
+        Path to tumor mask
+    output : str
+        Path to output masked volume
+    """
+    masked_img = mask_lesion(image, mask)
+    nib.save(masked_img, output)
+
+
+if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Mask tumor from a volume')
     parser.add_argument('-i','--image', help='Path to volume to mask', type=str, required=True)
     parser.add_argument('-m','--mask', help='Path to tumor mask', type=str, required=True)
     parser.add_argument('-o','--output', help='Path to output masked volume', type=str, required=True)
     args = parser.parse_args()
-
-    masked_img = mask_lesion(args.image, args.mask)
-    nib.save(masked_img, args.output)
-
-if __name__ == '__main__':
-    main()
+    
+    main(args.image, args.mask, args.output)
