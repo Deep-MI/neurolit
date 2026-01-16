@@ -34,6 +34,9 @@ from LIT.data import conform
 from LIT.inference import OffsetTwoAndHalfDInpaintingInferer
 from LIT.networks.DiffusionUnet import DiffusionModelUNetVINN
 from LIT.utils.plotting import plot_batch, plot_inpainting
+from LIT.utils.logging import get_logger
+
+logger = get_logger(__name__)
 
 # use Agg backend on server
 if os.environ.get('DISPLAY','') == '':
@@ -52,15 +55,21 @@ AffineMatrix = NDArray[np.float64]
 
 
 def dilate_mask(mask: torch.Tensor, num_iterations: int, kernel_size: int = 3) -> torch.Tensor:
-    """Dilate a binary mask multiple times using max pooling.
+    """Dilate a binary mask using repeated max pooling.
 
-    Args:
-        mask: Input binary mask tensor
-        num_iterations: Number of times to apply dilation
-        kernel_size: Size of the dilation kernel (must be odd), defaults to 3
+    Parameters
+    ----------
+    mask : torch.Tensor
+        Binary mask tensor to dilate.
+    num_iterations : int
+        Number of dilation steps to apply.
+    kernel_size : int, optional
+        Size of the dilation kernel (must be odd), by default 3.
 
-    Returns:
-        Dilated mask tensor of same shape as input
+    Returns
+    -------
+    torch.Tensor
+        Dilated mask tensor of the same shape as the input.
     """
     if kernel_size % 2 != 1:
         raise ValueError("Kernel size must be odd")
@@ -94,7 +103,18 @@ def dilate_mask(mask: torch.Tensor, num_iterations: int, kernel_size: int = 3) -
 
 
 def conform_nifti(image: NiftiImage) -> NiftiImage:
-    """Conform NIfTI image to standard orientation and voxel size."""
+    """Conform a NIfTI image to the repository orientation/voxel standard.
+
+    Parameters
+    ----------
+    image : NiftiImage
+        Input image that should be conformed.
+
+    Returns
+    -------
+    NiftiImage
+        Conformed image with standardized affine/voxel size.
+    """
     if len(image.shape) > 3 and image.shape[3] != 1:
         raise ValueError(f"Multiple input frames ({image.shape[3]}) not supported!")
 
@@ -112,7 +132,24 @@ def get_slice_from_volume(
     slice_cut: int,
     thickness: int
 ) -> torch.Tensor:
-    """Extract a slice from a volume with given thickness."""
+    """Extract a slice from a volume with a specified thickness.
+
+    Parameters
+    ----------
+    volume : torch.Tensor
+        Tensor representing the volume to slice.
+    slice_dim : int
+        Dimension to slice along.
+    slice_cut : int
+        Index at the center of the slice.
+    thickness : int
+        Total thickness of the slice (number of voxels).
+
+    Returns
+    -------
+    torch.Tensor
+        Extracted slice tensor.
+    """
     threed_to_twod_slice: List[slice] = [slice(None)] * 3
     threed_to_twod_slice[slice_dim] = slice(slice_cut - thickness//2, slice_cut + thickness//2 + 1)
     return volume[tuple(threed_to_twod_slice)]
@@ -132,25 +169,41 @@ def inpaint_volume(
     DDIM: bool = False,
     val_image_nib: Optional[NiftiImage] = None
 ) -> torch.Tensor:
-    """Inpaints a volume using trained diffusion models.
+    """Inpaint a volume using the trained diffusion models.
 
-    Args:
-        models: Dictionary mapping view names to model instances
-        val_image: Input image tensor of shape (B, C, H, W, D)
-        mask: Binary mask tensor of same shape as val_image
-        val_image_masked: Masked input image tensor
-        scale_factor: Optional scaling factor for the output
-        out_dir: Directory to save outputs
-        slice_dim: Dimension to slice along for 2D models
-        slice_input: Whether to process input as slices
-        SAVE_VOLUMES: Whether to save intermediate volumes
-        SAVE_IMAGES: Whether to save intermediate images
-        device: Device to run inference on
-        DDIM: Whether to use DDIM sampling
-        val_image_nib: Original NIfTI image for header/affine info
+    Parameters
+    ----------
+    models : ModelDict
+        Dictionary mapping view names to model instances.
+    val_image : torch.Tensor
+        Input image tensor (B, C, H, W, D).
+    mask : torch.Tensor
+        Binary mask tensor of the same shape as ``val_image``.
+    val_image_masked : torch.Tensor
+        Masked version of the input image.
+    scale_factor : Optional[float], optional
+        Scaling factor applied during inference, by default ``None``.
+    out_dir : Optional[PathLike], optional
+        Directory to save outputs, by default ``None``.
+    slice_dim : Optional[int], optional
+        Dimensionality slice direction for 2D models, by default ``None``.
+    slice_input : bool, optional
+        Whether to slice the input volume, by default ``True``.
+    SAVE_VOLUMES : bool, optional
+        Whether to persist intermediate volumes, by default ``True``.
+    SAVE_IMAGES : bool, optional
+        Whether to persist intermediate images, by default ``True``.
+    device : str, optional
+        Device identifier (e.g., ``'cuda'``), by default ``'cuda'``.
+    DDIM : bool, optional
+        Whether to use DDIM sampling instead of DDPM, by default ``False``.
+    val_image_nib : Optional[NiftiImage], optional
+        Original NIfTI image used for metadata, by default ``None``.
 
-    Returns:
-        Inpainted image tensor of same shape as input
+    Returns
+    -------
+    torch.Tensor
+        Inpainted volume with the same shape as the input.
     """
 
     # Input validation with type checking
@@ -208,7 +261,7 @@ def inpaint_volume(
     if DDIM:
         steps = 10
         scheduler = DDIMScheduler(num_train_timesteps=1000, schedule="scaled_linear_beta", beta_start=0.0005, beta_end=0.0195, clip_sample=False)
-        print('Using DDIM scheduler with', steps, 'steps')
+        logger.info(f'Using DDIM scheduler with {steps} steps')
     else:
         steps = 1000
         scheduler = DDPMScheduler(num_train_timesteps=steps, schedule="scaled_linear_beta", beta_start=0.0005, beta_end=0.0195)
@@ -220,7 +273,7 @@ def inpaint_volume(
     val_image_masked = val_image_masked.to(device)
 
     # Run inpainting
-    print('Using 2.5D inpainting with view aggregation')
+    logger.info('Using 2.5D inpainting with view aggregation')
     Inpainter = OffsetTwoAndHalfDInpaintingInferer(
         inference_steps=steps,
         scheduler=scheduler,
@@ -262,13 +315,17 @@ def inpaint_volume(
     if SAVE_VOLUMES:
         nib.save(nib.Nifti1Image(val_image_inpainted[volume_only_slice].cpu().numpy() * 255, *affine_header),
                  os.path.join(out_dir, 'inpainting_volumes/inpainting_result.nii.gz'))
-        print('Saved inpainting result as inpainting_volumes/inpainting_result.nii.gz')
+        logger.info('Saved inpainting result as inpainting_volumes/inpainting_result.nii.gz')
 
-    print('Finished inpainting')
+    logger.info('Finished inpainting')
     return val_image_inpainted
 
 
 def main():
+    """Entry point for the inpainting CLI (debug mode).
+
+    Parses CLI arguments, prepares models, and runs ``inpaint_volume``.
+    """
     SAVE_VOLUMES = True
     SAVE_IMAGES = True
 
@@ -388,9 +445,9 @@ def main():
     if not os.path.exists(os.path.join(args.out_dir,'inpainting_images')) or not os.path.exists(os.path.join(args.out_dir,'inpainting_volumes')):
         os.makedirs(os.path.join(args.out_dir,'inpainting_images'), exist_ok=True)
         os.makedirs(os.path.join(args.out_dir,'inpainting_volumes'), exist_ok=True)
-        print('Created output directory:', args.out_dir)
+        logger.info(f'Created output directory: {args.out_dir}')
     else:
-        print('Output directory already exists:', args.out_dir)
+        logger.info(f'Output directory already exists: {args.out_dir}')
 
 
     tr = [

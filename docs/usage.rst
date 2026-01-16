@@ -267,7 +267,8 @@ The recommended way to run postprocessing is using the unified ``lesion_postproc
 **Features:**
 
 * **Installation Validation:** Automatically checks for FastSurfer or FreeSurfer.
-* **Dynamic Configuration:** Uses ``segstats_config.json`` to define processing steps.
+* **Dynamic Configuration:** Uses ``segstats_config.json`` for volumetric stats and ``surfstats_config.json`` for surface stats.
+* **Surface Stats:** Runs ``mris_anatomical_stats`` calls defined in ``surfstats_config.json``.
 * **Surface Masking:** Automatically processes both hemispheres.
 * **Fine-grained Control:** Flags like ``--skip-segstats`` or ``--skip-surface-masking`` are available.
 

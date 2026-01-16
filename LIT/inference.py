@@ -22,6 +22,10 @@ import torch
 from monai.inferers import DiffusionInferer
 from tqdm import tqdm
 
+from LIT.utils.logging import get_logger
+
+logger = get_logger(__name__)
+
 
 class InpaintingInferer():
 
@@ -215,7 +219,7 @@ class SliceWiseInpaintingInferer(InpaintingInferer):
             start_idx = slice_indices_batch[0] - self.slice_thickness // 2
             end_idx = slice_indices_batch[-1] + self.slice_thickness // 2 + 1
 
-            print(f'Inpainting slices {start_idx} to {end_idx}')
+            logger.info(f'Inpainting slices {start_idx} to {end_idx}')
 
             # put channel dimension first 
             slices_batch = torch.swapaxes(slices_batch, 1, self.dimension+1)

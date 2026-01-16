@@ -62,13 +62,13 @@ Using PyPI Package
    :caption: API Reference
 
    api/modules
-   api/cli
-   api/inference
-   api/inpainting
-   api/data
-   api/networks
-   api/postprocessing
-   api/utils
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Getting Started
+
+   QUICKSTART
+   README
 
 .. toctree::
    :maxdepth: 1

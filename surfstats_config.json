@@ -1,0 +1,33 @@
+{
+  "surfstats_calls": [
+    {
+      "name": "aparc.DKTatlas.mapped",
+      "statsfile": "stats/{hemi}.aparc.DKTatlas.mapped.stats",
+      "cortex": "label/{hemi}.cortex.label",
+      "annot": "label/{hemi}.aparc.DKTatlas.mapped.annot",
+      "ctab": "label/aparc.annot.mapped.ctab",
+      "surface": "white",
+      "th3": true,
+      "mgz": true,
+      "b": true
+    },
+    {
+      "name": "BA_exvivo",
+      "statsfile": "stats/{hemi}.BA_exvivo.stats",
+      "annot": "label/{hemi}.BA_exvivo.annot",
+      "ctab": "label/BA_exvivo.ctab",
+      "surface": "white",
+      "mgz": true,
+      "b": true
+    },
+    {
+      "name": "BA_exvivo.thresh",
+      "statsfile": "stats/{hemi}.BA_exvivo.thresh.stats",
+      "annot": "label/{hemi}.BA_exvivo.thresh.annot",
+      "ctab": "label/BA_exvivo.thresh.ctab",
+      "surface": "white",
+      "mgz": true,
+      "b": true
+    }
+  ]
+}

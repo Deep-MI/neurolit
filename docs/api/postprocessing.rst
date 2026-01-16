@@ -46,21 +46,6 @@ Mark lesion vertices on cortical surfaces.
 - ``find_lesion_vertices()``: Identify affected vertices
 - ``create_lesion_label()``: Create label file
 
-smooth_aparc
-~~~~~~~~~~~~
-
-.. automodule:: LIT.postprocessing.smooth_aparc
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Smooth parcellation around lesions.
-
-**Key Functions:**
-
-- ``smooth_labels()``: Smooth label boundaries
-- ``interpolate_labels()``: Interpolate missing labels
-
 Examples
 --------
 
@@ -122,21 +107,6 @@ Command-Line Surface Masking
        --radius 0 \\
        --single_label \\
        --to_annot fastsurfer/label/lh.aparc.DKTatlas.annot
-
-Smoothing Parcellations
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-   from LIT.postprocessing.smooth_aparc import smooth_labels
-   
-   # Smooth labels around lesions
-   smooth_labels(
-       input_annot='fastsurfer/label/lh.aparc.DKTatlas.annot',
-       output_annot='fastsurfer/label/lh.aparc.DKTatlas.smooth.annot',
-       surface_file='fastsurfer/surf/lh.white',
-       iterations=3
-   )
 
 Batch Processing
 ~~~~~~~~~~~~~~~~

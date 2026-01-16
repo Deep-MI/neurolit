@@ -20,24 +20,35 @@ import nibabel as nib
 import nibabel.processing
 import numpy as np
 
+from LIT.utils.logging import get_logger
+
+logger = get_logger(__name__)
+
 
 def mask_lesion(to_mask_path, mask_path):
-    
-    tumor_mask_img = nib.load(mask_path)
-    
-    orig_img = nib.load(to_mask_path)
-    
-    # Get the original data type to preserve it
-    orig_dtype = orig_img.get_data_dtype()
+    """Mask the provided image volume with the tumor segmentation.
+
+    Parameters
+    ----------
+    to_mask_path : str
+        Path to the volume that should have the lesion masked out.
+    mask_path : str
+        Path to the tumor mask volume.
+
+    Returns
+    -------
+    nibabel.spatialimages.SpatialImage
+        Masked image volume.
+    """
     
     resampled_tumor_mask = nibabel.processing.resample_from_to(tumor_mask_img, orig_img, order=0, mode='constant', cval=0)
     #nib.save(resampled_tumor_mask, os.path.join(subj_output_dir, 'tumor_mask_conf.mgz'))
 
     if (resampled_tumor_mask.get_fdata() == 0).all():
-        print('Tumor mask is all zeros, skipping mask volume')
+        logger.info('Tumor mask is all zeros, skipping mask volume')
         return orig_img
     elif (resampled_tumor_mask.get_fdata() > 0).all():
-        print('Tumor mask is greater than 0 everywhere, returning all zeros')
+        logger.warning('Tumor mask is greater than 0 everywhere, returning all zeros')
         zeros_data = np.zeros(orig_img.shape, dtype=orig_dtype)
         # Use the same image class as input with original header (like reference script)
         zeros_img = orig_img.__class__(zeros_data, orig_img.affine, orig_img.header)

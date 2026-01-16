@@ -36,12 +36,11 @@ LIT Package Structure
    │   └── interpolation_layer.py  # Custom layers
    ├── postprocessing/        # Postprocessing tools
    │   ├── lesion_to_segmentation.py  # Mask segmentations
-   │   ├── lesion_to_surface.py       # Mask surfaces
-   │   └── smooth_aparc.py            # Smooth parcellations
+   │   └── lesion_to_surface.py       # Mask surfaces
    └── utils/                 # Utility functions
        ├── download_checkpoints.py  # Model downloading
        ├── plotting.py              # Visualization
-       └── utils.py                 # General utilities
+       └── logging.py               # Console logging helpers
 
 Quick Reference
 ---------------
@@ -51,9 +50,9 @@ Common Functions
 
 .. code-block:: python
 
+   from LIT.cli import run_lit
    from LIT.inpaint_image import main as inpaint
-   from LIT.inference import run_inference
-   from LIT.data.conform import conform_image
+   from LIT.data.conform import conform
    from LIT.utils.download_checkpoints import download_models
 
 Most Used Classes

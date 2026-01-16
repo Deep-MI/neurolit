@@ -14,13 +14,16 @@
 
 
 # IMPORTS
-import logging
 from typing import Optional, Type, Tuple, Union
 import argparse
 import sys
 
 import numpy as np
 import nibabel as nib
+
+from LIT.utils.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 HELPTEXT = """
@@ -124,7 +127,7 @@ def options_parse():
             "ERROR: You passed in check_only. Please do not also specify output image"
         )
     if args.seg_input and args.dtype not in ["uint8", "any"]:
-        print("WARNING: --seg_input overwrites the --dtype arguments.")
+        logger.warning("--seg_input overwrites the --dtype arguments.")
     return args
 
 
@@ -224,9 +227,9 @@ def getscale(
     src_max = np.max(data)
 
     if src_min < 0.0:
-        print("WARNING: Input image has value(s) below 0.0 !")
+        logger.warning("Input image has value(s) below 0.0 !")
 
-    print("Input:    min: " + format(src_min) + "  max: " + format(src_max))
+    logger.info("Input:    min: " + format(src_min) + "  max: " + format(src_max))
 
     if f_low == 0.0 and f_high == 1.0:
         return src_min, 1.0
@@ -263,7 +266,7 @@ def getscale(
         idx = idx[0][0] - 2
 
     else:
-        print("ERROR: rescale upper bound not found")
+        logger.error("rescale upper bound not found")
 
     src_max = idx * bin_size + src_min
 
@@ -274,7 +277,7 @@ def getscale(
     else:
         scale = (dst_max - dst_min) / (src_max - src_min)
 
-    print(
+    logger.info(
         "rescale:  min: "
         + format(src_min)
         + "  max: "
@@ -318,7 +321,7 @@ def scalecrop(
 
     # clip
     data_new = np.clip(data_new, dst_min, dst_max)
-    print(
+    logger.info(
         "Output:   min: " + format(data_new.min()) + "  max: " + format(data_new.max())
     )
 
@@ -533,7 +536,7 @@ def conform(
                 for k in nib.freesurfer.mghformat.data_type_codes.code.keys()
                 if isinstance(k, np.dtype)
             )
-            print(
+            logger.warning(
                 f'The data type "{options.dtype}" is not recognized for MGH images, switching '
                 f'to "{new_img.get_data_dtype()}" (supported: {tuple(codes)}).'
             )
@@ -631,14 +634,14 @@ def is_conform(
 
     if verbose:
         if not _is_conform:
-            print("The input image is not conformed.")
+            logger.info("The input image is not conformed.")
 
         conform_str = (
             "conformed" if conform_vox_size == 1.0 else f"{conform_vox_size}-conformed"
         )
-        print(f"A {conform_str} image must satisfy the following criteria:")
+        logger.info(f"A {conform_str} image must satisfy the following criteria:")
         for condition, value in criteria.items():
-            print(" - {:<30} {}".format(condition + ":", value))
+            logger.info(" - {:<30} {}".format(condition + ":", value))
     return _is_conform
 
 
@@ -687,7 +690,6 @@ def get_conformed_vox_img_size(
 
 def check_affine_in_nifti(
         img: Union[nib.Nifti1Image, nib.Nifti2Image],
-        logger: Optional[logging.Logger] = None
 ) -> bool:
     """Check the affine in nifti Image.
 
@@ -767,7 +769,7 @@ def check_affine_in_nifti(
         logger.info(message)
 
     else:
-        print(message)
+        logger.info(message)
 
     return check
 
@@ -776,7 +778,7 @@ if __name__ == "__main__":
     # Command Line options are error checking done here
     options = options_parse()
 
-    print(f"Reading input: {options.input} ...")
+    logger.info(f"Reading input: {options.input} ...")
     image = nib.load(options.input)
 
     if len(image.shape) > 3 and image.shape[3] != 1:
@@ -804,12 +806,12 @@ if __name__ == "__main__":
         sys.exit(e.args[0])
 
     if image_is_conformed:
-        print(f"Input {options.input} is already conformed! Exiting.\n")
+        logger.info(f"Input {options.input} is already conformed! Exiting.\n")
         sys.exit(0)
     else:
         # Note: if check_only, a non-conforming image leads to an error code, this result is needed in recon_surf.sh
         if options.check_only:
-            print("check_only flag provided. Exiting without conforming input image.\n")
+            logger.info("check_only flag provided. Exiting without conforming input image.\n")
             sys.exit(1)
 
     # If image is nifti image
@@ -824,7 +826,7 @@ if __name__ == "__main__":
         )
     except ValueError as e:
         sys.exit(e.args[0])
-    print(f"Writing conformed image: {options.output}")
+    logger.info(f"Writing conformed image: {options.output}")
 
     nib.save(new_image, options.output)
 

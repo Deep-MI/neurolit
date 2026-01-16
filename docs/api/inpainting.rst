@@ -17,7 +17,7 @@ Main Function
 main
 ~~~~
 
-.. autofunction:: LIT.inpaint_image.main
+:py:func:`LIT.inpaint_image.main`
 
 Entry point for the ``inpaint-image`` command. Provides direct access to inpainting functionality.
 

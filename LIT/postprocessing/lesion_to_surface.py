@@ -28,6 +28,10 @@ from lapy import TriaMesh
 
 import numpy.typing as npt
 
+from LIT.utils.logging import get_logger
+
+logger = get_logger(__name__)
+
 
 HELPTEXT = """
 Script to sample labels from image to surface and clean up. 
@@ -138,8 +142,8 @@ def mode_filter(
         # select the ones with the labels
         ids = np.where(labels == fillonlylabel)[0]
         if ids.size == 0:
-            print(
-                "WARNING: No ids found with idx "
+            logger.warning(
+                "No ids found with idx "
                 + str(fillonlylabel)
                 + "  ... continue"
             )
@@ -198,7 +202,7 @@ def mode_filter(
             labels_new[ids[row]] = mvals[0]
     if rempty > 0:
         # should not happen
-        print("WARNING: row empty: " + str(rempty))
+        logger.warning("row empty: " + str(rempty))
     # nbrs=np.squeeze(np.asarray(nbrs.todense())) # sparse matrix to dense matrix to np.array
     # nlabels=labels[nbrs]
     # counts = np.bincount(nlabels)
@@ -256,7 +260,7 @@ def sample_nearest_nonzero(img, vox_coords, radius=3.0):
     """
     # check for isotropic voxels 
     voxsize = img.header.get_zooms()
-    print("Check isotropic vox sizes: {}".format(voxsize))
+    logger.info("Check isotropic vox sizes: {}".format(voxsize))
     assert (np.max(np.abs(voxsize - voxsize[0])) < 0.001), 'Voxels not isotropic!'
     data = np.asarray(img.dataobj)
     
@@ -358,12 +362,12 @@ def sample_img(surf, img, cortex=None, projmm=0.0, radius=None):
         mask = np.ones(nvert, dtype=bool)
 
     data = np.asarray(img.dataobj)
-    # Use LaPy TriaMesh for vertex normal computation
+    # Compute LaPy TriaMesh for vertex normal computation
     T = TriaMesh(surf[0], surf[1])
     # compute sample coordinates projmm mm along the surface normal
     # in surface RAS coordiante system:
     if not T.is_oriented():
-        print("Warning: Surface is not oriented, orienting ...")
+        logger.warning("Surface is not oriented, orienting ...")
         T.orient_()
     x = T.v + projmm * T.vertex_normals()
     
@@ -391,7 +395,7 @@ def sample_img(surf, img, cortex=None, projmm=0.0, radius=None):
         return samplesfull
     # here we need to do the hard work of searching in a windows
     # for non-zero samples
-    print("sample_img: found {} zero samples, searching radius ...".format(zeros.size))
+    logger.info("sample_img: found {} zero samples, searching radius ...".format(zeros.size))
     z_nn = x_nn[zeros]
     z_samples = sample_nearest_nonzero(img, z_nn, radius=radius)
     samples_nn[zeros] = z_samples
@@ -559,7 +563,7 @@ def main(insurf: str, inseg: str, incort: str, surflut: str, seglut: str,
             label_value = labels_in_surf[1]
         
             if label_value in existing_labels:
-                print("Label value already exists, leaving LUT unchanged.")
+                logger.info("Label value already exists, leaving LUT unchanged.")
                 surfctab = existing_surfctab
                 surfnames = existing_surfnames
             else:
@@ -574,7 +578,7 @@ def main(insurf: str, inseg: str, incort: str, surflut: str, seglut: str,
         elif len(labels_in_surf) > 2:
             raise ValueError("More than one label in surface, cannot append to existing annot file.")
         elif len(labels_in_surf) == 1:
-            print('No label found in surface, leaving LUT and outvolume unchanged.')
+            logger.info('No label found in surface, leaving LUT and outvolume unchanged.')
             labels = existing_labels
             surfctab = existing_surfctab
             surfnames = existing_surfnames
@@ -597,4 +601,3 @@ if __name__ == "__main__":
         to_annot=options.to_annot,
         dilation=options.dilation
     )
-

@@ -27,11 +27,15 @@ Date: October 29, 2025
 import argparse
 import sys
 from pathlib import Path
-from typing import Dict, Set, Tuple, Optional
+from typing import Dict, Set, Optional
 
 import numpy as np
 import nibabel as nib
 from scipy import ndimage
+
+from LIT.utils.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 def read_lut(lut_path: str) -> Dict[int, str]:
@@ -144,22 +148,22 @@ def find_adjacent_labels(
     adjacent_labels : Set[int]
         Set of label IDs adjacent to target label
     """
-    print(f"Finding labels adjacent to label ID {target_label}...")
+    logger.info(f"Finding labels adjacent to label ID {target_label}...")
     
     # Check if target label exists
     if target_label not in seg_data:
-        print(f"Warning: Target label {target_label} not found in segmentation!")
+        logger.warning(f"Target label {target_label} not found in segmentation!")
         return set()
     
     # Get target label mask (possibly dilated)
     if dilation > 0:
-        print(f"  Dilating target label {dilation} iteration(s)...")
+        logger.info(f"  Dilating target label {dilation} iteration(s)...")
         target_mask = dilate_label(seg_data, target_label, iterations=dilation)
     else:
         target_mask = (seg_data == target_label)
     
     target_voxels = np.sum(target_mask)
-    print(f"  Target region contains {target_voxels:,} voxels")
+    logger.info(f"  Target region contains {target_voxels:,} voxels")
     
     # Create a dilated boundary around the target
     # This gives us the "adjacency zone"
@@ -178,7 +182,7 @@ def find_adjacent_labels(
     # Remove target label if somehow included
     adjacent_labels.discard(target_label)
     
-    print(f"  Found {len(adjacent_labels)} adjacent label(s)")
+    logger.info(f"  Found {len(adjacent_labels)} adjacent label(s)")
     
     return adjacent_labels
 
@@ -248,10 +252,15 @@ def write_results(
             else:
                 f.write(f"{label_id:8d}\n")
     
-    print(f"\nResults written to: {output_path}")
+    logger.info(f"Results written to: {output_path}")
 
 
 def main():
+    """CLI entry point for finding labels adjacent to a target label.
+
+    Parses arguments, loads the segmentation, finds adjacent labels,
+    and writes a report to disk.
+    """
     parser = argparse.ArgumentParser(
         description='Find labels adjacent to a target label in a segmentation volume.',
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -324,47 +333,48 @@ Examples:
     
     # Check input file exists
     if not Path(args.input).exists():
-        sys.exit(f"Error: Input file not found: {args.input}")
+        logger.error(f"Input file not found: {args.input}")
+        sys.exit(1)
     
-    print("=" * 70)
-    print("FIND ADJACENT LABELS")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info("FIND ADJACENT LABELS")
+    logger.info("=" * 70)
     
     # Load lookup table if provided
     lut_dict = None
     if args.lut:
         if not Path(args.lut).exists():
-            sys.exit(f"Error: Lookup table not found: {args.lut}")
+            logger.error(f"Lookup table not found: {args.lut}")
+            sys.exit(1)
         
-        print(f"\nLoading lookup table: {args.lut}")
+        logger.info(f"Loading lookup table: {args.lut}")
         lut_dict = read_lut(args.lut)
-        print(f"  Loaded {len(lut_dict)} label definitions")
+        logger.info(f"  Loaded {len(lut_dict)} label definitions")
     
     # Determine target label ID
     if args.target_name:
-        print(f"\nSearching for label name: {args.target_name}")
+        logger.info(f"Searching for label name: {args.target_name}")
         target_label = get_label_id_from_name(lut_dict, args.target_name)
         if target_label is None:
-            sys.exit(f"Error: Label name '{args.target_name}' not found in lookup table")
-        print(f"  Found label ID: {target_label}")
+            logger.error(f"Label name '{args.target_name}' not found in lookup table")
+            sys.exit(1)
+        logger.info(f"  Found label ID: {target_label}")
         target_name = args.target_name
     else:
         target_label = args.target_label
         target_name = lut_dict.get(target_label) if lut_dict else None
     
     # Load segmentation
-    print(f"\nLoading segmentation: {args.input}")
+    logger.info(f"Loading segmentation: {args.input}")
     seg_img = nib.load(args.input)
     seg_data = np.asarray(seg_img.dataobj, dtype=int)
-    print(f"  Shape: {seg_data.shape}")
-    print(f"  Contains {len(np.unique(seg_data))} unique labels")
+    logger.info(f"  Shape: {seg_data.shape}")
+    logger.info(f"  Contains {len(np.unique(seg_data))} unique labels")
     
     # Find adjacent labels
-    print()
     adjacent_labels = find_adjacent_labels(seg_data, target_label, dilation=args.dilate)
     
     # Write results
-    print()
     write_results(
         args.output,
         target_label,
@@ -375,29 +385,29 @@ Examples:
     )
     
     # Print summary to console
-    print("\n" + "=" * 70)
-    print("SUMMARY")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info("SUMMARY")
+    logger.info("=" * 70)
     if target_name:
-        print(f"Target: {target_label} ({target_name})")
+        logger.info(f"Target: {target_label} ({target_name})")
     else:
-        print(f"Target: {target_label}")
+        logger.info(f"Target: {target_label}")
     
     if args.dilate > 0:
-        print(f"Dilation: {args.dilate} iteration(s)")
+        logger.info(f"Dilation: {args.dilate} iteration(s)")
     
-    print(f"Adjacent labels found: {len(adjacent_labels)}")
+    logger.info(f"Adjacent labels found: {len(adjacent_labels)}")
     
     if adjacent_labels and lut_dict:
-        print("\nAdjacent regions:")
+        logger.info("Adjacent regions:")
         for label_id in sorted(adjacent_labels)[:10]:  # Show first 10
             label_name = lut_dict.get(label_id, "Unknown")
-            print(f"  {label_id:4d}: {label_name}")
+            logger.info(f"  {label_id:4d}: {label_name}")
         if len(adjacent_labels) > 10:
-            print(f"  ... and {len(adjacent_labels) - 10} more")
+            logger.info(f"  ... and {len(adjacent_labels) - 10} more")
     
-    print("=" * 70)
-    print("\n✓ Complete!")
+    logger.info("=" * 70)
+    logger.info("✓ Complete!")
 
 
 if __name__ == '__main__':

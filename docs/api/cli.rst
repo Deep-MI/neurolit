@@ -17,7 +17,7 @@ Main Functions
 run_lit
 ~~~~~~~
 
-.. autofunction:: LIT.cli.run_lit
+:py:func:`LIT.cli.run_lit`
 
 Entry point for the main ``run-lit`` command. This is the primary interface for running the full LIT pipeline.
 

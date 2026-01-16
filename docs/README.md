@@ -169,7 +169,7 @@ Sphinx is strict about formatting. Fix warnings to ensure quality:
 
 ## Contributing
 
-See the main [CONTRIBUTING.md](../CONTRIBUTING.md) for general contribution guidelines.
+See the main `CONTRIBUTING.md` in the repository root for general contribution guidelines.
 
 For documentation-specific contributions:
 

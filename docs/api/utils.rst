@@ -46,23 +46,6 @@ Visualization utilities for brain MRI and results.
 - ``plot_comparison()``: Compare before/after inpainting
 - ``plot_mask_overlay()``: Overlay mask on image
 
-utils
-~~~~~
-
-.. automodule:: LIT.utils.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-General utility functions.
-
-**Key Functions:**
-
-- ``ensure_dir()``: Create directory if not exists
-- ``load_nifti()``: Load NIfTI image
-- ``save_nifti()``: Save NIfTI image
-- ``get_device()``: Get appropriate torch device
-
 Examples
 --------
 
@@ -161,43 +144,6 @@ Mask Overlay
        alpha=0.5,  # Overlay transparency
        save_path='overlay.png'
    )
-
-File Operations
-~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-   from LIT.utils.utils import load_nifti, save_nifti, ensure_dir
-   import numpy as np
-   
-   # Load NIfTI file
-   image, affine = load_nifti('T1w.nii.gz')
-   
-   # Process image
-   processed = image * 1.5
-   
-   # Ensure output directory exists
-   ensure_dir('output')
-   
-   # Save result
-   save_nifti(processed, affine, 'output/processed.nii.gz')
-
-Device Selection
-~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-   from LIT.utils.utils import get_device
-   
-   # Get best available device
-   device = get_device()
-   print(f"Using device: {device}")
-   
-   # Force CPU
-   device = get_device(force_cpu=True)
-   
-   # Check CUDA availability
-   device = get_device(cuda_index=0)  # Use specific GPU
 
 Custom Visualization
 ~~~~~~~~~~~~~~~~~~~~

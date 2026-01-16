@@ -94,8 +94,9 @@ python3 lesion_postprocessing.py \
 
 **Key Features:**
 - **Validation**: Automatically checks for FastSurfer/FreeSurfer installations.
-- **Dynamic Configuration**: Uses `segstats_config.json` to define which files to process.
+- **Dynamic Configuration**: Uses `segstats_config.json` for volumetric stats and `surfstats_config.json` for surface stats.
 - **Support for All Outputs**: Maps lesions to all relevant `.mgz` files and runs `segstats`.
+- **Surface Stats**: Runs `mris_anatomical_stats` calls defined in `surfstats_config.json`.
 - **Surface Masking**: Automatically runs surface masking for both hemispheres.
 - **Flexible**: Flags like `--skip-segstats` or `--skip-surface-masking` allow fine-grained control.
 
