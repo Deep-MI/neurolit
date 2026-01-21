@@ -9,22 +9,22 @@ This directory contains the Sphinx documentation source for LIT.
 Install the documentation dependencies:
 
 ```bash
-pip install -r docs/requirements.txt
+pip install -r doc/requirements.txt
 ```
 
 ### Build HTML Documentation
 
 ```bash
-cd docs
+cd doc
 make html
 ```
 
-The built documentation will be in `docs/_build/html/`. Open `docs/_build/html/index.html` in your browser.
+The built documentation will be in `doc/_build/html/`. Open `doc/_build/html/index.html` in your browser.
 
 ### Clean Build Files
 
 ```bash
-cd docs
+cd doc
 make clean
 ```
 
@@ -39,7 +39,7 @@ make help      # See all available formats
 ## Documentation Structure
 
 ```
-docs/
+doc/
 ├── conf.py              # Sphinx configuration
 ├── index.rst            # Main documentation page
 ├── installation.rst     # Installation guide
@@ -128,7 +128,7 @@ def my_function(param1: str, param2: int) -> bool:
 After making changes, rebuild the docs:
 
 ```bash
-cd docs
+cd doc
 make clean
 make html
 firefox _build/html/index.html  # Or your preferred browser

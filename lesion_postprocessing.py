@@ -518,7 +518,9 @@ def _find_lut_file(fs_home: Optional[Path]) -> Optional[Path]:
     return None
 
 
-def surface_masking(lit_path: Path, subjects_dir: Path, subject_id: str, hemisphere: str) -> bool:
+def surface_masking(lit_path: Path, subjects_dir: Path, subject_id: str, 
+                    hemisphere: str, input_file: str, output_file: str,
+                    report_file: Optional[str] = None) -> bool:
     """Apply surface masking for the hemisphere based on lesion annotations.
 
     Parameters
@@ -531,20 +533,29 @@ def surface_masking(lit_path: Path, subjects_dir: Path, subject_id: str, hemisph
         Subject identifier.
     hemisphere : str
         Hemisphere code (``'lh'`` or ``'rh'``).
+    input_file : str
+        Relative path to the input annotation file (with {hemi} placeholder).
+    output_file : str
+        Relative path to the output annotation file (with {hemi} placeholder).
+    report_file : str, optional
+        Relative path to the surface anatomy report file (with {hemi} placeholder).
 
     Returns
     -------
     bool
         Always ``True`` (kept for backwards compatibility).
     """
-    insurf = str(subjects_dir / subject_id / "surf" / f"{hemisphere}.white.preaparc")
+    insurf = str(subjects_dir / subject_id / "surf" / f"{hemisphere}.pial")
     inseg = str(subjects_dir / subject_id / "inpainting_volumes" / "inpainting_mask.nii.gz")
     incort = str(subjects_dir / subject_id / "label" / f"{hemisphere}.cortex.label")
     surflut = str(lit_path / "LIT" / "postprocessing" / "DKTatlaslookup_lesion.txt")
     seglut = str(lit_path / "LIT" / "postprocessing" / "hemi.DKTatlaslookup_lesion.txt")
-    out_annot = str(subjects_dir / subject_id / "label" / f"{hemisphere}.lesion.annot")
-    to_annot = str(subjects_dir / subject_id / "label" / f"{hemisphere}.aparc.DKTatlas.annot")
     
+    out_annot = str(subjects_dir / subject_id / output_file.format(hemi=hemisphere))
+    to_annot = str(subjects_dir / subject_id / input_file.format(hemi=hemisphere))
+    
+    report_path = subjects_dir / subject_id / report_file.format(hemi=hemisphere) if report_file else None
+
     # Call the main function with all parameters
     lesion_to_surface_main(
         insurf=insurf,
@@ -556,8 +567,10 @@ def surface_masking(lit_path: Path, subjects_dir: Path, subject_id: str, hemisph
         projmm=0.0,
         radius=None,
         to_annot=to_annot,
-        dilation=3
+        dilation=3,
+        report=str(report_path) if report_path else None
     )
+    return True
 
 
 def _format_inputs(inputs: List[str]) -> str:
@@ -725,14 +738,23 @@ def main():
         logger.info("=" * 60)
     
     # Run surface masking (before surface-based statistics)
+    surface_reports: List[Tuple[str, str]] = []
     if not args.skip_surface_masking:
         logger.info("=" * 60)
         logger.info("STEP 3: Running surface masking")
         logger.info("=" * 60)
         
-        for hemisphere in ["lh", "rh"]:
-            logger.info(f"Processing hemisphere: {hemisphere}")
-            surface_masking(lit_path, subjects_dir, subject_id, hemisphere)
+        for surf_map in surf_config.get('surface_mappings', []):
+            if surf_map.get('map_lesion', False):
+                logger.info(f"Processing: {surf_map['name']}")
+                report_file = surf_map.get('report_file')
+                for hemisphere in ["lh", "rh"]:
+                    logger.info(f"  Hemisphere: {hemisphere}")
+                    surface_masking(lit_path, subjects_dir, subject_id, hemisphere, 
+                                    surf_map['input_file'], surf_map['output_file'], report_file)
+                    if report_file:
+                        surface_reports.append((surf_map['output_file'].format(hemi=hemisphere), 
+                                              report_file.format(hemi=hemisphere)))
 
     # Run surface-related segstats (after surface masking)
     if surface_segstats_calls:
@@ -778,6 +800,7 @@ def main():
     # List output files with input overview
     overview = build_stats_overview(subject_id, config, surf_config)
     overview.extend(f"{seg} => {report}" for seg, report in mapping_reports)
+    overview.extend(f"{seg} => {report}" for seg, report in surface_reports)
     if overview:
         logger.info("Generated statistics files:")
         for line in overview:

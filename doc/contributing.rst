@@ -136,7 +136,7 @@ When adding new features, update documentation:
 .. code-block:: bash
 
    # Build documentation locally
-   cd docs
+   cd doc
    make html
    
    # View in browser
@@ -150,7 +150,7 @@ Branch Naming
 
 * ``feature/description`` - New features
 * ``bugfix/description`` - Bug fixes
-* ``docs/description`` - Documentation changes
+* ``doc/description`` - Documentation changes
 * ``refactor/description`` - Code refactoring
 
 Commit Messages
@@ -259,7 +259,7 @@ Building Documentation
 
 .. code-block:: bash
 
-   cd docs
+   cd doc
    make html  # Build HTML documentation
    make clean  # Clean build files
 

@@ -6,10 +6,10 @@ This guide will help you quickly build and view the LIT documentation.
 
 ```bash
 # Install dependencies
-pip install -r docs/requirements.txt
+pip install -r doc/requirements.txt
 
 # Build HTML documentation
-cd docs && make html
+cd doc && make html
 
 # View in browser (Linux)
 firefox _build/html/index.html
@@ -26,7 +26,7 @@ start _build/html/index.html
 ### Clean and Rebuild
 
 ```bash
-cd docs
+cd doc
 make clean
 make html
 ```
@@ -34,21 +34,21 @@ make html
 ### Check for Broken Links
 
 ```bash
-cd docs
+cd doc
 make linkcheck
 ```
 
 ### Build PDF (requires LaTeX)
 
 ```bash
-cd docs
+cd doc
 make latexpdf
 ```
 
 ### Build Other Formats
 
 ```bash
-cd docs
+cd doc
 make epub        # EPUB format
 make singlehtml  # Single HTML page
 make man         # Man pages
@@ -74,13 +74,13 @@ pip install -e .
 
 Install all documentation dependencies:
 ```bash
-pip install -r docs/requirements.txt
+pip install -r doc/requirements.txt
 ```
 
 ## Directory Structure
 
 ```
-docs/
+doc/
 ├── _build/           # Build output (not in git)
 ├── _static/          # Static files (CSS, images)
 ├── _templates/       # Custom templates
@@ -97,7 +97,7 @@ docs/
 
 The documentation is automatically built by:
 
-- **GitHub Actions**: On every push/PR (see `.github/workflows/docs.yml`)
+- **GitHub Actions**: On every push/PR (see `.github/workflows/doc.yml`)
 - **Read the Docs**: Automatically from the repository (see `.readthedocs.yml`)
 
 ## Read the Docs
@@ -113,7 +113,7 @@ To enable Read the Docs:
 
 To deploy to GitHub Pages:
 
-1. Uncomment the deploy step in `.github/workflows/docs.yml`
+1. Uncomment the deploy step in `.github/workflows/doc.yml`
 2. Enable GitHub Pages in repository settings
 3. Select "gh-pages" branch as source
 4. Docs will auto-deploy on main branch commits
@@ -122,7 +122,7 @@ To deploy to GitHub Pages:
 
 ### Add a New Page
 
-1. Create `docs/my_page.rst`:
+1. Create `doc/my_page.rst`:
    ```rst
    My Page Title
    =============
@@ -130,7 +130,7 @@ To deploy to GitHub Pages:
    Content goes here.
    ```
 
-2. Add to `docs/index.rst`:
+2. Add to `doc/index.rst`:
    ```rst
    .. toctree::
       :maxdepth: 2
@@ -140,7 +140,7 @@ To deploy to GitHub Pages:
 
 3. Build and view:
    ```bash
-   cd docs && make html
+   cd doc && make html
    ```
 
 ### Code Examples
@@ -162,7 +162,7 @@ See :func:`LIT.module.function` for usage.
 
 ## Questions?
 
-- See `docs/README.md` for detailed information
+- See `doc/README.md` for detailed information
 - See `CONTRIBUTING.md` for contribution guidelines
 - Open an issue on GitHub for help
 

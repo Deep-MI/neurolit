@@ -1,4 +1,40 @@
 {
+  "surface_mappings": [
+    {
+      "name": "lesion_label",
+      "input_file": "label/{hemi}.aparc.DKTatlas.annot",
+      "output_file": "label/{hemi}.lesion.label",
+      "map_lesion": true
+    },
+    {
+      "name": "aparc.DKTatlas",
+      "input_file": "label/{hemi}.aparc.DKTatlas.annot",
+      "output_file": "label/{hemi}.aparc.DKTatlas.lesion.annot",
+      "report_file": "stats/{hemi}.aparc.DKTatlas.anatomy_report.txt",
+      "map_lesion": true
+    },
+    {
+      "name": "BA_exvivo",
+      "input_file": "label/{hemi}.BA_exvivo.annot",
+      "output_file": "label/{hemi}.BA_exvivo.lesion.annot",
+      "report_file": "stats/{hemi}.BA_exvivo.anatomy_report.txt",
+      "map_lesion": true
+    },
+    {
+      "name": "BA_exvivo.thresh",
+      "input_file": "label/{hemi}.BA_exvivo.thresh.annot",
+      "output_file": "label/{hemi}.BA_exvivo.lesion.thresh.annot",
+      "report_file": "stats/{hemi}.BA_exvivo.thresh.anatomy_report.txt",
+      "map_lesion": true
+    },
+    {
+      "name": "mpm.vpnl",
+      "input_file": "label/{hemi}.mpm.vpnl.annot",
+      "output_file": "label/{hemi}.mpm.vpnl.lesion.annot",
+      "report_file": "stats/{hemi}.mpm.vpnl.anatomy_report.txt",
+      "map_lesion": true
+    }
+  ],
   "surfstats_calls": [
     {
       "name": "aparc.DKTatlas.mapped",

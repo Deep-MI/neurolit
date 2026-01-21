@@ -286,10 +286,10 @@ LIT uses Sphinx for documentation. To build the documentation locally:
 
 ```bash
 # Install documentation dependencies
-pip install -r docs/requirements.txt
+pip install -r doc/requirements.txt
 
 # Build HTML documentation
-cd docs
+cd doc
 make html
 
 # View in browser
@@ -349,17 +349,17 @@ def module_level_function(param1, param2=None, *args, **kwargs):
     bool
         True if successful, False otherwise.
 
-        The return type is not optional. The ``Returns`` section may span
-        multiple lines and paragraphs. Following lines should be indented to
-        match the first line of the description.
+    The return type is not optional. The ``Returns`` section may span
+    multiple lines and paragraphs. Following lines should be indented to
+    match the first line of the description.
 
-        The ``Returns`` section supports any reStructuredText formatting,
-        including literal blocks::
+    The ``Returns`` section supports any reStructuredText formatting,
+    including literal blocks::
 
-            {
-                'param1': param1,
-                'param2': param2
-            }
+        {
+            'param1': param1,
+            'param2': param2
+        }
 
     Raises
     ------
@@ -375,7 +375,7 @@ def module_level_function(param1, param2=None, *args, **kwargs):
 
 **Adding New Documentation Pages:**
 
-1. Create a new `.rst` file in the `docs/` directory
+1. Create a new `.rst` file in the `doc/` directory
 2. Add content using reStructuredText syntax
 3. Add the page to a `toctree` directive in `index.rst` or parent page
 4. Build and preview the documentation
@@ -383,7 +383,7 @@ def module_level_function(param1, param2=None, *args, **kwargs):
 **Documentation Structure:**
 
 ```
-docs/
+doc/
 ├── index.rst            # Main page
 ├── installation.rst     # Installation guide
 ├── usage.rst           # Usage guide
@@ -395,7 +395,7 @@ docs/
 └── ...
 ```
 
-For more details, see `docs/README.md`.
+For more details, see `doc/README.md`.
 
 ## Questions or Issues?
 

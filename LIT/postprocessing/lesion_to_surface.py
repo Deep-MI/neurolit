@@ -18,6 +18,7 @@
 
 # IMPORTS
 import optparse
+from typing import Set, Tuple
 
 import numpy as np
 import nibabel.freesurfer.io as fs
@@ -40,7 +41,7 @@ USAGE:
 sample_parc --inseg <segimg> --insurf <surf> --incort <cortex.label>
             --seglut <seglut> --surflut <surflut> --outaparc <out_aparc>
             --projmm <float> --radius <float> --to_annot <annot>
-            --dilation <int>
+            --dilation <int> --report <report_path>
 
 Author: Clemens Pollak
 Date: October 29, 2025
@@ -58,6 +59,7 @@ h_projmm = "Sample along normal at projmm distance (in mm), default 0"
 h_radius = "Search around sample location at radius (in mm) for label if 'unknown', default None"
 h_to_annot = "Replace annotations in existing annot file."
 h_dilation = "Dilation radius for the lesion segmentation mask, default 3"
+h_report = "Path to write the surface anatomy report (optional)"
 
 def options_parse():
     """
@@ -79,8 +81,120 @@ def options_parse():
     parser.add_option("--radius", dest="radius", help=h_radius, default=None, type="float")
     parser.add_option("--to_annot", dest="to_annot", help=h_to_annot)
     parser.add_option("--dilation", dest="dilation", help=h_dilation, default=3, type="int")
+    parser.add_option("--report", dest="report", help=h_report)
     (options, args) = parser.parse_args()
     return options
+
+
+def get_surface_anatomy_info(
+    existing_labels: npt.NDArray[np.integer],
+    target_mask: npt.NDArray[np.bool_],
+    adjM: sparse.csr_matrix
+) -> Tuple[Set[int], Set[int], Set[int]]:
+    """
+    Categorize surface labels based on their relationship with the lesion mask.
+
+    Parameters
+    ----------
+    existing_labels : npt.NDArray[np.integer]
+        Original annotation labels (indices into ctab).
+    target_mask : npt.NDArray[np.bool_]
+        Binary mask of the lesion on the surface.
+    adjM : sparse.csr_matrix
+        Adjacency matrix of the surface mesh.
+
+    Returns
+    -------
+    replaced : Set[int]
+        Label indices fully replaced by the lesion.
+    reduced : Set[int]
+        Label indices partially replaced by the lesion.
+    adjacent : Set[int]
+        Label indices touching the lesion boundary but not overlapping.
+    """
+    # Adjacency zone: neighbors of target_mask that are not in target_mask
+    [II, JJ, VV] = sparse.find(adjM[target_mask, :])
+    adjacent_indices = np.unique(JJ)
+    adjacent_mask = np.zeros(existing_labels.shape, dtype=bool)
+    adjacent_mask[adjacent_indices] = True
+    adjacent_zone = adjacent_mask & ~target_mask
+
+    labels_in_mask = set(np.unique(existing_labels[target_mask]))
+    labels_outside_mask = set(np.unique(existing_labels[~target_mask]))
+    labels_in_adj_zone = set(np.unique(existing_labels[adjacent_zone]))
+
+    # Remove background/unknown (usually -1 or 0 in FS annotations)
+    # FS labels from read_annot can be -1 for unknown
+    for s in [labels_in_mask, labels_outside_mask, labels_in_adj_zone]:
+        s.discard(-1)
+        s.discard(0)
+
+    # Categorize
+    replaced = labels_in_mask - labels_outside_mask
+    reduced = labels_in_mask & labels_outside_mask
+    adjacent = labels_in_adj_zone - labels_in_mask
+
+    return replaced, reduced, adjacent
+
+
+def write_surface_report(
+    output_path: str,
+    replaced: Set[int],
+    reduced: Set[int],
+    adjacent: Set[int],
+    names: list
+):
+    """
+    Write surface anatomy report to text file.
+
+    Parameters
+    ----------
+    output_path : str
+        Path to output text file.
+    replaced : Set[int]
+        Set of replaced label indices.
+    reduced : Set[int]
+        Set of reduced label indices.
+    adjacent : Set[int]
+        Set of adjacent label indices.
+    names : list
+        List of label names from the annotation.
+    """
+    # names might be bytes, decode if necessary
+    decoded_names = []
+    for n in names:
+        if isinstance(n, bytes):
+            decoded_names.append(n.decode('utf-8'))
+        else:
+            decoded_names.append(str(n))
+
+    with open(output_path, 'w') as f:
+        f.write("# Lesion Surface Anatomy Report\n")
+        f.write("#" + "=" * 60 + "\n")
+        f.write(f"# Number of replaced labels: {len(replaced)}\n")
+        f.write(f"# Number of reduced labels:  {len(reduced)}\n")
+        f.write(f"# Number of adjacent labels: {len(adjacent)}\n")
+        f.write("#" + "=" * 60 + "\n\n")
+
+        categories = [
+            ("Replaced Labels (fully covered by lesion)", replaced),
+            ("Reduced Labels (partially covered by lesion)", reduced),
+            ("Adjacent Labels (touching lesion boundary)", adjacent)
+        ]
+
+        for title, labels in categories:
+            f.write(f"# {title}\n")
+            f.write("#" + "-" * 60 + "\n")
+            if not labels:
+                f.write("# None found\n")
+            else:
+                f.write("# Index    LabelName\n")
+                for idx in sorted(labels):
+                    name = decoded_names[idx] if idx < len(decoded_names) else "Unknown"
+                    f.write(f"{idx:8d}    {name}\n")
+            f.write("\n")
+
+    logger.info(f"Surface anatomy report written to: {output_path}")
 
 
 def mode_filter(
@@ -510,12 +624,49 @@ def sample_label_to_surface(surf, seg, imglut, surflut, cortex=None, projmm=0.0,
 
     # write annotation
     #fs.write_annot(outaparc, labels, ctab=surfctab, names=surfnames)
-    return labels, surfctab, surfnames
+    return labels, surfctab, surfnames, adjM
+
+
+def write_freesurfer_label(filename, vertex_indices, coords=None, values=None, subject='SubjectID', vox2ras='TkReg'):
+    """
+    Write a FreeSurfer label file.
+
+    Parameters
+    ----------
+    filename : str
+        Path to output label file.
+    vertex_indices : np.ndarray
+        Array of vertex indices.
+    coords : np.ndarray, optional
+        Array of (n, 3) vertex coordinates. If None, uses zeros.
+    values : np.ndarray, optional
+        Array of vertex values. If None, uses 1.0 for all.
+    subject : str, optional
+        Subject name for the header.
+    vox2ras : str, optional
+        Coordinate system for the header.
+    """
+    num_vertices = len(vertex_indices)
+    if coords is None:
+        coords = np.zeros((num_vertices, 3))
+    if values is None:
+        values = np.ones(num_vertices)
+
+    with open(filename, 'w') as f:
+        f.write(f"#!ascii label  , from subject {subject} vox2ras={vox2ras}\n")
+        f.write(f"{num_vertices}\n")
+        for i in range(num_vertices):
+            idx = vertex_indices[i]
+            x, y, z = coords[i]
+            val = values[i]
+            f.write(f"{idx:d}  {x:f}  {y:f}  {z:f} {val:f}\n")
+
+    logger.info(f"FreeSurfer label file written to: {filename}")
 
 
 def main(insurf: str, inseg: str, incort: str, surflut: str, seglut: str, 
          out_annot: str, projmm: float = 0.0, radius: float = None, 
-         to_annot: str = None, dilation: int = 3) -> None:
+         to_annot: str = None, dilation: int = 3, report: str = None) -> None:
     """
     Main function to sample labels from segmentation to surface.
     
@@ -532,7 +683,7 @@ def main(insurf: str, inseg: str, incort: str, surflut: str, seglut: str,
     seglut : str
         Look-up-table for values in segmentation image
     out_annot : str
-        Path to output annotation file
+        Path to output annotation or label file
     projmm : float, optional
         Sample along normal at projmm distance (in mm), default 0
     radius : float, optional
@@ -541,9 +692,14 @@ def main(insurf: str, inseg: str, incort: str, surflut: str, seglut: str,
         Replace annotations in existing annot file
     dilation : int, optional
         Dilation radius for the lesion segmentation mask, default 3
+    report : str, optional
+        Path to write the surface anatomy report
     """
-    labels, surfctab, surfnames = sample_label_to_surface(
-        surf=insurf, 
+    # Load surface for geometry if needed for label file
+    surf_geom = fs.read_geometry(insurf, read_metadata=True)
+    
+    labels, surfctab, surfnames, adjM = sample_label_to_surface(
+        surf=surf_geom, 
         seg=inseg, 
         imglut=seglut, 
         surflut=surflut, 
@@ -553,6 +709,11 @@ def main(insurf: str, inseg: str, incort: str, surflut: str, seglut: str,
         radius=radius
     )
     
+    # Track the lesion label value
+    # If sampling to a new surface, it's typically the second unique value (background is 0)
+    # If appending to existing, it's np.max(existing_labels) + 1
+    lesion_mask = None
+    
     if to_annot:
         existing_labels, existing_surfctab, existing_surfnames = fs.read_annot(to_annot)
         assert labels.shape == existing_labels.shape, "New labels shape does not match existing labels shape."
@@ -561,6 +722,14 @@ def main(insurf: str, inseg: str, incort: str, surflut: str, seglut: str,
         
         if len(labels_in_surf) == 2:
             label_value = labels_in_surf[1]
+            lesion_mask = (labels == label_value)
+
+            if report:
+                logger.info("Generating surface anatomy report...")
+                replaced, reduced, adjacent = get_surface_anatomy_info(
+                    existing_labels, lesion_mask, adjM
+                )
+                write_surface_report(report, replaced, reduced, adjacent, existing_surfnames)
         
             if label_value in existing_labels:
                 logger.info("Label value already exists, leaving LUT unchanged.")
@@ -573,7 +742,7 @@ def main(insurf: str, inseg: str, incort: str, surflut: str, seglut: str,
                 surfnames = existing_surfnames + [str.encode(surfnames[-1])]
                 
             new_labels = existing_labels
-            new_labels[labels == label_value] = np.max(existing_labels) + 1
+            new_labels[lesion_mask] = np.max(existing_labels) + 1
             labels = new_labels
         elif len(labels_in_surf) > 2:
             raise ValueError("More than one label in surface, cannot append to existing annot file.")
@@ -582,8 +751,25 @@ def main(insurf: str, inseg: str, incort: str, surflut: str, seglut: str,
             labels = existing_labels
             surfctab = existing_surfctab
             surfnames = existing_surfnames
-        
-    fs.write_annot(out_annot, labels, ctab=surfctab, names=surfnames)
+    else:
+        # No to_annot provided, check if we have a lesion label
+        labels_in_surf = np.unique(labels)
+        if len(labels_in_surf) == 2:
+            lesion_mask = (labels == labels_in_surf[1])
+
+    if out_annot.endswith('.label'):
+        if lesion_mask is None or np.sum(lesion_mask) == 0:
+            logger.warning("No lesion label found to write to .label file.")
+            # Still write an empty label file or skip? 
+            # FreeSurfer usually wants a valid file. Let's write an empty one.
+            write_freesurfer_label(out_annot, np.array([], dtype=int))
+        else:
+            vertex_indices = np.where(lesion_mask)[0]
+            # Get coordinates from surface geometry
+            coords = surf_geom[0][vertex_indices]
+            write_freesurfer_label(out_annot, vertex_indices, coords=coords)
+    else:
+        fs.write_annot(out_annot, labels, ctab=surfctab, names=surfnames)
 
 
 if __name__ == "__main__":
@@ -599,5 +785,6 @@ if __name__ == "__main__":
         projmm=options.projmm,
         radius=options.radius,
         to_annot=options.to_annot,
-        dilation=options.dilation
+        dilation=options.dilation,
+        report=options.report
     )

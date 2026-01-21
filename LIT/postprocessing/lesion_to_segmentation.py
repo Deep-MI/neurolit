@@ -216,7 +216,7 @@ def mask_lesion(to_mask_path, mask_path, report_path=None, lut_path=None):
     masked_orig[target_mask] = 99
     
     if report_path:
-        logger.info(f"Generating anatomy report...")
+        logger.info("Generating anatomy report...")
         replaced, reduced, adjacent = get_anatomy_info(orig_data, target_mask)
         
         lut_dict = None

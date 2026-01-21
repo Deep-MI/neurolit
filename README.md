@@ -1,6 +1,6 @@
 # Lesion Inpainting Tool (LIT) 🔥
 
-![teaser](https://github.com/Deep-MI/LIT/blob/dev/docs/overview.png)
+![teaser](https://github.com/Deep-MI/LIT/blob/dev/doc/overview.png)
 
 ## Overview
 This repository contains sourcecode and documentation related to our publication [**FastSurfer-LIT: Lesion Inpainting Tool for Whole Brain MRI Segmentation With Tumors,
@@ -171,14 +171,14 @@ The training script can be found [here](lit/train_ddpm.py). The same docker imag
 
 ## Documentation
 
-Comprehensive documentation is available in the `docs/` directory. To build and view:
+Comprehensive documentation is available in the `doc/` directory. To build and view:
 
 ```bash
 # Install documentation dependencies
-pip install -r docs/requirements.txt
+pip install -r doc/requirements.txt
 
 # Build HTML documentation
-cd docs && make html
+cd doc && make html
 
 # View in browser
 firefox _build/html/index.html  # Or your preferred browser

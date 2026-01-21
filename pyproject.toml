@@ -6,26 +6,13 @@ build-backend = "setuptools.build_meta"
 name = "lesion-inpainting-tool"
 version = "0.5.1"
 description = "Lesion Inpainting Tool"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
 authors = [
     {name = "Clemens Pollak, David Kuegler, Martin Reuter et al.", email = "clemens.pollak@dzne.de"}
 ]
 maintainers = [{name = 'FastSurfer Developers'}]
-license-files = ["LICENSE"]
-readme = "README.md"
-requires-python = ">=3.8"
-dependencies = [
-    "numpy>=1.21.0",
-    "torch>=2.0.0",
-    "nibabel>=4.0.0",
-    "monai>=1.4.0",
-    "matplotlib>=3.5.0",
-    "tqdm>=4.65.0",
-    "pillow>=9.0.0",
-    "pyyaml>=6.0.0",
-    "filelock>=3.0.0",
-    "typing-extensions>=4.0.0",
-    "platformdirs>=3.0.0",
-]
 keywords = [
     "brain",
     "MRI",
@@ -36,6 +23,82 @@ keywords = [
     "lesion",
     "segmentation"
 ]
+classifiers = [
+    'Operating System :: Microsoft :: Windows',
+    'Operating System :: Unix',
+    'Operating System :: MacOS',
+    'Programming Language :: Python :: 3 :: Only',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Natural Language :: English',
+    'License :: OSI Approved :: Apache Software License',
+    'Intended Audience :: Science/Research',
+]
+dependencies = [
+    "filelock>=3.0.0",
+    "matplotlib>=3.5.0",
+    "monai>=1.4.0",
+    "nibabel>=4.0.0",
+    "numpy>=1.21.0",
+    "pillow>=9.0.0",
+    "platformdirs>=3.0.0",
+    "pyyaml>=6.0.0",
+    "requests",
+    "scipy>=1.10.0",
+    "torch>=2.0.0",
+    "tqdm>=4.65.0",
+    "typing-extensions>=4.0.0",
+]
+
+[project.optional-dependencies]
+doc = [
+    'furo!=2023.8.17',
+    'matplotlib',
+    'memory-profiler',
+    'myst-parser',
+    'numpydoc',
+    'sphinx>=7.3,<8',
+    'sphinxcontrib-bibtex',
+    'sphinxcontrib-programoutput',
+    'sphinx-argparse',
+    'sphinx-copybutton',
+    'sphinx-design',
+    'sphinx-gallery',
+    'sphinx-issues',
+    'pypandoc',
+    'nbsphinx',
+    'IPython',
+    'ipykernel',
+]
+style = [
+    'bibclean',
+    'codespell',
+    'pydocstyle[toml]',
+    'ruff',
+]
+quicktest = [
+    'pytest>=8.2.2',
+]
+all = [
+    'lesion-inpainting-tool[doc]',
+    'lesion-inpainting-tool[style]',
+    'lesion-inpainting-tool[quicktest]',
+]
+full = [
+    'lesion-inpainting-tool[all]',
+]
+
+[project.scripts]
+run-lit = "LIT.cli:run_lit"
+inpaint-image = "LIT.inpaint_image:main"
+lit-download-models = "LIT.utils.download_checkpoints:main"
+
+[project.urls]
+homepage = "https://github.com/Deep-MI/LIT"
+documentation = "https://github.com/Deep-MI/LIT"
+source = "https://github.com/Deep-MI/LIT"
+tracker = "https://github.com/Deep-MI/LIT/issues"
 
 [tool.setuptools]
 include-package-data = true
@@ -47,24 +110,48 @@ exclude = ["build*", "dist*", "*.egg-info", "tests*", "doc*", "containerization*
 [tool.setuptools.package-data]
 LIT = ["scripts/run_lit.sh"]
 
-[tool.pytest.ini_options]
-minversion = "7.0"
-addopts = "-ra -q"
-testpaths = [
-    "tests",
-]
-
-[project.scripts]
-run-lit = "LIT.cli:run_lit"
-inpaint-image = "LIT.inpaint_image:main"
-lit-download-models = "LIT.utils.download_checkpoints:main"
-
-[project.urls]
-Homepage = "https://github.com/Deep-MI/LIT"
+[tool.pydocstyle]
+convention = 'numpy'
+ignore-decorators = '(copy_doc|property|.*setter|.*getter|pyqtSlot|Slot)'
+match = '^(?!setup|__init__|test_).*\.py'
+match-dir = '^LIT.*'
+add_ignore = 'D100,D104,D107'
 
 [tool.ruff]
-# Ignore specific rules
-ignore = [
-    "E701",  # Multiple statements on one line (colon)
-    "E731",  # Do not assign a lambda expression, use a def
+line-length = 120
+target-version = "py310"
+extend-exclude = [
+    "build",
+    "doc",
 ]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle
+    "F",   # Pyflakes
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "I",   # isort
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.pytest.ini_options]
+minversion = '6.0'
+addopts = '--durations 20 --junit-xml=junit-results.xml --verbose'
+filterwarnings = []
+
+[tool.coverage.run]
+branch = true
+cover_pylib = false
+omit = [
+    '**/__init__.py',
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    'pragma: no cover',
+    'if __name__ == .__main__.:',
+]
+precision = 2
