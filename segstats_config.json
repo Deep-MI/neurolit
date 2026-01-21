@@ -4,6 +4,7 @@
       "name": "aparc.DKTatlas+aseg",
       "input_file": "mri/aparc.DKTatlas+aseg.deep.mgz",
       "output_file": "mri/aparc.DKTatlas+aseg+lesion.deep.mgz",
+      "report_file": "stats/aparc.DKTatlas+aseg+lesion.anatomy_report.txt",
       "map_lesion": true
     },
     {
@@ -16,6 +17,7 @@
       "name": "aseg",
       "input_file": "mri/aseg.mgz",
       "output_file": "mri/aseg+lesion.mgz",
+      "report_file": "stats/aseg+lesion.anatomy_report.txt",
       "map_lesion": true
     },
     {

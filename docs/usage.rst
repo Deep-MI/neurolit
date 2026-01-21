@@ -270,6 +270,7 @@ The recommended way to run postprocessing is using the unified ``lesion_postproc
 * **Dynamic Configuration:** Uses ``segstats_config.json`` for volumetric stats and ``surfstats_config.json`` for surface stats.
 * **Surface Stats:** Runs ``mris_anatomical_stats`` calls defined in ``surfstats_config.json``.
 * **Surface Masking:** Automatically processes both hemispheres.
+* **Anatomy Reports:** Automatically generates reports (Replaced, Reduced, and Adjacent labels) for mappings defined in ``segstats_config.json``.
 * **Fine-grained Control:** Flags like ``--skip-segstats`` or ``--skip-surface-masking`` are available.
 
 Individual Postprocessing Tools
@@ -277,9 +278,8 @@ Individual Postprocessing Tools
 
 For granular control, you can run individual scripts:
 
-1. **lesion_to_segmentation.py**: Inserts lesion labels into volumetric segmentation.
+1. **lesion_to_segmentation.py**: Inserts lesion labels into volumetric segmentation and generates anatomy reports.
 2. **lesion_to_surface.py**: Projects lesion masks onto cortical surfaces.
-3. **find_adjacent_labels.py**: Identifies brain regions adjacent to the lesion.
 
 See the :doc:`integration` guide for detailed examples of using these individual tools.
 

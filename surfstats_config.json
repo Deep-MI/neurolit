@@ -13,18 +13,18 @@
     },
     {
       "name": "BA_exvivo",
-      "statsfile": "stats/{hemi}.BA_exvivo.stats",
-      "annot": "label/{hemi}.BA_exvivo.annot",
-      "ctab": "label/BA_exvivo.ctab",
+      "statsfile": "stats/{hemi}.BA_exvivo.lesion.stats",
+      "annot": "label/{hemi}.BA_exvivo.lesion.annot",
+      "ctab": "label/BA_exvivo.lesion.ctab",
       "surface": "white",
       "mgz": true,
       "b": true
     },
     {
       "name": "BA_exvivo.thresh",
-      "statsfile": "stats/{hemi}.BA_exvivo.thresh.stats",
-      "annot": "label/{hemi}.BA_exvivo.thresh.annot",
-      "ctab": "label/BA_exvivo.thresh.ctab",
+      "statsfile": "stats/{hemi}.BA_exvivo.lesion.thresh.stats",
+      "annot": "label/{hemi}.BA_exvivo.lesion.thresh.annot",
+      "ctab": "label/BA_exvivo.lesion.thresh.ctab",
       "surface": "white",
       "mgz": true,
       "b": true

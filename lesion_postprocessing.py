@@ -13,13 +13,16 @@ import os
 import sys
 import subprocess
 from pathlib import Path
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
 
 from LIT.postprocessing.lesion_to_segmentation import main as lesion_to_segmentation_main
 from LIT.postprocessing.lesion_to_surface import main as lesion_to_surface_main
 from LIT.utils.logging import get_logger
 
 logger = get_logger(__name__)
+
+
+ADJACENT_LABEL_TARGET = 99
 
 
 def setup_argparse() -> argparse.ArgumentParser:
@@ -254,7 +257,9 @@ def run_command(cmd: List[str], description: str, env: Optional[Dict[str, str]] 
 
 
 def map_lesion_to_segmentation(subjects_dir: Path, subject_id: str,
-                                input_file: str, output_file: str) -> bool:
+                                input_file: str, output_file: str, 
+                                report_file: Optional[str] = None, 
+                                fs_home: Optional[Path] = None) -> bool:
     """Map lesion labels into a segmentation file via the lesion_to_segmentation script.
 
     Parameters
@@ -267,6 +272,10 @@ def map_lesion_to_segmentation(subjects_dir: Path, subject_id: str,
         Relative path to the input segmentation to be modified.
     output_file : str
         Relative path to the desired output segmentation.
+    report_file : str, optional
+        Relative path to the anatomy report file.
+    fs_home : Path, optional
+        FreeSurfer installation path for LUT files.
 
     Returns
     -------
@@ -276,12 +285,18 @@ def map_lesion_to_segmentation(subjects_dir: Path, subject_id: str,
     input_path = subjects_dir / subject_id / input_file
     output_path = subjects_dir / subject_id / output_file
     mask_path = subjects_dir / subject_id / "inpainting_volumes" / "inpainting_mask.nii.gz"
+    
+    report_path = subjects_dir / subject_id / report_file if report_file else None
+    lut_path = _find_lut_file(fs_home) if report_file else None
 
     lesion_to_segmentation_main(
         image=str(input_path),
         mask=str(mask_path),
-        output=str(output_path)
+        output=str(output_path),
+        report=str(report_path) if report_path else None,
+        lut=str(lut_path) if lut_path else None
     )
+    return True
 
 
 def build_segstats_command(fastsurfer_path: Optional[Path], subjects_dir: Path, subject_id: str,
@@ -489,6 +504,20 @@ def run_surfstats(subjects_dir: Path, subject_id: str, hemisphere: str,
     return run_command(cmd, f"Running mris_anatomical_stats: {hemisphere}.{config['name']}", env=env, fail_ok=True)
 
 
+def _find_lut_file(fs_home: Optional[Path]) -> Optional[Path]:
+    """Return the FreeSurferColorLUT.txt path if available."""
+    candidates = []
+    if fs_home:
+        candidates.append(fs_home / "FreeSurferColorLUT.txt")
+    env_fs = os.environ.get("FREESURFER_HOME")
+    if env_fs:
+        candidates.append(Path(env_fs) / "FreeSurferColorLUT.txt")
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return None
+
+
 def surface_masking(lit_path: Path, subjects_dir: Path, subject_id: str, hemisphere: str) -> bool:
     """Apply surface masking for the hemisphere based on lesion annotations.
 
@@ -636,10 +665,15 @@ def main():
     logger.info("STEP 1: Mapping lesions to segmentation files")
     logger.info("=" * 60)
     
+    mapping_reports: List[Tuple[str, str]] = []
     for seg_map in config.get('segmentation_mappings', []):
         if seg_map.get('map_lesion', False):
             logger.info(f"Processing: {seg_map['name']}")
-            map_lesion_to_segmentation(subjects_dir, subject_id, seg_map['input_file'], seg_map['output_file'])
+            report_file = seg_map.get('report_file')
+            map_lesion_to_segmentation(subjects_dir, subject_id, seg_map['input_file'], 
+                                       seg_map['output_file'], report_file, fs_home)
+            if report_file:
+                mapping_reports.append((seg_map['output_file'], report_file))
     
     # Run all segstats calls (unless skipped)
     surface_segstats_calls: List[Dict[str, Any]] = []
@@ -743,6 +777,7 @@ def main():
     
     # List output files with input overview
     overview = build_stats_overview(subject_id, config, surf_config)
+    overview.extend(f"{seg} => {report}" for seg, report in mapping_reports)
     if overview:
         logger.info("Generated statistics files:")
         for line in overview:

@@ -98,15 +98,32 @@ python3 lesion_postprocessing.py \
 - **Support for All Outputs**: Maps lesions to all relevant `.mgz` files and runs `segstats`.
 - **Surface Stats**: Runs `mris_anatomical_stats` calls defined in `surfstats_config.json`.
 - **Surface Masking**: Automatically runs surface masking for both hemispheres.
+- **Adjacent Label Reports**: Generates adjacency reports for lesion segmentations.
 - **Flexible**: Flags like `--skip-segstats` or `--skip-surface-masking` allow fine-grained control.
 
 #### 2. Individual Postprocessing Scripts
 
 For more granular control, individual scripts are available:
 
-1. **`lesion_to_segmentation.py`** - Insert lesion label into volumetric segmentation
+1. **`lesion_to_segmentation.py`** - Map lesion masks into segmentations and generate anatomy reports
 2. **`lesion_to_surface.py`** - Project lesion onto cortical surfaces
-3. **`find_adjacent_labels.py`** - Identify brain regions adjacent to lesions
+
+### Quick Start: Anatomy Reports
+You can now generate comprehensive anatomy reports during the lesion mapping step:
+
+```bash
+python LIT/postprocessing/lesion_to_segmentation.py \
+    -i aparc+aseg.mgz \
+    -m lesion_mask.nii.gz \
+    -o aparc+aseg+lesion.mgz \
+    -r anatomy_report.txt \
+    -l FreeSurferColorLUT.txt
+```
+
+This will identify:
+1. **Replaced labels**: Structures fully covered by the lesion.
+2. **Reduced labels**: Structures partially covered by the lesion.
+3. **Adjacent labels**: Structures touching the lesion boundary.
 
 ##### Masking Segmentation Files
 
@@ -115,7 +132,9 @@ For more granular control, individual scripts are available:
 python LIT/postprocessing/lesion_to_segmentation.py \
     -i "/fastsurfer_output/mri/aparc+aseg.mgz" \
     -m "/inpainting_output/inpainting_volumes/inpainting_mask.nii.gz" \
-    -o "/fastsurfer_output/mri/aparc+aseg+lesion.mgz"
+    -o "/fastsurfer_output/mri/aparc+aseg+lesion.mgz" \
+    -r "/fastsurfer_output/stats/lesion_anatomy.txt" \
+    -l "/fastsurfer_output/config/FreeSurferColorLUT.txt"
 ```
 
 ##### Masking Surfaces
@@ -137,16 +156,7 @@ python LIT/postprocessing/lesion_to_surface.py \
 
 ##### Finding Adjacent Brain Regions
 
-```bash
-# Find which brain regions are adjacent to the lesion (label 99)
-python LIT/postprocessing/find_adjacent_labels.py \
-    -i "/fastsurfer_output/mri/aparc+aseg+lesion.mgz" \
-    -t 99 \
-    -l "$FREESURFER_HOME/FreeSurferColorLUT.txt" \
-    -o "/fastsurfer_output/mri/lesion_adjacent_regions.txt"
-```
-
-See [ADJACENT_LABELS_TOOL.md](ADJACENT_LABELS_TOOL.md) for detailed documentation.
+Anatomy reports can be generated during the mapping step (see above). For more details, see [ADJACENT_LABELS_TOOL.md](ADJACENT_LABELS_TOOL.md) (Note: the `find_adjacent_labels.py` script has been integrated into `lesion_to_segmentation.py`).
 
 **Useful FastSurfer flags:**
 - `--seg_only` skip cortical surface reconstruction (much faster!)
