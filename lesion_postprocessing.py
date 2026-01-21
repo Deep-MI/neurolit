@@ -369,6 +369,11 @@ def build_segstats_command(fastsurfer_path: Optional[Path], subjects_dir: Path, 
         if key in config:
             cmd.extend([flag] + [str(x) for x in config[key]])
     
+    # Merged labels (each list as separate --merged_labels call)
+    if 'merged_labels' in config:
+        for item in config['merged_labels']:
+            cmd.extend(["--merged_labels"] + [str(x) for x in item])
+    
     # LUT handling - prefer FastSurfer LUTs, fall back to FreeSurfer
     if 'lut' in config:
         if config.get('lut_absolute', False):

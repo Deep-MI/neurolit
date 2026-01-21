@@ -31,9 +31,48 @@
       "input_file": "mri/wmparc.DKTatlas.mapped.mgz",
       "output_file": "mri/wmparc.DKTatlas.mapped+lesion.mgz",
       "map_lesion": true
+    },
+    {
+      "name": "hypothalamus.HypVINN",
+      "input_file": "mri/hypothalamus.HypVINN.nii.gz",
+      "output_file": "mri/hypothalamus.HypVINN+lesion.nii.gz",
+      "map_lesion": true
+    },
+    {
+      "name": "cerebellum.CerebNet",
+      "input_file": "mri/cerebellum.CerebNet.nii.gz",
+      "output_file": "mri/cerebellum.CerebNet+lesion.nii.gz",
+      "map_lesion": true
     }
   ],
   "segstats_calls": [
+    {
+      "name": "cerebellum.CerebNet",
+      "segfile": "mri/cerebellum.CerebNet+lesion.nii.gz",
+      "segstatsfile": "stats/cerebellum.CerebNet+lesion.stats",
+      "normfile": "mri/orig_nu.mgz",
+      "pvfile": "mri/orig_nu.mgz",
+      "lut": "config/FreeSurferColorLUT.txt",
+      "empty": true,
+      "excludeid": [0],
+      "volume_precision": 3,
+      "ids": [7, 46, 601, 602, 603, 604, 605, 606, 607, 608, 610, 611, 613, 614, 616, 617, 619, 620, 622, 623, 624, 625, 626, 627, 628, 630, 631],
+      "merged_labels": [
+        [8, 601, 603, 605, 608, 611, 614, 617, 620, 623, 626],
+        [47, 602, 604, 607, 610, 613, 616, 619, 622, 625, 628],
+        [632, 606, 630, 631, 624, 627]
+      ]
+    },
+    {
+      "name": "hypothalamus.HypVINN",
+      "segfile": "mri/hypothalamus.HypVINN+lesion.nii.gz",
+      "segstatsfile": "stats/hypothalamus.HypVINN+lesion.stats",
+      "normfile": "mri/orig_nu.mgz",
+      "lut": "config/FreeSurferColorLUT.txt",
+      "empty": true,
+      "excludeid": [0],
+      "ids": [961, 962, 963, 964, 965, 966, 967, 968, 969, 970, 971, 972, 973, 974, 975, 976, 977, 978, 979, 980, 981, 982, 983, 984, 985, 986]
+    },
     {
       "name": "aseg+DKT.VINN",
       "segfile": "mri/aparc.DKTatlas+aseg+lesion.deep.mgz",
