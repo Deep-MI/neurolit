@@ -11,6 +11,7 @@
       "input_file": "label/{hemi}.aparc.DKTatlas.annot",
       "output_file": "label/{hemi}.aparc.DKTatlas.lesion.annot",
       "report_file": "stats/{hemi}.aparc.DKTatlas.anatomy_report.txt",
+      "output_ctab": "label/aparc.annot.mapped.lesion.ctab",
       "map_lesion": true
     },
     {
@@ -18,6 +19,7 @@
       "input_file": "label/{hemi}.BA_exvivo.annot",
       "output_file": "label/{hemi}.BA_exvivo.lesion.annot",
       "report_file": "stats/{hemi}.BA_exvivo.anatomy_report.txt",
+      "output_ctab": "label/BA_exvivo.lesion.ctab",
       "map_lesion": true
     },
     {
@@ -25,6 +27,7 @@
       "input_file": "label/{hemi}.BA_exvivo.thresh.annot",
       "output_file": "label/{hemi}.BA_exvivo.lesion.thresh.annot",
       "report_file": "stats/{hemi}.BA_exvivo.thresh.anatomy_report.txt",
+      "output_ctab": "label/BA_exvivo.thresh.lesion.ctab",
       "map_lesion": true
     },
     {
@@ -38,10 +41,10 @@
   "surfstats_calls": [
     {
       "name": "aparc.DKTatlas.mapped",
-      "statsfile": "stats/{hemi}.aparc.DKTatlas.mapped.stats",
+      "statsfile": "stats/{hemi}.aparc.DKTatlas.mapped+lesion.stats",
       "cortex": "label/{hemi}.cortex.label",
-      "annot": "label/{hemi}.aparc.DKTatlas.mapped.annot",
-      "ctab": "label/aparc.annot.mapped.ctab",
+      "annot": "label/{hemi}.aparc.DKTatlas.lesion.mapped.annot",
+      "ctab": "label/aparc.annot.mapped.lesion.ctab",
       "surface": "white",
       "th3": true,
       "mgz": true,
@@ -60,7 +63,7 @@
       "name": "BA_exvivo.thresh",
       "statsfile": "stats/{hemi}.BA_exvivo.lesion.thresh.stats",
       "annot": "label/{hemi}.BA_exvivo.lesion.thresh.annot",
-      "ctab": "label/BA_exvivo.lesion.thresh.ctab",
+      "ctab": "label/BA_exvivo.thresh.lesion.ctab",
       "surface": "white",
       "mgz": true,
       "b": true

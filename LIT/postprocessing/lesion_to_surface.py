@@ -80,6 +80,7 @@ def options_parse():
     parser.add_option("--projmm", dest="projmm", help=h_projmm, default=0.0, type="float")
     parser.add_option("--radius", dest="radius", help=h_radius, default=None, type="float")
     parser.add_option("--to_annot", dest="to_annot", help=h_to_annot)
+    parser.add_option("--out_ctab", dest="out_ctab", help="path to output color table (ctab) file")
     parser.add_option("--dilation", dest="dilation", help=h_dilation, default=3, type="int")
     parser.add_option("--report", dest="report", help=h_report)
     (options, args) = parser.parse_args()
@@ -664,9 +665,34 @@ def write_freesurfer_label(filename, vertex_indices, coords=None, values=None, s
     logger.info(f"FreeSurfer label file written to: {filename}")
 
 
+def write_ctab(filename, ctab, names):
+    """
+    Write a FreeSurfer color table file.
+
+    Parameters
+    ----------
+    filename : str
+        Path to output ctab file.
+    ctab : np.ndarray
+        Array of (n, 5) color values (R, G, B, A, ID).
+    names : list
+        List of label names.
+    """
+    with open(filename, "w") as f:
+        for i in range(len(names)):
+            name = names[i]
+            if isinstance(name, bytes):
+                name = name.decode("utf-8")
+            r, g, b, a, lid = ctab[i]
+            f.write(f"{lid:d} {name} {r:d} {g:d} {b:d} {a:d}\n")
+
+    logger.info(f"Color table file written to: {filename}")
+
+
 def main(insurf: str, inseg: str, incort: str, surflut: str, seglut: str, 
          out_annot: str, projmm: float = 0.0, radius: float = None, 
-         to_annot: str = None, dilation: int = 3, report: str = None) -> None:
+         to_annot: str = None, dilation: int = 3, report: str = None,
+         out_ctab: str = None) -> None:
     """
     Main function to sample labels from segmentation to surface.
     
@@ -694,6 +720,8 @@ def main(insurf: str, inseg: str, incort: str, surflut: str, seglut: str,
         Dilation radius for the lesion segmentation mask, default 3
     report : str, optional
         Path to write the surface anatomy report
+    out_ctab : str, optional
+        Path to write the output color table
     """
     # Load surface for geometry if needed for label file
     surf_geom = fs.read_geometry(insurf, read_metadata=True)
@@ -770,6 +798,8 @@ def main(insurf: str, inseg: str, incort: str, surflut: str, seglut: str,
             write_freesurfer_label(out_annot, vertex_indices, coords=coords)
     else:
         fs.write_annot(out_annot, labels, ctab=surfctab, names=surfnames)
+        if out_ctab:
+            write_ctab(out_ctab, surfctab, surfnames)
 
 
 if __name__ == "__main__":
@@ -786,5 +816,6 @@ if __name__ == "__main__":
         radius=options.radius,
         to_annot=options.to_annot,
         dilation=options.dilation,
-        report=options.report
+        report=options.report,
+        out_ctab=options.out_ctab
     )

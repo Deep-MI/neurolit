@@ -155,20 +155,6 @@
         "file": "stats/brainvol+lesion.stats",
         "import": ["Mask", "VentricleChoroidVol", "rhCerebralWhiteMatter", "lhCerebralWhiteMatter", "CerebralWhiteMatter"]
       }
-    },
-    {
-      "name": "lh.w-g.pct",
-      "in_file": "surf/lh.w-g.pct.mgh",
-      "annot": ["lh", "aparc.DKTatlas"],
-      "sum": "stats/lh.w-g.pct.stats",
-      "snr": true
-    },
-    {
-      "name": "rh.w-g.pct",
-      "in_file": "surf/rh.w-g.pct.mgh",
-      "annot": ["rh", "aparc.DKTatlas"],
-      "sum": "stats/rh.w-g.pct.stats",
-      "snr": true
     }
   ]
 }

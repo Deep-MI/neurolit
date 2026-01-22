@@ -369,10 +369,11 @@ def build_segstats_command(fastsurfer_path: Optional[Path], subjects_dir: Path, 
         if key in config:
             cmd.extend([flag] + [str(x) for x in config[key]])
     
-    # Merged labels (each list as separate --merged_labels call)
+    # Merged labels (each list as separate --merged_label/--merge call)
     if 'merged_labels' in config:
+        flag = "--merge" if use_mri_segstats else "--merged_label"
         for item in config['merged_labels']:
-            cmd.extend(["--merged_labels"] + [str(x) for x in item])
+            cmd.extend([flag] + [str(x) for x in item])
     
     # LUT handling - prefer FastSurfer LUTs, fall back to FreeSurfer
     if 'lut' in config:
@@ -525,7 +526,8 @@ def _find_lut_file(fs_home: Optional[Path]) -> Optional[Path]:
 
 def surface_masking(lit_path: Path, subjects_dir: Path, subject_id: str, 
                     hemisphere: str, input_file: str, output_file: str,
-                    report_file: Optional[str] = None) -> bool:
+                    report_file: Optional[str] = None,
+                    output_ctab: Optional[str] = None) -> bool:
     """Apply surface masking for the hemisphere based on lesion annotations.
 
     Parameters
@@ -544,6 +546,8 @@ def surface_masking(lit_path: Path, subjects_dir: Path, subject_id: str,
         Relative path to the output annotation file (with {hemi} placeholder).
     report_file : str, optional
         Relative path to the surface anatomy report file (with {hemi} placeholder).
+    output_ctab : str, optional
+        Relative path to the output color table file.
 
     Returns
     -------
@@ -560,6 +564,7 @@ def surface_masking(lit_path: Path, subjects_dir: Path, subject_id: str,
     to_annot = str(subjects_dir / subject_id / input_file.format(hemi=hemisphere))
     
     report_path = subjects_dir / subject_id / report_file.format(hemi=hemisphere) if report_file else None
+    ctab_path = subjects_dir / subject_id / output_ctab.format(hemi=hemisphere) if output_ctab else None
 
     # Call the main function with all parameters
     lesion_to_surface_main(
@@ -573,7 +578,8 @@ def surface_masking(lit_path: Path, subjects_dir: Path, subject_id: str,
         radius=None,
         to_annot=to_annot,
         dilation=3,
-        report=str(report_path) if report_path else None
+        report=str(report_path) if report_path else None,
+        out_ctab=str(ctab_path) if ctab_path else None
     )
     return True
 
@@ -625,6 +631,136 @@ def build_stats_overview(subject_id: str, config: Dict[str, Any], surf_config: D
                 overview.append(f"{_format_inputs(inputs)} => {output}")
 
     return overview
+
+
+def generate_lesion_impact_summary(subjects_dir: Path, subject_id: str, 
+                                   mapping_reports: List[Tuple[str, str]], 
+                                   surface_reports: List[Tuple[str, str]]) -> Optional[Path]:
+    """Generate a machine-parseable YAML report of lesion impact.
+
+    Parameters
+    ----------
+    subjects_dir : Path
+        Subjects directory.
+    subject_id : str
+        Subject identifier.
+    mapping_reports : List[Tuple[str, str]]
+        List of (output_file, report_file) for volumetric mappings.
+    surface_reports : List[Tuple[str, str]]
+        List of (output_file, report_file) for surface mappings.
+
+    Returns
+    -------
+    Optional[Path]
+        Path to the generated summary report, or None if no reports found.
+    """
+    logger.info("Generating professional lesion impact summary (YAML)...")
+    
+    summary_path = subjects_dir / subject_id / "stats" / "lesion_impact_summary.yaml"
+    
+    impact = {
+        "lh_cortical": False,
+        "rh_cortical": False,
+        "lh_subcortical": False,
+        "rh_subcortical": False,
+        "affected_labels": []
+    }
+
+    def parse_report(report_path: Path, is_surface: bool = False, hemi: Optional[str] = None):
+        if not report_path.exists():
+            return
+        
+        with open(report_path, 'r') as f:
+            lines = f.readlines()
+            
+        current_cat = None
+        for line in lines:
+            line = line.strip()
+            if "Replaced Labels" in line or "Reduced Labels" in line:
+                current_cat = "overlap"
+                continue
+            if "Adjacent Labels" in line:
+                current_cat = "adjacent"
+                continue
+            
+            if current_cat == "overlap" and line.startswith("#") and "LabelName" not in line and "None found" not in line:
+                parts = line[1:].split()
+                if not parts: continue
+                
+                try:
+                    lid = int(parts[0])
+                    lname = parts[1] if len(parts) > 1 else str(lid)
+                except ValueError:
+                    continue
+
+                if is_surface:
+                    if hemi == "lh": impact["lh_cortical"] = True
+                    elif hemi == "rh": impact["rh_cortical"] = True
+                else:
+                    # Volumetric DKT+aseg logic
+                    is_lh = (1000 <= lid < 2000) or lname.startswith("Left-") or lname.startswith("ctx-lh-")
+                    is_rh = (2000 <= lid < 3000) or lname.startswith("Right-") or lname.startswith("ctx-rh-")
+                    is_cortical = (1000 <= lid < 3000) or lname.startswith("ctx-")
+                    
+                    if is_lh:
+                        if is_cortical: impact["lh_cortical"] = True
+                        else: impact["lh_subcortical"] = True
+                    if is_rh:
+                        if is_cortical: impact["rh_cortical"] = True
+                        else: impact["rh_subcortical"] = True
+                
+                impact["affected_labels"].append(f"{hemi + '.' if hemi else ''}{lname}")
+
+    # Process volumetric reports
+    for _, report_file in mapping_reports:
+        if "aparc.DKTatlas+aseg" in report_file:
+            parse_report(subjects_dir / subject_id / report_file)
+
+    # Process surface reports
+    for _, report_file in surface_reports:
+        hemi = "lh" if "lh." in report_file else "rh" if "rh." in report_file else None
+        parse_report(subjects_dir / subject_id / report_file, is_surface=True, hemi=hemi)
+
+    # Generate YAML content with professional commenting
+    yaml_lines = [
+        "# Lesion Impact Summary Report",
+        "# " + "=" * 60,
+        f"# Subject: {subject_id}",
+        "# " + "=" * 60,
+        "",
+        "# General involvement status per hemisphere",
+        "hemisphere_impact:",
+        f"  # True if any cortical or subcortical structure in the left hemisphere is affected",
+        f"  left_hemisphere_affected: {str(impact['lh_cortical'] or impact['lh_subcortical']).lower()}",
+        f"  # True if any cortical or subcortical structure in the right hemisphere is affected",
+        f"  right_hemisphere_affected: {str(impact['rh_cortical'] or impact['rh_subcortical']).lower()}",
+        "",
+        "# Categorized breakdown of affected regions",
+        "detailed_involvement:",
+        f"  # Involvement of left hemisphere cortical structures (from surface/volumetric annotations)",
+        f"  left_cortical_affected: {str(impact['lh_cortical']).lower()}",
+        f"  # Involvement of right hemisphere cortical structures (from surface/volumetric annotations)",
+        f"  right_cortical_affected: {str(impact['rh_cortical']).lower()}",
+        f"  # Involvement of left hemisphere subcortical structures (from volumetric segmentation)",
+        f"  left_subcortical_affected: {str(impact['lh_subcortical']).lower()}",
+        f"  # Involvement of right hemisphere subcortical structures (from volumetric segmentation)",
+        f"  right_subcortical_affected: {str(impact['rh_subcortical']).lower()}",
+        "",
+        "# List of structures showing spatial overlap with the lesion mask",
+        "affected_structures:"
+    ]
+    
+    unique_labels = sorted(list(set(impact["affected_labels"])))
+    if unique_labels:
+        for label in unique_labels:
+            yaml_lines.append(f"  - {label}")
+    else:
+        yaml_lines.append("  []")
+
+    with open(summary_path, 'w') as f:
+        f.write("\n".join(yaml_lines) + "\n")
+
+    return summary_path
 
 
 def main():
@@ -737,6 +873,20 @@ def main():
             
             run_segstats(fastsurfer_path, subjects_dir, subject_id, segstats_config, 
                         fs_home, call_use_mri_segstats, args.python_cmd)
+
+        # Create legacy link for combined stats to stay consistent with FastSurfer
+        aseg_vinn_stats = subjects_dir / subject_id / "stats" / "aseg+DKT+lesion.VINN.stats"
+        aseg_stats = subjects_dir / subject_id / "stats" / "aseg+DKT+lesion.stats"
+        if aseg_vinn_stats.exists():
+            if aseg_stats.exists() or aseg_stats.is_symlink():
+                logger.info(f"Link or file {aseg_stats.name} already exists, skipping symlink creation.")
+            else:
+                logger.info(f"Creating legacy symlink: {aseg_stats.name} -> {aseg_vinn_stats.name}")
+                try:
+                    # Use relative symlink (target is in the same directory)
+                    os.symlink(aseg_vinn_stats.name, aseg_stats)
+                except Exception as e:
+                    logger.warning(f"Failed to create symlink: {e}")
     else:
         logger.info("=" * 60)
         logger.info("STEP 2: Skipping segstats (--skip-segstats enabled)")
@@ -753,13 +903,29 @@ def main():
             if surf_map.get('map_lesion', False):
                 logger.info(f"Processing: {surf_map['name']}")
                 report_file = surf_map.get('report_file')
+                output_ctab = surf_map.get('output_ctab')
                 for hemisphere in ["lh", "rh"]:
                     logger.info(f"  Hemisphere: {hemisphere}")
                     surface_masking(lit_path, subjects_dir, subject_id, hemisphere, 
-                                    surf_map['input_file'], surf_map['output_file'], report_file)
+                                    surf_map['input_file'], surf_map['output_file'], 
+                                    report_file, output_ctab)
                     if report_file:
                         surface_reports.append((surf_map['output_file'].format(hemi=hemisphere), 
                                               report_file.format(hemi=hemisphere)))
+
+        # Create symlinks for .mapped.annot to stay consistent with FastSurfer/FreeSurfer naming
+        for hemisphere in ["lh", "rh"]:
+            src = subjects_dir / subject_id / "label" / f"{hemisphere}.aparc.DKTatlas.lesion.annot"
+            dst = subjects_dir / subject_id / "label" / f"{hemisphere}.aparc.DKTatlas.lesion.mapped.annot"
+            if src.exists():
+                if dst.exists() or dst.is_symlink():
+                    logger.info(f"Link or file {dst.name} already exists, skipping symlink creation.")
+                else:
+                    logger.info(f"Creating mapped annotation symlink: {dst.name} -> {src.name}")
+                    try:
+                        os.symlink(src.name, dst)
+                    except Exception as e:
+                        logger.warning(f"Failed to create symlink: {e}")
 
     # Run surface-related segstats (after surface masking)
     if surface_segstats_calls:
@@ -806,6 +972,12 @@ def main():
     overview = build_stats_overview(subject_id, config, surf_config)
     overview.extend(f"{seg} => {report}" for seg, report in mapping_reports)
     overview.extend(f"{seg} => {report}" for seg, report in surface_reports)
+    
+    # Generate impact summary
+    summary_path = generate_lesion_impact_summary(subjects_dir, subject_id, mapping_reports, surface_reports)
+    if summary_path:
+        overview.append(f"LESION_IMPACT_SUMMARY => {summary_path.relative_to(subjects_dir / subject_id)}")
+
     if overview:
         logger.info("Generated statistics files:")
         for line in overview:
