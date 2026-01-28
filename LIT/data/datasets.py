@@ -1,13 +1,12 @@
 import os
 
-from torch.utils.data import Dataset
+import nibabel as nib
 import numpy as np
+from monai import transforms
+from monai.data import CacheDataset
+from torch.utils.data import Dataset
 
 from LIT.data import conform
-
-from monai.data import CacheDataset
-from monai import transforms
-import nibabel as nib
 
 
 def get_test_sample():
@@ -48,7 +47,7 @@ def get_dataset(csv_file, transforms=None, size="standard"):
     Returns:
         CacheDataset: Dataset containing the loaded files
     """
-    with open(csv_file, "r") as f:
+    with open(csv_file) as f:
         if size == 'small':
             files = [{"image":os.path.join(line.rstrip(), 'mri/orig.mgz')} for line in f.readlines()[:3]]
         else:

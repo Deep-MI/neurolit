@@ -26,24 +26,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import os
 import time
-import argparse
 
+import monai
 import torch
 import torch.nn.functional as F
-import monai
-from monai.data import DataLoader
 from monai import transforms
+from monai.data import DataLoader
+from monai.networks.schedulers import DDPMScheduler
 from monai.utils import set_determinism
 from torch.cuda.amp import GradScaler, autocast
 from tqdm import tqdm
 
-from monai.networks.schedulers import DDPMScheduler
-from LIT.networks.DiffusionUnet import DiffusionModelUNetVINN
+from LIT.data.datasets import SlicedDataset, get_base_dataset
 from LIT.inference import DiffusionInfererVINN
+from LIT.networks.DiffusionUnet import DiffusionModelUNetVINN
 from LIT.utils import plot_batch
-from LIT.data.datasets import get_base_dataset, SlicedDataset
 
 
 def argument_parser():
@@ -59,7 +59,7 @@ def get_transforms(IMAGE_SHAPE, PATCH_DATASET, FIXED_SIZE, ISVINN=True):
         transforms.LoadImaged(keys=['image'],reader="nibabelreader", image_only=True, dtype=torch.float16, ensure_channel_first=True),
         transforms.ScaleIntensityd(keys=['image']),
     ]
-    if PATCH_DATASET: tr.append(transforms.RandSpatialCropd(keys=["image"], roi_size=IMAGE_SHAPE, random_size=False, random_center=True))#Identityd(keys=['image'])
+    if PATCH_DATASET: tr.append(transforms.RandSpatialCropd(keys=["image"], roi_size=IMAGE_SHAPE, random_size=False, random_center=True))
     if FIXED_SIZE: tr.append(transforms.Resized(keys=['image'],spatial_size=IMAGE_SHAPE))
 
     return transforms.Compose(tr)
@@ -154,8 +154,14 @@ if __name__ == "__main__":
 
     N_WORKERS = BATCH_SIZE if BATCH_SIZE <= 32 else 32
     collate_fn = lambda x: monai.data.pad_list_data_collate(x, mode='constant', constant_values=0, method='end')#, dtype=torch.float32)
-    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, num_workers=N_WORKERS, persistent_workers=True, prefetch_factor=2, shuffle=True, collate_fn=collate_fn) # drop_last=True
-    val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, num_workers=N_WORKERS, persistent_workers=True, prefetch_factor=2, shuffle=False, collate_fn=collate_fn) # drop_last=True
+    train_loader = DataLoader(train_dataset, 
+                              batch_size=BATCH_SIZE, num_workers=N_WORKERS, 
+                              persistent_workers=True, prefetch_factor=2, 
+                              shuffle=True, collate_fn=collate_fn) # drop_last=True
+    val_loader = DataLoader(val_dataset, 
+                            batch_size=BATCH_SIZE, num_workers=N_WORKERS, 
+                            persistent_workers=True, prefetch_factor=2, 
+                            shuffle=False, collate_fn=collate_fn) # drop_last=True
 
     print('Train image shape:', next(iter(train_loader))['image'].shape)
     print('Val image shape:', next(iter(val_loader))['image'].shape)
@@ -175,7 +181,7 @@ if __name__ == "__main__":
     # use multi-gpu
     model = model.to(device)
     if DATA_PARALLEL:
-        print('Using {} GPUs'.format(torch.cuda.device_count()))
+        print(f'Using {torch.cuda.device_count()} GPUs')
         model = torch.nn.DataParallel(model,device_ids=range(torch.cuda.device_count()))#, device_ids=[0, 1, 2, 3])
 
     scheduler = DDPMScheduler(num_train_timesteps=NUM_REVERSE_DIFFUSION_STEPS, schedule="scaled_linear_beta", beta_start=0.0005, beta_end=0.0195)
@@ -263,7 +269,8 @@ if __name__ == "__main__":
             scheduler.set_timesteps(num_inference_steps=NUM_REVERSE_DIFFUSION_STEPS)
             with autocast(enabled=True, cache_enabled=True), torch.no_grad(): # TODO: add no_grad()? maybe remove autocast?
                 if IS_VINN:
-                    scale_factors = torch.ones((1, 2 if TWO_D else 3), device=image.device) / internal_res_mm if not FIXED_SIZE else torch.ones((1, 3), device=image.device) # 1mm resolution with IMAGE_SHAPE size
+                    scale_factors = torch.ones((1, 2 if TWO_D else 3), device=image.device) / internal_res_mm if not FIXED_SIZE else torch.ones((1, 3)
+                                                                            , device=image.device) # 1mm resolution with IMAGE_SHAPE size
                 else:
                     scale_factors = torch.ones((1, 3), device=image.device)
                 image = inferer.sample(input_noise=image, scale_factors=scale_factors, diffusion_model=model, scheduler=scheduler)

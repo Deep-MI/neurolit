@@ -87,7 +87,7 @@ export FREESURFER_HOME=/path/to/freesurfer
 source $FREESURFER_HOME/SetUpFreeSurfer.sh
 
 # Run unified postprocessing
-python3 lesion_postprocessing.py \
+python3 LIT/scripts/lesion_postprocessing.py \
     -sid SUBJECT_ID \
     -sd /path/to/subjects_dir
 ```

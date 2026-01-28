@@ -57,10 +57,10 @@ from collections.abc import Sequence
 
 import torch
 import torch.nn.functional as F
-from torch import nn
 from monai.networks.blocks import Convolution, MLPBlock
 from monai.networks.layers.factories import Pool
 from monai.utils import ensure_tuple_rep
+from torch import nn
 
 from LIT.networks import interpolation_layer as il
 
@@ -895,7 +895,7 @@ class AttnDownBlock(nn.Module):
         del context
         output_states = []
 
-        for resnet, attn in zip(self.resnets, self.attentions):
+        for resnet, attn in zip(self.resnets, self.attentions, strict=True):
             hidden_states = resnet(hidden_states, temb)
             hidden_states = attn(hidden_states)
             output_states.append(hidden_states)
@@ -1011,7 +1011,7 @@ class CrossAttnDownBlock(nn.Module):
     ) -> tuple[torch.Tensor, list[torch.Tensor]]:
         output_states = []
 
-        for resnet, attn in zip(self.resnets, self.attentions):
+        for resnet, attn in zip(self.resnets, self.attentions, strict=True):
             hidden_states = resnet(hidden_states, temb)
             hidden_states = attn(hidden_states, context=context)
             output_states.append(hidden_states)
@@ -1344,7 +1344,7 @@ class AttnUpBlock(nn.Module):
         context: torch.Tensor | None = None,
     ) -> torch.Tensor:
         del context
-        for resnet, attn in zip(self.resnets, self.attentions):
+        for resnet, attn in zip(self.resnets, self.attentions, strict=True):
             # pop res hidden states
             res_hidden_states = res_hidden_states_list[-1]
             res_hidden_states_list = res_hidden_states_list[:-1]
@@ -1462,7 +1462,7 @@ class CrossAttnUpBlock(nn.Module):
         temb: torch.Tensor,
         context: torch.Tensor | None = None,
     ) -> torch.Tensor:
-        for resnet, attn in zip(self.resnets, self.attentions):
+        for resnet, attn in zip(self.resnets, self.attentions, strict=True):
             # pop res hidden states
             res_hidden_states = res_hidden_states_list[-1]
             res_hidden_states_list = res_hidden_states_list[:-1]
@@ -1976,7 +1976,8 @@ class DiffusionModelUNetVINN(nn.Module):
         if down_block_additional_residuals is not None:
             new_down_block_res_samples = ()
             for down_block_res_sample, down_block_additional_residual in zip(
-                down_block_res_samples, down_block_additional_residuals
+                down_block_res_samples, down_block_additional_residuals, 
+                strict=True
             ):
                 down_block_res_sample = down_block_res_sample + down_block_additional_residual
                 new_down_block_res_samples += (down_block_res_sample,)

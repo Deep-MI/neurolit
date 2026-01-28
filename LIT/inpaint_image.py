@@ -15,8 +15,11 @@
 import argparse
 import os
 import sys
+import warnings
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+
+# Suppress the cuda.cudart deprecation warning (triggered by torch/onnxruntime)
+warnings.filterwarnings("ignore", category=FutureWarning, module="cuda.cudart")
 
 # supress warning on loading matplotlib
 import matplotlib
@@ -33,8 +36,8 @@ from torch.amp import autocast  # previous: from torch.cuda.amp import autocast
 from LIT.data import conform
 from LIT.inference import OffsetTwoAndHalfDInpaintingInferer
 from LIT.networks.DiffusionUnet import DiffusionModelUNetVINN
-from LIT.utils.plotting import plot_batch, plot_inpainting
 from LIT.utils.logging import get_logger
+from LIT.utils.plotting import plot_batch, plot_inpainting
 
 logger = get_logger(__name__)
 
@@ -47,10 +50,10 @@ if os.environ.get('DISPLAY','') == '':
 
 
 # Custom types
-PathLike = Union[str, Path]
+PathLike = str | Path
 NiftiImage = nib.Nifti1Image
-ModelDict = Dict[str, torch.nn.Module]
-VolumeSlice = Tuple[Union[int, slice], ...]
+ModelDict = dict[str, torch.nn.Module]
+VolumeSlice = tuple[int | slice, ...]
 AffineMatrix = NDArray[np.float64]
 
 
@@ -124,7 +127,7 @@ def conform_nifti(image: NiftiImage) -> NiftiImage:
             return image
         return conform.conform(image, order=2, conform_vox_size=_vox_size)
     except ValueError as e:
-        raise ValueError(e.args[0])
+        raise ValueError(e.args[0]) from e
 
 def get_slice_from_volume(
     volume: torch.Tensor,
@@ -150,7 +153,7 @@ def get_slice_from_volume(
     torch.Tensor
         Extracted slice tensor.
     """
-    threed_to_twod_slice: List[slice] = [slice(None)] * 3
+    threed_to_twod_slice: list[slice] = [slice(None)] * 3
     threed_to_twod_slice[slice_dim] = slice(slice_cut - thickness//2, slice_cut + thickness//2 + 1)
     return volume[tuple(threed_to_twod_slice)]
 
@@ -159,15 +162,15 @@ def inpaint_volume(
     val_image: torch.Tensor,
     mask: torch.Tensor,
     val_image_masked: torch.Tensor,
-    scale_factor: Optional[float] = None,
-    out_dir: Optional[PathLike] = None,
-    slice_dim: Optional[int] = None,
+    scale_factor: float | None = None,
+    out_dir: PathLike | None = None,
+    slice_dim: int | None = None,
     slice_input: bool = True,
     SAVE_VOLUMES: bool = True,
     SAVE_IMAGES: bool = True,
     device: str = 'cuda',
     DDIM: bool = False,
-    val_image_nib: Optional[NiftiImage] = None
+    val_image_nib: NiftiImage | None = None
 ) -> torch.Tensor:
     """Inpaint a volume using the trained diffusion models.
 
@@ -461,7 +464,8 @@ def main():
 
 
 
-    assert(val_sample_preproc['image'].shape == val_sample_preproc['mask'].shape), f"Image and mask must have the same shape, but got {val_sample_preproc['image'].shape} and {val_sample_preproc['mask'].shape}"
+    assert(val_sample_preproc['image'].shape == val_sample_preproc['mask'].shape), \
+        f"Image and mask must have the same shape, but got {val_sample_preproc['image'].shape} and {val_sample_preproc['mask'].shape}"
     val_image = val_sample_preproc['image']
     mask = val_sample_preproc['mask']
 

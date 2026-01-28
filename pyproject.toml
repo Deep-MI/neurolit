@@ -93,6 +93,7 @@ full = [
 run-lit = "LIT.cli:run_lit"
 inpaint-image = "LIT.inpaint_image:main"
 lit-download-models = "LIT.utils.download_checkpoints:main"
+lesion-postprocessing = "LIT.scripts.lesion_postprocessing:main"
 
 [project.urls]
 homepage = "https://github.com/Deep-MI/LIT"
@@ -118,7 +119,7 @@ match-dir = '^LIT.*'
 add_ignore = 'D100,D104,D107'
 
 [tool.ruff]
-line-length = 120
+line-length = 150
 target-version = "py310"
 extend-exclude = [
     "build",
@@ -126,6 +127,7 @@ extend-exclude = [
 ]
 
 [tool.ruff.lint]
+ignore = ["E701", "E731"]
 select = [
     "E",   # pycodestyle
     "F",   # Pyflakes

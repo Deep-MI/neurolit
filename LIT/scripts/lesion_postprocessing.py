@@ -7,13 +7,17 @@ Handles multiple segmentation files and segstats calls dynamically.
 """
 
 import argparse
-import logging
 import json
+import logging
 import os
-import sys
 import subprocess
+import sys
+import warnings
 from pathlib import Path
-from typing import Optional, List, Dict, Any, Tuple
+from typing import Any
+
+# Suppress the cuda.cudart deprecation warning (triggered by torch/onnxruntime)
+warnings.filterwarnings("ignore", category=FutureWarning, module="cuda.cudart")
 
 from LIT.postprocessing.lesion_to_segmentation import main as lesion_to_segmentation_main
 from LIT.postprocessing.lesion_to_surface import main as lesion_to_surface_main
@@ -67,7 +71,7 @@ Note: Either FastSurfer or FreeSurfer is required unless --skip-segstats is used
     return parser
 
 
-def load_config(config_path: Path) -> Dict[str, Any]:
+def load_config(config_path: Path) -> dict[str, Any]:
     """Load configuration from a JSON file.
 
     Parameters
@@ -84,11 +88,11 @@ def load_config(config_path: Path) -> Dict[str, Any]:
         logger.error(f"Configuration file not found: {config_path}")
         sys.exit(1)
     
-    with open(config_path, 'r') as f:
+    with open(config_path) as f:
         return json.load(f)
 
 
-def validate_segstats_installation() -> tuple[Optional[Path], bool]:
+def validate_segstats_installation() -> tuple[Path | None, bool]:
     """Validate segstats installation and select the appropriate tool.
 
     Returns
@@ -168,7 +172,7 @@ def validate_segstats_installation() -> tuple[Optional[Path], bool]:
     sys.exit(1)
 
 
-def check_required_files(subjects_dir: Path, subject_id: str, config: Dict[str, Any]) -> None:
+def check_required_files(subjects_dir: Path, subject_id: str, config: dict[str, Any]) -> None:
     """Verify that the essential files exist for a subject before processing.
 
     Parameters
@@ -183,7 +187,7 @@ def check_required_files(subjects_dir: Path, subject_id: str, config: Dict[str, 
     logger.info("Checking for required input files...")
     
     required_files = [
-        subjects_dir / subject_id / "inpainting_volumes" / "inpainting_mask.nii.gz",
+        subjects_dir / subject_id / "inpainting" / "inpainting_mask.nii.gz",
         subjects_dir / subject_id / "mri" / "orig_nu.mgz",
         subjects_dir / subject_id / "mri" / "mask.mgz",
     ]
@@ -206,7 +210,7 @@ def check_required_files(subjects_dir: Path, subject_id: str, config: Dict[str, 
     logger.info("All critical files found. Proceeding with processing...")
 
 
-def run_command(cmd: List[str], description: str, env: Optional[Dict[str, str]] = None,
+def run_command(cmd: list[str], description: str, env: dict[str, str] | None = None,
                 fail_ok: bool = False) -> bool:
     """Run a subprocess command and log its output.
 
@@ -258,8 +262,8 @@ def run_command(cmd: List[str], description: str, env: Optional[Dict[str, str]] 
 
 def map_lesion_to_segmentation(subjects_dir: Path, subject_id: str,
                                 input_file: str, output_file: str, 
-                                report_file: Optional[str] = None, 
-                                fs_home: Optional[Path] = None) -> bool:
+                                report_file: str | None = None, 
+                                fs_home: Path | None = None) -> bool:
     """Map lesion labels into a segmentation file via the lesion_to_segmentation script.
 
     Parameters
@@ -284,7 +288,7 @@ def map_lesion_to_segmentation(subjects_dir: Path, subject_id: str,
     """
     input_path = subjects_dir / subject_id / input_file
     output_path = subjects_dir / subject_id / output_file
-    mask_path = subjects_dir / subject_id / "inpainting_volumes" / "inpainting_mask.nii.gz"
+    mask_path = subjects_dir / subject_id / "inpainting" / "inpainting_mask.nii.gz"
     
     report_path = subjects_dir / subject_id / report_file if report_file else None
     lut_path = _find_lut_file(fs_home) if report_file else None
@@ -299,9 +303,9 @@ def map_lesion_to_segmentation(subjects_dir: Path, subject_id: str,
     return True
 
 
-def build_segstats_command(fastsurfer_path: Optional[Path], subjects_dir: Path, subject_id: str,
-                            config: Dict[str, Any], fs_home: Optional[Path] = None,
-                            python_cmd: str = 'python3', use_mri_segstats: bool = False) -> List[str]:
+def build_segstats_command(fastsurfer_path: Path | None, subjects_dir: Path, subject_id: str,
+                            config: dict[str, Any], fs_home: Path | None = None,
+                            python_cmd: str = 'python3', use_mri_segstats: bool = False) -> list[str]:
     """Build segstats command from the provided configuration.
 
     Parameters
@@ -391,7 +395,12 @@ def build_segstats_command(fastsurfer_path: Optional[Path], subjects_dir: Path, 
                     break
             if not lut_found:
                 # Use FreeSurfer home as fallback even if file doesn't exist (let segstats error)
-                fallback = fs_home or (Path(os.environ.get('FREESURFER_HOME')) if os.environ.get('FREESURFER_HOME') else Path('/usr/local/freesurfer'))
+                if fs_home:
+                    fallback = fs_home
+                elif os.environ.get('FREESURFER_HOME'):
+                    fallback = Path(os.environ.get('FREESURFER_HOME'))
+                else:
+                    fallback = Path('/usr/local/freesurfer')
                 lut_path = fallback / config['lut']
         else:
             # For relative LUTs, use FastSurfer's config directory
@@ -424,8 +433,8 @@ def build_segstats_command(fastsurfer_path: Optional[Path], subjects_dir: Path, 
     return cmd
 
 
-def run_segstats(fastsurfer_path: Optional[Path], subjects_dir: Path, subject_id: str,
-                       config: Dict[str, Any], fs_home: Optional[Path] = None,
+def run_segstats(fastsurfer_path: Path | None, subjects_dir: Path, subject_id: str,
+                       config: dict[str, Any], fs_home: Path | None = None,
                        use_mri_segstats: bool = False, python_cmd: str = 'python3') -> bool:
     """Invoke segstats with the configured arguments.
 
@@ -472,7 +481,7 @@ def run_segstats(fastsurfer_path: Optional[Path], subjects_dir: Path, subject_id
 
 
 def build_surfstats_command(subjects_dir: Path, subject_id: str, hemisphere: str, 
-                            config: Dict[str, Any]) -> List[str]:
+                            config: dict[str, Any]) -> list[str]:
     """Build mris_anatomical_stats command from configuration."""
     cmd = ["mris_anatomical_stats"]
     subj_path = subjects_dir / subject_id
@@ -502,7 +511,7 @@ def build_surfstats_command(subjects_dir: Path, subject_id: str, hemisphere: str
 
 
 def run_surfstats(subjects_dir: Path, subject_id: str, hemisphere: str, 
-                  config: Dict[str, Any]) -> bool:
+                  config: dict[str, Any]) -> bool:
     """Run surface-based anatomical statistics."""
     cmd = build_surfstats_command(subjects_dir, subject_id, hemisphere, config)
     env = os.environ.copy()
@@ -510,7 +519,7 @@ def run_surfstats(subjects_dir: Path, subject_id: str, hemisphere: str,
     return run_command(cmd, f"Running mris_anatomical_stats: {hemisphere}.{config['name']}", env=env, fail_ok=True)
 
 
-def _find_lut_file(fs_home: Optional[Path]) -> Optional[Path]:
+def _find_lut_file(fs_home: Path | None) -> Path | None:
     """Return the FreeSurferColorLUT.txt path if available."""
     candidates = []
     if fs_home:
@@ -526,8 +535,8 @@ def _find_lut_file(fs_home: Optional[Path]) -> Optional[Path]:
 
 def surface_masking(lit_path: Path, subjects_dir: Path, subject_id: str, 
                     hemisphere: str, input_file: str, output_file: str,
-                    report_file: Optional[str] = None,
-                    output_ctab: Optional[str] = None) -> bool:
+                    report_file: str | None = None,
+                    output_ctab: str | None = None) -> bool:
     """Apply surface masking for the hemisphere based on lesion annotations.
 
     Parameters
@@ -555,10 +564,10 @@ def surface_masking(lit_path: Path, subjects_dir: Path, subject_id: str,
         Always ``True`` (kept for backwards compatibility).
     """
     insurf = str(subjects_dir / subject_id / "surf" / f"{hemisphere}.pial")
-    inseg = str(subjects_dir / subject_id / "inpainting_volumes" / "inpainting_mask.nii.gz")
+    inseg = str(subjects_dir / subject_id / "inpainting" / "inpainting_mask.nii.gz")
     incort = str(subjects_dir / subject_id / "label" / f"{hemisphere}.cortex.label")
-    surflut = str(lit_path / "LIT" / "postprocessing" / "DKTatlaslookup_lesion.txt")
-    seglut = str(lit_path / "LIT" / "postprocessing" / "hemi.DKTatlaslookup_lesion.txt")
+    surflut = str(lit_path / "postprocessing" / "DKTatlaslookup_lesion.txt")
+    seglut = str(lit_path / "postprocessing" / "hemi.DKTatlaslookup_lesion.txt")
     
     out_annot = str(subjects_dir / subject_id / output_file.format(hemi=hemisphere))
     to_annot = str(subjects_dir / subject_id / input_file.format(hemi=hemisphere))
@@ -584,16 +593,16 @@ def surface_masking(lit_path: Path, subjects_dir: Path, subject_id: str,
     return True
 
 
-def _format_inputs(inputs: List[str]) -> str:
+def _format_inputs(inputs: list[str]) -> str:
     return " + ".join(inputs)
 
 
-def build_stats_overview(subject_id: str, config: Dict[str, Any], surf_config: Dict[str, Any]) -> List[str]:
+def build_stats_overview(subject_id: str, config: dict[str, Any], surf_config: dict[str, Any]) -> list[str]:
     """Build human-readable mapping of inputs to output stats files."""
-    overview: List[str] = []
+    overview: list[str] = []
 
     for segstats_call in config.get("segstats_calls", []):
-        inputs: List[str] = []
+        inputs: list[str] = []
         if "segfile" in segstats_call:
             inputs.append(segstats_call["segfile"])
         if "in_file" in segstats_call:
@@ -634,8 +643,8 @@ def build_stats_overview(subject_id: str, config: Dict[str, Any], surf_config: D
 
 
 def generate_lesion_impact_summary(subjects_dir: Path, subject_id: str, 
-                                   mapping_reports: List[Tuple[str, str]], 
-                                   surface_reports: List[Tuple[str, str]]) -> Optional[Path]:
+                                   mapping_reports: list[tuple[str, str]], 
+                                   surface_reports: list[tuple[str, str]]) -> Path | None:
     """Generate a machine-parseable YAML report of lesion impact.
 
     Parameters
@@ -666,11 +675,11 @@ def generate_lesion_impact_summary(subjects_dir: Path, subject_id: str,
         "affected_labels": []
     }
 
-    def parse_report(report_path: Path, is_surface: bool = False, hemi: Optional[str] = None):
+    def parse_report(report_path: Path, is_surface: bool = False, hemi: str | None = None):
         if not report_path.exists():
             return
         
-        with open(report_path, 'r') as f:
+        with open(report_path) as f:
             lines = f.readlines()
             
         current_cat = None
@@ -730,20 +739,20 @@ def generate_lesion_impact_summary(subjects_dir: Path, subject_id: str,
         "",
         "# General involvement status per hemisphere",
         "hemisphere_impact:",
-        f"  # True if any cortical or subcortical structure in the left hemisphere is affected",
+        "  # True if any cortical or subcortical structure in the left hemisphere is affected",
         f"  left_hemisphere_affected: {str(impact['lh_cortical'] or impact['lh_subcortical']).lower()}",
-        f"  # True if any cortical or subcortical structure in the right hemisphere is affected",
+        "  # True if any cortical or subcortical structure in the right hemisphere is affected",
         f"  right_hemisphere_affected: {str(impact['rh_cortical'] or impact['rh_subcortical']).lower()}",
         "",
         "# Categorized breakdown of affected regions",
         "detailed_involvement:",
-        f"  # Involvement of left hemisphere cortical structures (from surface/volumetric annotations)",
+        "  # Involvement of left hemisphere cortical structures (from surface/volumetric annotations)",
         f"  left_cortical_affected: {str(impact['lh_cortical']).lower()}",
-        f"  # Involvement of right hemisphere cortical structures (from surface/volumetric annotations)",
+        "  # Involvement of right hemisphere cortical structures (from surface/volumetric annotations)",
         f"  right_cortical_affected: {str(impact['rh_cortical']).lower()}",
-        f"  # Involvement of left hemisphere subcortical structures (from volumetric segmentation)",
+        "  # Involvement of left hemisphere subcortical structures (from volumetric segmentation)",
         f"  left_subcortical_affected: {str(impact['lh_subcortical']).lower()}",
-        f"  # Involvement of right hemisphere subcortical structures (from volumetric segmentation)",
+        "  # Involvement of right hemisphere subcortical structures (from volumetric segmentation)",
         f"  right_subcortical_affected: {str(impact['rh_subcortical']).lower()}",
         "",
         "# List of structures showing spatial overlap with the lesion mask",
@@ -782,17 +791,22 @@ def main():
     subject_id = args.subject_id
     
     # Load configurations
-    config_path = Path(args.config) if args.config else Path(__file__).parent / "segstats_config.json"
+    config_path = Path(args.config) if args.config else Path(__file__).parent.parent / "postprocessing" / "segstats_config.json"
     config = load_config(config_path)
     
-    surf_config_path = Path(args.surf_config) if args.surf_config else Path(__file__).parent / "surfstats_config.json"
+    surf_config_path = Path(args.surf_config) if args.surf_config else Path(__file__).parent.parent / "postprocessing" / "surfstats_config.json"
     surf_config = load_config(surf_config_path) if surf_config_path.exists() else {"surfstats_calls": []}
     
     # Get FreeSurfer home if provided
-    fs_home = Path(args.freesurfer_home) if args.freesurfer_home else Path(os.environ.get('FREESURFER_HOME')) if os.environ.get('FREESURFER_HOME') else None
+    if args.freesurfer_home:
+        fs_home = Path(args.freesurfer_home)
+    elif os.environ.get('FREESURFER_HOME'):
+        fs_home = Path(os.environ.get('FREESURFER_HOME'))
+    else:
+        fs_home = None
     
     # Auto-detect LIT path
-    lit_path = Path(__file__).parent
+    lit_path = Path(__file__).parent.parent
     
     # Validate segstats installation (unless skipping segstats)
     if not args.skip_segstats:
@@ -819,7 +833,7 @@ def main():
     logger.info("STEP 1: Mapping lesions to segmentation files")
     logger.info("=" * 60)
     
-    mapping_reports: List[Tuple[str, str]] = []
+    mapping_reports: list[tuple[str, str]] = []
     for seg_map in config.get('segmentation_mappings', []):
         if seg_map.get('map_lesion', False):
             logger.info(f"Processing: {seg_map['name']}")
@@ -830,7 +844,7 @@ def main():
                 mapping_reports.append((seg_map['output_file'], report_file))
     
     # Run all segstats calls (unless skipped)
-    surface_segstats_calls: List[Dict[str, Any]] = []
+    surface_segstats_calls: list[dict[str, Any]] = []
     if not args.skip_segstats:
         logger.info("=" * 60)
         logger.info("STEP 2: Running segstats for all configurations")
@@ -893,7 +907,7 @@ def main():
         logger.info("=" * 60)
     
     # Run surface masking (before surface-based statistics)
-    surface_reports: List[Tuple[str, str]] = []
+    surface_reports: list[tuple[str, str]] = []
     if not args.skip_surface_masking:
         logger.info("=" * 60)
         logger.info("STEP 3: Running surface masking")

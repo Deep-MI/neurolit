@@ -1,7 +1,9 @@
-from typing import List, Tuple, Dict, Any
+from typing import Any
+
 import monai
-from monai import transforms
 import torch
+from monai import transforms
+
 
 class Subsampled(transforms.MapTransform):
     """Transform that subsamples input data and pads to a specified size.
@@ -12,13 +14,13 @@ class Subsampled(transforms.MapTransform):
         size_reduction (int, optional): Factor by which to subsample. Defaults to 2.
     """
 
-    def __init__(self, keys: List[str], spatial_size: Tuple[int, int, int], size_reduction: int = 2) -> None:
+    def __init__(self, keys: list[str], spatial_size: tuple[int, int, int], size_reduction: int = 2) -> None:
         super().__init__(keys)
         self.make_meta_tensor = lambda x,y : monai.data.MetaTensor(x,meta=y)
         self.image_shape = spatial_size
         self.size_reduction = size_reduction
 
-    def _pad_image(self, img: torch.Tensor, max_out: Tuple[int, int, int]) -> torch.Tensor:
+    def _pad_image(self, img: torch.Tensor, max_out: tuple[int, int, int]) -> torch.Tensor:
         # Get correct size = max along shape
         assert(len(max_out) == 3), 'max_out must be 3D'
         c, h, w, d = img.shape
@@ -29,7 +31,7 @@ class Subsampled(transforms.MapTransform):
         padded_img = self.make_meta_tensor(padded_img, img.meta)
         return padded_img
 
-    def __call__(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def __call__(self, data: dict[str, Any]) -> dict[str, Any]:
         #assert(data.shape[1:]//2 <= self.image_shape), 'image_shape must be at least half of data.shape[1:]'
         for key in data.keys():
             if key in self.keys:
@@ -53,11 +55,11 @@ class ScaleAugmentation(transforms.MapTransform):
         scale_range (tuple): Range of possible scale factors (min, max)
     """
 
-    def __init__(self, keys: List[str], scale_range: Tuple[float, float]) -> None:
+    def __init__(self, keys: list[str], scale_range: tuple[float, float]) -> None:
         super().__init__(keys)
         self.scale_range = scale_range
 
-    def __call__(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def __call__(self, data: dict[str, Any]) -> dict[str, Any]:
         for key in data.keys():
             if key in self.keys:
                 s = torch.rand(1) * (self.scale_range[1] - self.scale_range[0]) + self.scale_range[0]
@@ -71,5 +73,5 @@ class Identityd(transforms.MapTransform):
     Used as a placeholder when no transform is needed.
     """
     
-    def __call__(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def __call__(self, data: dict[str, Any]) -> dict[str, Any]:
         return data

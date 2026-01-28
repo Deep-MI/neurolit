@@ -207,7 +207,7 @@ fastsurfer_command="$fastsurfer_command --t1 ${MASK_IMAGE:+$INPAINTED_IMG}"
 fastsurfer_command="$fastsurfer_command ${POSITIONAL_ARGS[*]}"
 
 # Set PYTHONPATH
-export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}$FASTSURFER_HOME/FastSurferCNN"
+export PYTHONPATH="$PROJ_DIR:${PYTHONPATH:+$PYTHONPATH:}$FASTSURFER_HOME/FastSurferCNN"
 
 # Run FastSurfer and post-processing
 if [ ! -f "$OUT_DIR/$S_DIR/scripts/recon-surf.done" ]; then
@@ -219,37 +219,8 @@ fi
 
 # Handle post-processing
 if [ -f "$MASK_IMAGE" ]; then
-  mask_image_fastsurfer_folder="$OUT_DIR/$S_DIR/inpainting_volumes/inpainting_mask.nii.gz"
-  
-  for seg_file in "aparc+aseg.mgz" "aparc.DKTatlas+aseg.deep.mgz"; do
-    if [ -f "$OUT_DIR/$S_DIR/mri/$seg_file" ]; then
-      mv "$OUT_DIR/$S_DIR/mri/$seg_file" "$OUT_DIR/$S_DIR/mri/${seg_file%.mgz}_inpainted.mgz"
-      python lit/postprocessing/lesion_to_segmentation.py \
-        -i "$OUT_DIR/$S_DIR/mri/${seg_file%.mgz}_inpainted.mgz" \
-        -m "$mask_image_fastsurfer_folder" \
-        -o "$OUT_DIR/$S_DIR/mri/$seg_file"
-    fi
-  done
-
-  # Set directory paths
-  mdir="$OUT_DIR/$S_DIR/mri"
-  ldir="$OUT_DIR/$S_DIR/label"
-  sdir="$OUT_DIR/$S_DIR/surf"
-  inpaintdir="$OUT_DIR/$S_DIR/inpainting_volumes"
-  
-  # TODO: Might want to include other surfaces
-  # Process left and right hemispheres
-  for hemi in "lh" "rh"; do
-    python lit/postprocessing/lesion_to_surface.py \
-      --inseg "$inpaintdir/inpainting_mask.nii.gz" \
-      --insurf "$sdir/$hemi.white.preaparc" \
-      --incort "$ldir/$hemi.cortex.label" \
-      --outaparc "$ldir/$hemi.lesion.label" \
-      --surflut "lit/postprocessing/DKTatlaslookup_lesion.txt" \
-      --seglut "lit/postprocessing/hemi.DKTatlaslookup_lesion.txt" \
-      --projmm 0 \
-      --radius 0 \
-      --single_label \
-      --to_annot "$ldir/$hemi.aparc.DKTatlas.annot"
-  done
+  echo "Running lesion postprocessing..."
+  python3 "$SCRIPT_DIR/lesion_postprocessing.py" \
+    -sid "$S_DIR" \
+    -sd "$OUT_DIR"
 fi

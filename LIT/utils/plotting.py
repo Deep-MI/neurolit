@@ -13,17 +13,14 @@
 # limitations under the License.
 
 import os
-from typing import Union, List, Any
+from typing import Any
 
-import torch
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import torch
 
 
-
-
-
-def plot_batch(image_batch: torch.Tensor, image_path: str, slice_cut: Union[None, List[int]] = None) -> None:
+def plot_batch(image_batch: torch.Tensor, image_path: str, slice_cut: None | list[int] = None) -> None:
     """Plot a batch of 2D or 3D images with different slice views.
     
     Args:
@@ -58,7 +55,7 @@ def plot_batch(image_batch: torch.Tensor, image_path: str, slice_cut: Union[None
     if BATCH_SIZE == 1:
         axs = np.expand_dims(axs, axis=1)
 
-    for s, ax in zip(slices, axs):
+    for s, ax in zip(slices, axs, strict=True):
         for i in range(BATCH_SIZE):
             ax[i].imshow(image_batch[s[i]].detach().cpu(), vmin=0, vmax=1, cmap="gray")
             #plt.axis("off")
@@ -69,8 +66,8 @@ def plot_batch(image_batch: torch.Tensor, image_path: str, slice_cut: Union[None
     plt.savefig(image_path, dpi=300, bbox_inches='tight')
     plt.close()
 
-def plot_learning_curve(n_epochs: int, epoch_loss_list: List[float], 
-                       val_epoch_loss_list: List[float], args: Any, 
+def plot_learning_curve(n_epochs: int, epoch_loss_list: list[float], 
+                       val_epoch_loss_list: list[float], args: Any, 
                        VAL_INTERVAL: int) -> None:
     """Plot training and validation learning curves.
     

@@ -18,16 +18,14 @@
 
 # IMPORTS
 import optparse
-from typing import Set, Tuple
 
-import numpy as np
-import nibabel.freesurfer.io as fs
 import nibabel as nib
+import nibabel.freesurfer.io as fs
+import numpy as np
+import numpy.typing as npt
+from lapy import TriaMesh
 from scipy import sparse
 from scipy.ndimage import binary_dilation
-from lapy import TriaMesh
-
-import numpy.typing as npt
 
 from LIT.utils.logging import get_logger
 
@@ -54,7 +52,8 @@ h_incort = "path to input cortex label mask"
 h_insurf = "path to input surface"
 h_out_annot = "path to output annot"
 h_surflut = "FreeSurfer look-up-table for values on surface"
-h_seglut = "Look-up-table for values in segmentation image (rows need to correspond to surflut). Label ID is the value of the label in the binarysegmentation image."
+h_seglut = "Look-up-table for values in segmentation image (rows need to correspond to surflut). " \
+                                "Label ID is the value of the label in the binarysegmentation image."
 h_projmm = "Sample along normal at projmm distance (in mm), default 0"
 h_radius = "Search around sample location at radius (in mm) for label if 'unknown', default None"
 h_to_annot = "Replace annotations in existing annot file."
@@ -91,7 +90,7 @@ def get_surface_anatomy_info(
     existing_labels: npt.NDArray[np.integer],
     target_mask: npt.NDArray[np.bool_],
     adjM: sparse.csr_matrix
-) -> Tuple[Set[int], Set[int], Set[int]]:
+) -> tuple[set[int], set[int], set[int]]:
     """
     Categorize surface labels based on their relationship with the lesion mask.
 
@@ -140,9 +139,9 @@ def get_surface_anatomy_info(
 
 def write_surface_report(
     output_path: str,
-    replaced: Set[int],
-    reduced: Set[int],
-    adjacent: Set[int],
+    replaced: set[int],
+    reduced: set[int],
+    adjacent: set[int],
     names: list
 ):
     """
@@ -202,7 +201,7 @@ def mode_filter(
         adjM: sparse.csr_matrix,
         labels: npt.NDArray[np.integer],
         fillonlylabel = None,
-        novote: npt.ArrayLike = []
+        novote: npt.ArrayLike | None = None
 ) -> npt.NDArray[np.integer]:
     """
     Apply mode filter (smoothing) to integer labels on mesh vertices.
@@ -219,13 +218,15 @@ def mode_filter(
     fillonlylabel : int
         Label to fill exclusively. Defaults to None to smooth all labels.
     novote : npt.ArrayLike
-        Label ids that should not vote. Defaults to [].
+        Label ids that should not vote. Defaults to None ([]).
 
     Returns
     -------
     labels_new : npt.NDArray[np.integer]
         New smoothed labels.
     """
+    if novote is None:
+        novote = []
     # make sure labels lengths equals adjM dimension
     n = labels.shape[0]
     if n != adjM.shape[0] or n != adjM.shape[1]:
@@ -375,7 +376,7 @@ def sample_nearest_nonzero(img, vox_coords, radius=3.0):
     """
     # check for isotropic voxels 
     voxsize = img.header.get_zooms()
-    logger.info("Check isotropic vox sizes: {}".format(voxsize))
+    logger.info(f"Check isotropic vox sizes: {voxsize}")
     assert (np.max(np.abs(voxsize - voxsize[0])) < 0.001), 'Voxels not isotropic!'
     data = np.asarray(img.dataobj)
     
@@ -510,7 +511,7 @@ def sample_img(surf, img, cortex=None, projmm=0.0, radius=None):
         return samplesfull
     # here we need to do the hard work of searching in a windows
     # for non-zero samples
-    logger.info("sample_img: found {} zero samples, searching radius ...".format(zeros.size))
+    logger.info(f"sample_img: found {zeros.size} zero samples, searching radius ...")
     z_nn = x_nn[zeros]
     z_samples = sample_nearest_nonzero(img, z_nn, radius=radius)
     samples_nn[zeros] = z_samples

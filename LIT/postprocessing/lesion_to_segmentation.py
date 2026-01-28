@@ -16,19 +16,19 @@
 # limitations under the License.
 
 import argparse
+from pathlib import Path
+
 import nibabel as nib
 import nibabel.processing
 import numpy as np
 from scipy import ndimage
-from typing import Dict, Set, Optional, Tuple
-from pathlib import Path
 
 from LIT.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
 
-def read_lut(lut_path: str) -> Dict[int, str]:
+def read_lut(lut_path: str) -> dict[int, str]:
     """
     Read FreeSurfer lookup table.
 
@@ -44,7 +44,7 @@ def read_lut(lut_path: str) -> Dict[int, str]:
     """
     lut_dict = {}
 
-    with open(lut_path, 'r') as f:
+    with open(lut_path) as f:
         for line in f:
             line = line.strip()
             # Skip comments and empty lines
@@ -63,7 +63,7 @@ def read_lut(lut_path: str) -> Dict[int, str]:
     return lut_dict
 
 
-def get_anatomy_info(orig_data: np.ndarray, target_mask: np.ndarray) -> Tuple[Set[int], Set[int], Set[int]]:
+def get_anatomy_info(orig_data: np.ndarray, target_mask: np.ndarray) -> tuple[set[int], set[int], set[int]]:
     """
     Categorize labels from original segmentation based on their relationship with the lesion mask.
 
@@ -107,10 +107,10 @@ def get_anatomy_info(orig_data: np.ndarray, target_mask: np.ndarray) -> Tuple[Se
 
 def write_report(
     output_path: str,
-    replaced: Set[int],
-    reduced: Set[int],
-    adjacent: Set[int],
-    lut_dict: Optional[Dict[int, str]] = None
+    replaced: set[int],
+    reduced: set[int],
+    adjacent: set[int],
+    lut_dict: dict[int, str] | None = None
 ):
     """
     Write anatomy report to text file.
@@ -202,10 +202,22 @@ def mask_lesion(to_mask_path, mask_path, report_path=None, lut_path=None):
         return zeros_img
 
     #mask_volume
-    assert(resampled_tumor_mask.shape == orig_img.shape), 'Shape mismatch between tumor mask and orig image ' + str(resampled_tumor_mask.shape) + ' vs ' + str(orig_img.shape)
-    assert((resampled_tumor_mask.affine == orig_img.affine).all()), 'Affine mismatch between tumor mask and orig image ' + str(resampled_tumor_mask.affine) + ' vs ' + str(orig_img.affine)
-    #assert((np.unique(resampled_tumor_mask.get_fdata()) == [0,1]).all()), 'Tumor mask should be binary, but has values: ' + str(np.unique(resampled_tumor_mask.get_fdata()))
-    #masked_orig = orig_img.get_fdata() * (resampled_tumor_mask.get_fdata() == 0).astype(int) # invert and mask
+    assert (
+        resampled_tumor_mask.shape == orig_img.shape
+    ), (
+        'Shape mismatch between tumor mask and orig image '
+        + str(resampled_tumor_mask.shape)
+        + ' vs '
+        + str(orig_img.shape)
+    )
+    assert (
+        np.allclose(resampled_tumor_mask.affine, orig_img.affine)
+    ), (
+        'Affine mismatch between tumor mask and orig image '
+        + str(resampled_tumor_mask.affine)
+        + ' vs '
+        + str(orig_img.affine)
+    )
     
     # Load data with np.asanyarray (preserves dtype) and modify
     # Pattern from FastSurfer's paint_cc_into_pred.py

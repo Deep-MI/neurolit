@@ -14,12 +14,11 @@
 
 
 # IMPORTS
-from typing import Optional, Type, Tuple, Union
 import argparse
 import sys
 
-import numpy as np
 import nibabel as nib
+import numpy as np
 
 from LIT.utils.logging import get_logger
 
@@ -135,9 +134,9 @@ def map_image(
         img: nib.analyze.SpatialImage,
         out_affine: np.ndarray,
         out_shape: np.ndarray,
-        ras2ras: Optional[np.ndarray] = None,
+        ras2ras: np.ndarray | None = None,
         order: int = 1,
-        dtype: Optional[Type] = None
+        dtype: type | None = None
 ) -> np.ndarray:
     """Map image to new voxel space (RAS orientation).
 
@@ -162,8 +161,8 @@ def map_image(
         mapped image data array
     
     """
-    from scipy.ndimage import affine_transform
     from numpy.linalg import inv
+    from scipy.ndimage import affine_transform
 
     if ras2ras is None:
         ras2ras = np.eye(4)
@@ -196,7 +195,7 @@ def getscale(
         dst_max: float,
         f_low: float = 0.0,
         f_high: float = 0.999
-) -> Tuple[float, float]:
+) -> tuple[float, float]:
     """Get offset and scale of image intensities to robustly rescale to range dst_min..dst_max.
 
     Equivalent to how mri_convert conforms images.
@@ -433,8 +432,8 @@ def conform(
         img: nib.analyze.SpatialImage,
         order: int = 1,
         conform_vox_size = 1.0,
-        dtype: Optional[Type] = None,
-        conform_to_1mm_threshold: Optional[float] = None
+        dtype: type | None = None,
+        conform_to_1mm_threshold: float | None = None
 ) -> nib.MGHImage:
     """Python version of mri_convert -c.
 
@@ -549,9 +548,9 @@ def is_conform(
         conform_vox_size = 1.0,
         eps: float = 1e-06,
         check_dtype: bool = True,
-        dtype: Optional[Type] = None,
+        dtype: type | None = None,
         verbose: bool = True,
-        conform_to_1mm_threshold: Optional[float] = None
+        conform_to_1mm_threshold: float | None = None
 ) -> bool:
     """Check if an image is already conformed or not.
 
@@ -605,14 +604,14 @@ def is_conform(
 
     criteria = {}
     # check dimensions
-    criteria["Dimensions {0}x{0}x{0}".format(conformed_img_size)] = all(
+    criteria[f"Dimensions {conformed_img_size}x{conformed_img_size}x{conformed_img_size}"] = all(
         s == conformed_img_size for s in ishape[:3]
     )
 
     # check voxel size
     izoom = np.array(img.header.get_zooms())
     is_correct_vox_size = np.max(np.abs(izoom - conformed_vox_size) < eps)
-    criteria["Voxel Size {0}x{0}x{0}".format(conformed_vox_size)] = is_correct_vox_size
+    criteria[f"Voxel Size {conformed_vox_size}x{conformed_vox_size}x{conformed_vox_size}"] = is_correct_vox_size
 
     # check orientation LIA
     LIA_affine = np.array([[-1, 0, 0], [0, 0, 1], [0, -1, 0]])
@@ -648,8 +647,8 @@ def is_conform(
 def get_conformed_vox_img_size(
         img: nib.analyze.SpatialImage,
         conform_vox_size,
-        conform_to_1mm_threshold: Optional[float] = None
-) -> Tuple[float, int]:
+        conform_to_1mm_threshold: float | None = None
+) -> tuple[float, int]:
     """Extract the voxel size and the image size.
 
     This function only needs the header (not the data).
@@ -689,7 +688,7 @@ def get_conformed_vox_img_size(
 
 
 def check_affine_in_nifti(
-        img: Union[nib.Nifti1Image, nib.Nifti2Image],
+        img: nib.Nifti1Image | nib.Nifti2Image,
 ) -> bool:
     """Check the affine in nifti Image.
 
@@ -724,13 +723,11 @@ def check_affine_in_nifti(
     ):
         message = (
             "#############################################################"
-            "\nWARNING: qform and sform transform are not identical!\n sform-transform:\n{}\n "
-            "qform-transform:\n{}\n"
+            f"\nWARNING: qform and sform transform are not identical!\n sform-transform:\n{img.header.get_sform()}\n "
+            f"qform-transform:\n{img.header.get_qform()}\n"
             "You might want to check your Nifti-header for inconsistencies!"
             "\n!!! Affine from qform transform will now be used !!!\n"
-            "#############################################################".format(
-                img.header.get_sform(), img.header.get_qform()
-            )
+            "#############################################################"
         )
         # Set sform with qform affine and update best affine in header
         img.set_sform(img.get_qform())

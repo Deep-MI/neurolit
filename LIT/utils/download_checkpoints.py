@@ -13,9 +13,11 @@
 # limitations under the License.
 
 from pathlib import Path
+
 import requests
-from tqdm import tqdm
 from platformdirs import user_data_dir
+from tqdm import tqdm
+
 
 def download_checkpoint(
         checkpoint_name: str,

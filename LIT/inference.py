@@ -14,7 +14,7 @@
 
 
 import math
-from typing import Callable
+from collections.abc import Callable
 
 import monai
 import numpy as np
@@ -27,7 +27,7 @@ from LIT.utils.logging import get_logger
 logger = get_logger(__name__)
 
 
-class InpaintingInferer():
+class InpaintingInferer:
 
     def __init__(self, inference_steps, scheduler, diffusion_model):
         self.scheduler = scheduler
@@ -50,7 +50,7 @@ class InpaintingInferer():
             args: optional args to be passed to ``network``.
             kwargs: optional keyword args to be passed to ``network``.
         """
-        assert(set(np.unique(mask)) == set((0,1))), 'mask is not binary but has values {}'.format(np.unique(mask))
+        assert(set(np.unique(mask)) == set((0,1))), f'mask is not binary but has values {np.unique(mask)}'
         assert(mask.device == image_masked.device), 'mask and input must be on the same device'
         assert(image_masked.device == self.model.device), 'model and inputs must be on the same device'
         device = image_masked.device
@@ -228,8 +228,8 @@ class SliceWiseInpaintingInferer(InpaintingInferer):
             
             image_inpainted_slice = super().__call__(masks_batch, slices_batch, 
                                                     num_resample_steps, num_resample_jumps, 
-                                                    get_intermediates=get_intermediates, scale_factor=scale_factor, 
-                                                    *args, **kwargs)
+                                                    *args, get_intermediates=get_intermediates, scale_factor=scale_factor, 
+                                                    **kwargs)
             
             
 
@@ -281,7 +281,9 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
                     mask == 0, image_masked, torch.randn(image_masked.shape, device=image_masked.device)
         )
 
-        #plot_batch(image_inpainted.unsqueeze(0), '/groups/ag-reuter/projects/fastsurfer-tumor/monai_generative/diffusion_inpainting/experiments/inference_viewagg/images/initial_noised.png', slice_cut=[100, 84, 140])
+        #plot_batch(image_inpainted.unsqueeze(0), 
+        # '/groups/ag-reuter/projects/fastsurfer-tumor/monai_generative/diffusion_inpainting/experiments/inference_viewagg/images/initial_noised.png',
+        # slice_cut=[100, 84, 140])
 
         get_batch = lambda x, i: x[i*batch_size:(i+1)*batch_size]
         intermediates = []
@@ -295,7 +297,8 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
             batch_outputs = []
 
             current_plane = self.dimension_to_plane[int(t%3)] # alternate between sagittal, axial, coronal
-            self.model = self.diffusion_model_dict[current_plane] #.eval() # TODO: this may not be needed and might cause overhead (same for other eval calls)
+            # TODO: this may not be needed and might cause overhead (same for other eval calls)
+            self.model = self.diffusion_model_dict[current_plane] #.eval() 
             batched_slices, batched_masks, batch_slice_indices, _ = inference_slices[current_plane]
 
             
@@ -314,8 +317,6 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
             # get checked image area (for logging)
             start_idx = batch_slice_indices[0] - self.slice_thickness // 2
             end_idx = batch_slice_indices[-1] + self.slice_thickness // 2 + 1
-
-            # assert(len(batched_slices)*self.slice_thickness == end_idx - start_idx), 'batched_slices and image_inpainted_slice have different lengths'
 
             for i in range(math.ceil(len(batched_slices) / batch_size)): # iterate over batches
                 # get current batch
@@ -434,7 +435,7 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
         if mask.dtype == torch.bool:
             mask = mask.int()
         else:
-            assert(set(np.unique(mask)) == set((0,1))), 'mask is not binary but has values {}'.format(np.unique(mask))
+            assert(set(np.unique(mask)) == set((0,1))), f'mask is not binary but has values {np.unique(mask)}'
 
         # unpack meta tensors (operating on torch tensors is faster)
         if isinstance(image_masked, monai.data.meta_tensor.MetaTensor):
@@ -478,8 +479,9 @@ class OffsetTwoAndHalfDInpaintingInferer(TwoAndHalfDInpaintingInferer):
 
             current_plane = self.dimension_to_plane[int(t%3)] # alternate between sagittal, axial, coronal
             self.model = self.diffusion_model_dict[current_plane] # .eval()
+            # add offset to alternate slicings to avoid checkerboard pattern
             batched_slices, batched_masks, batch_slice_indices, _ = self.get_inference_slices(mask, image_masked, int(t%3), 
-                                                                        offset=(self.slice_thickness//2) * (t.item() % 2)) # add offset to alternate slicings
+                                                                        offset=(self.slice_thickness//2) * (t.item() % 2)) 
 
             
 
@@ -497,8 +499,6 @@ class OffsetTwoAndHalfDInpaintingInferer(TwoAndHalfDInpaintingInferer):
             # get checked image area (for logging)
             start_idx = batch_slice_indices[0] - self.slice_thickness // 2
             end_idx = batch_slice_indices[-1] + self.slice_thickness // 2 + 1
-
-            # assert(len(batched_slices)*self.slice_thickness == end_idx - start_idx), 'batched_slices and image_inpainted_slice have different lengths'
 
             for i in range(math.ceil(len(batched_slices) / batch_size)): # iterate over batches
                 # get current batch
@@ -544,7 +544,7 @@ class OffsetTwoAndHalfDInpaintingInferer(TwoAndHalfDInpaintingInferer):
         if mask.dtype == torch.bool:
             mask = mask.int()
         else:
-            assert(set(np.unique(mask)) == set((0,1))), 'mask is not binary but has values {}'.format(np.unique(mask))
+            assert(set(np.unique(mask)) == set((0,1))), f'mask is not binary but has values {np.unique(mask)}'
 
         # unpack meta tensors (operating on torch tensors is faster)
         if isinstance(image_masked, monai.data.meta_tensor.MetaTensor):
