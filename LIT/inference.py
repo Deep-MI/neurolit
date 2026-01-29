@@ -22,7 +22,7 @@ import torch
 from monai.inferers import DiffusionInferer
 from tqdm import tqdm
 
-from LIT.utils.logging import get_logger
+from lit.utils.logging import get_logger
 
 logger = get_logger(__name__)
 

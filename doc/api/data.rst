@@ -1,7 +1,7 @@
 Data Module
 ===========
 
-.. automodule:: LIT.data
+.. automodule:: lit.data
    :members:
    :undoc-members:
    :show-inheritance:
@@ -17,7 +17,7 @@ Submodules
 conform
 ~~~~~~~
 
-.. automodule:: LIT.data.conform
+.. automodule:: lit.data.conform
    :members:
    :undoc-members:
    :show-inheritance:
@@ -33,7 +33,7 @@ Image conforming utilities for standardizing brain MRI images.
 datasets
 ~~~~~~~~
 
-.. automodule:: LIT.data.datasets
+.. automodule:: lit.data.datasets
    :members:
    :undoc-members:
    :show-inheritance:
@@ -48,7 +48,7 @@ PyTorch dataset classes for brain MRI data.
 transforms
 ~~~~~~~~~~
 
-.. automodule:: LIT.data.transforms
+.. automodule:: lit.data.transforms
    :members:
    :undoc-members:
    :show-inheritance:
@@ -71,7 +71,7 @@ Conforming Images
 
 .. code-block:: python
 
-   from LIT.data.conform import conform_image
+   from lit.data.conform import conform_image
    
    # Conform a single image
    conform_image(
@@ -86,7 +86,7 @@ Using Datasets
 
 .. code-block:: python
 
-   from LIT.data.datasets import BrainDataset
+   from lit.data.datasets import BrainDataset
    from torch.utils.data import DataLoader
    
    # Create dataset
@@ -113,7 +113,7 @@ Applying Transforms
 
 .. code-block:: python
 
-   from LIT.data.transforms import Compose, RandomFlip, Normalize, ToTensor
+   from lit.data.transforms import Compose, RandomFlip, Normalize, ToTensor
    
    # Define transform pipeline
    transform = Compose([
@@ -133,7 +133,7 @@ Custom Transforms
 
 .. code-block:: python
 
-   from LIT.data.transforms import Compose
+   from lit.data.transforms import Compose
    
    class CustomTransform:
        def __call__(self, image):
@@ -152,7 +152,7 @@ Batch Conforming
 
 .. code-block:: python
 
-   from LIT.data.conform import conform_image
+   from lit.data.conform import conform_image
    from pathlib import Path
    
    input_dir = Path('raw_data')

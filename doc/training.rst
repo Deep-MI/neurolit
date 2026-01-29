@@ -195,7 +195,7 @@ To generate samples during training for quality assessment:
 
 .. code-block:: python
 
-   from LIT.inference import sample_from_model
+   from lit.inference import sample_from_model
    
    # After training for a few epochs
    samples = sample_from_model(
@@ -312,7 +312,7 @@ To compare different models:
 
 .. code-block:: python
 
-   from LIT.inference import compare_models
+   from lit.inference import compare_models
    
    models = {
        'model_v1': 'checkpoints/model_v1.pt',

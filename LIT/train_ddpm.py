@@ -40,10 +40,10 @@ from monai.utils import set_determinism
 from torch.cuda.amp import GradScaler, autocast
 from tqdm import tqdm
 
-from LIT.data.datasets import SlicedDataset, get_base_dataset
-from LIT.inference import DiffusionInfererVINN
-from LIT.networks.DiffusionUnet import DiffusionModelUNetVINN
-from LIT.utils import plot_batch
+from lit.data.datasets import SlicedDataset, get_base_dataset
+from lit.inference import DiffusionInfererVINN
+from lit.networks.DiffusionUnet import DiffusionModelUNetVINN
+from lit.utils import plot_batch
 
 
 def argument_parser():

@@ -20,7 +20,7 @@ import sys
 import nibabel as nib
 import numpy as np
 
-from LIT.utils.logging import get_logger
+from lit.utils.logging import get_logger
 
 logger = get_logger(__name__)
 

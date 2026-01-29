@@ -1,7 +1,7 @@
 Inpainting Module
 =================
 
-.. automodule:: LIT.inpaint_image
+.. automodule:: lit.inpaint_image
    :members:
    :undoc-members:
    :show-inheritance:
@@ -17,7 +17,7 @@ Main Function
 main
 ~~~~
 
-:py:func:`LIT.inpaint_image.main`
+:py:func:`lit.inpaint_image.main`
 
 Entry point for the ``inpaint-image`` command. Provides direct access to inpainting functionality.
 
@@ -37,7 +37,7 @@ Basic Inpainting
 
 .. code-block:: python
 
-   from LIT.inpaint_image import main
+   from lit.inpaint_image import main
    import argparse
    
    args = argparse.Namespace(
@@ -56,7 +56,7 @@ Custom Parameters
 
 .. code-block:: python
 
-   from LIT.inpaint_image import main
+   from lit.inpaint_image import main
    import argparse
    
    # Use custom parameters
@@ -100,8 +100,8 @@ Preprocessing Pipeline
 
 .. code-block:: python
 
-   from LIT.inpaint_image import main
-   from LIT.data.conform import conform_image
+   from lit.inpaint_image import main
+   from lit.data.conform import conform_image
    import argparse
    
    # Step 1: Conform image

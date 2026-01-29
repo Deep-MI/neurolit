@@ -6,7 +6,7 @@ from monai import transforms
 from monai.data import CacheDataset
 from torch.utils.data import Dataset
 
-from LIT.data import conform
+from lit.data import conform
 
 
 def get_test_sample():

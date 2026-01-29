@@ -1,7 +1,7 @@
 Command-Line Interface
 ======================
 
-.. automodule:: LIT.cli
+.. automodule:: lit.cli
    :members:
    :undoc-members:
    :show-inheritance:
@@ -17,7 +17,7 @@ Main Functions
 run_lit
 ~~~~~~~
 
-:py:func:`LIT.cli.run_lit`
+:py:func:`lit.cli.run_lit`
 
 Entry point for the main ``run-lit`` command. This is the primary interface for running the full LIT pipeline.
 
@@ -45,7 +45,7 @@ Basic Usage
 
 .. code-block:: python
 
-   from LIT.cli import run_lit
+   from lit.cli import run_lit
    import sys
    
    # Simulate command-line arguments

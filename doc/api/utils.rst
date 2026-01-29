@@ -1,7 +1,7 @@
 Utils Module
 ============
 
-.. automodule:: LIT.utils
+.. automodule:: lit.utils
    :members:
    :undoc-members:
    :show-inheritance:
@@ -17,7 +17,7 @@ Submodules
 download_checkpoints
 ~~~~~~~~~~~~~~~~~~~~
 
-.. automodule:: LIT.utils.download_checkpoints
+.. automodule:: lit.utils.download_checkpoints
    :members:
    :undoc-members:
    :show-inheritance:
@@ -33,7 +33,7 @@ Download and manage model checkpoints.
 plotting
 ~~~~~~~~
 
-.. automodule:: LIT.utils.plotting
+.. automodule:: lit.utils.plotting
    :members:
    :undoc-members:
    :show-inheritance:
@@ -54,7 +54,7 @@ Downloading Models
 
 .. code-block:: python
 
-   from LIT.utils.download_checkpoints import download_models
+   from lit.utils.download_checkpoints import download_models
    
    # Download all models
    download_models(force=False)  # Skip if already downloaded
@@ -75,7 +75,7 @@ Getting Model Paths
 
 .. code-block:: python
 
-   from LIT.utils.download_checkpoints import get_model_path
+   from lit.utils.download_checkpoints import get_model_path
    
    # Get path to specific model
    axial_path = get_model_path('axial')
@@ -89,7 +89,7 @@ Plotting Results
 
 .. code-block:: python
 
-   from LIT.utils.plotting import plot_comparison
+   from lit.utils.plotting import plot_comparison
    import nibabel as nib
    
    # Load images
@@ -111,7 +111,7 @@ Plotting Slices
 
 .. code-block:: python
 
-   from LIT.utils.plotting import plot_slices
+   from lit.utils.plotting import plot_slices
    import nibabel as nib
    
    # Load image
@@ -129,7 +129,7 @@ Mask Overlay
 
 .. code-block:: python
 
-   from LIT.utils.plotting import plot_mask_overlay
+   from lit.utils.plotting import plot_mask_overlay
    import nibabel as nib
    
    # Load data
@@ -150,7 +150,7 @@ Custom Visualization
 
 .. code-block:: python
 
-   from LIT.utils.plotting import plot_slices
+   from lit.utils.plotting import plot_slices
    import matplotlib.pyplot as plt
    import nibabel as nib
    
@@ -179,7 +179,7 @@ Batch Visualization
 
 .. code-block:: python
 
-   from LIT.utils.plotting import plot_comparison
+   from lit.utils.plotting import plot_comparison
    from pathlib import Path
    import nibabel as nib
    

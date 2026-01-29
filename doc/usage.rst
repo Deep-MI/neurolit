@@ -1,7 +1,7 @@
 Usage Guide
 ===========
 
-This guide covers the basic and advanced usage of LIT.
+This guide covers the basic and advanced usage of lit.
 
 Basic Usage
 -----------
@@ -93,7 +93,7 @@ For programmatic access, use the direct inpainting function:
 
 .. code-block:: python
 
-   from LIT.inpaint_image import main as inpaint
+   from lit.inpaint_image import main as inpaint
    import argparse
    
    # Prepare arguments

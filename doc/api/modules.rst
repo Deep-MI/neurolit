@@ -50,17 +50,17 @@ Common Functions
 
 .. code-block:: python
 
-   from LIT.cli import run_lit
-   from LIT.inpaint_image import main as inpaint
-   from LIT.data.conform import conform
-   from LIT.utils.download_checkpoints import download_models
+   from lit.cli import run_lit
+   from lit.inpaint_image import main as inpaint
+   from lit.data.conform import conform
+   from lit.utils.download_checkpoints import download_models
 
 Most Used Classes
 ~~~~~~~~~~~~~~~~~
 
-* :class:`LIT.networks.DiffusionUnet.DiffusionUNet`
-* :class:`LIT.data.datasets.BrainDataset`
-* :class:`LIT.data.transforms.Compose`
+* :class:`lit.networks.DiffusionUnet.DiffusionUNet`
+* :class:`lit.data.datasets.BrainDataset`
+* :class:`lit.data.transforms.Compose`
 
 Entry Points
 ~~~~~~~~~~~~

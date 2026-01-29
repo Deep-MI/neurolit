@@ -23,7 +23,7 @@ import nibabel.processing
 import numpy as np
 from scipy import ndimage
 
-from LIT.utils.logging import get_logger
+from lit.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -88,9 +88,9 @@ def get_anatomy_info(orig_data: np.ndarray, target_mask: np.ndarray) -> tuple[se
     dilated_mask = ndimage.binary_dilation(target_mask, structure=struct, iterations=1)
     adjacent_zone = dilated_mask & ~target_mask
 
-    labels_in_mask = set(np.unique(orig_data[target_mask]))
-    labels_outside_mask = set(np.unique(orig_data[~target_mask]))
-    labels_in_adj_zone = set(np.unique(orig_data[adjacent_zone]))
+    labels_in_mask = {int(x) for x in np.unique(orig_data[target_mask])}
+    labels_outside_mask = {int(x) for x in np.unique(orig_data[~target_mask])}
+    labels_in_adj_zone = {int(x) for x in np.unique(orig_data[adjacent_zone])}
 
     # Remove background
     labels_in_mask.discard(0)
@@ -151,12 +151,12 @@ def write_report(
                 if lut_dict:
                     f.write("# LabelID    LabelName\n")
                     for lid in sorted(labels):
-                        name = lut_dict.get(lid, "Unknown")
-                        f.write(f"{lid:8d}    {name}\n")
+                        name = lut_dict.get(int(lid), "Unknown")
+                        f.write(f"{int(lid):8d}    {name}\n")
                 else:
                     f.write("# LabelID\n")
                     for lid in sorted(labels):
-                        f.write(f"{lid:8d}\n")
+                        f.write(f"{int(lid):8d}\n")
             f.write("\n")
 
     logger.info(f"Anatomy report written to: {output_path}")

@@ -19,9 +19,9 @@ from typing import Any
 # Suppress the cuda.cudart deprecation warning (triggered by torch/onnxruntime)
 warnings.filterwarnings("ignore", category=FutureWarning, module="cuda.cudart")
 
-from LIT.postprocessing.lesion_to_segmentation import main as lesion_to_segmentation_main
-from LIT.postprocessing.lesion_to_surface import main as lesion_to_surface_main
-from LIT.utils.logging import get_logger
+from lit.postprocessing.lesion_to_segmentation import main as lesion_to_segmentation_main
+from lit.postprocessing.lesion_to_surface import main as lesion_to_surface_main
+from lit.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -99,22 +99,24 @@ def validate_segstats_installation() -> tuple[Path | None, bool]:
     -------
     tuple[Optional[Path], bool]
         (`fastsurfer_path`, `use_mri_segstats`): first element is a Path to FastSurfer if
-        Available, second element is True when FreeSurfer's `mri_segstats` should be used.
+        available, second element is True when FreeSurfer's `mri_segstats` should be used.
 
     Raises
     ------
     SystemExit
-        When neither FastSurfer nor FreeSurfer is installed/configured.
+        When neither FastSurfer nor FreeSurfer is installed/configured or working.
     """
     logger.info("=== Validating Segstats Installation ===")
     
     # Try to find FastSurfer (preferred)
     fastsurfer_home = os.environ.get('FASTSURFER_HOME')
+    fastsurfer_found = False
     if fastsurfer_home:
         fs_path = Path(fastsurfer_home)
         segstats_script = fs_path / "FastSurferCNN" / "segstats.py"
         
         if fs_path.exists() and segstats_script.exists():
+            fastsurfer_found = True
             # Test if segstats.py can be imported/run
             try:
                 # Set PYTHONPATH and try to import
@@ -124,7 +126,7 @@ def validate_segstats_installation() -> tuple[Path | None, bool]:
                     [sys.executable, str(segstats_script), "--help"],
                     capture_output=True,
                     env=test_env,
-                    timeout=5
+                    timeout=15
                 )
                 if result.returncode == 0:
                     logger.info(f"Found FastSurfer segstats.py: {segstats_script}")
@@ -132,35 +134,60 @@ def validate_segstats_installation() -> tuple[Path | None, bool]:
                     return (fs_path, False)
                 else:
                     logger.warning(f"FastSurfer segstats.py found but not working: {segstats_script}")
-                    logger.warning(f"Error: {result.stderr.decode()[:200]}")
+                    stderr = result.stderr.decode()
+                    logger.warning(f"Error: {stderr[:500]}")
+                    if "ModuleNotFoundError" in stderr and "pandas" in stderr:
+                        logger.error("\n[TIP] FastSurfer requires 'pandas'. Try: pip install pandas")
+            except subprocess.TimeoutExpired:
+                logger.warning("FastSurfer segstats.py test timed out (15s). It might still work, but initialization is slow.")
+                logger.info(f"Assuming FastSurfer is available at: {fs_path}")
+                return (fs_path, False)
             except Exception as e:
                 logger.warning(f"FastSurfer segstats.py found but failed to test: {e}")
     
     # Fall back to FreeSurfer mri_segstats
     freesurfer_home = os.environ.get('FREESURFER_HOME')
+    mri_segstats_bin = "mri_segstats"
+    
+    # Check if mri_segstats is in path or in FREESURFER_HOME/bin
+    if freesurfer_home:
+        fs_bin = Path(freesurfer_home) / "bin" / "mri_segstats"
+        if fs_bin.exists():
+            mri_segstats_bin = str(fs_bin)
+    
+    freesurfer_found = False
     if freesurfer_home or subprocess.run(['which', 'mri_segstats'], 
                                          capture_output=True).returncode == 0:
+        freesurfer_found = True
         try:
             result = subprocess.run(
-                ['mri_segstats', '--help'],
+                [mri_segstats_bin, '--help'],
                 capture_output=True,
-                timeout=5
+                timeout=15
             )
             if result.returncode == 0 or b'USAGE' in result.stdout or b'USAGE' in result.stderr:
-                logger.info("Found FreeSurfer mri_segstats")
+                logger.info(f"Found FreeSurfer mri_segstats: {mri_segstats_bin}")
                 if freesurfer_home:
                     logger.info(f"  FreeSurfer path: {freesurfer_home}")
                 logger.info("Note: mri_segstats does not support 'measures' subcommand")
                 return (None, True)
+        except subprocess.TimeoutExpired:
+            logger.warning("FreeSurfer mri_segstats test timed out (15s). It might still work, but initialization is slow.")
+            return (None, True)
         except Exception as e:
-            logger.warning(f"mri_segstats found but failed to test: {e}")
+            logger.warning(f"mri_segstats found at {mri_segstats_bin} but failed to test: {e}")
     
-    # Neither found - print helpful error
-    logger.error("\n\u2717 ERROR: Neither FastSurfer nor FreeSurfer found!")
+    # Neither found or working - print helpful error
+    if fastsurfer_found or freesurfer_found:
+        logger.error("\n\u2717 ERROR: Tools were found but are not working correctly!")
+    else:
+        logger.error("\n\u2717 ERROR: Neither FastSurfer nor FreeSurfer found!")
+    
     logger.error("\nTo use LIT postprocessing, you need either:")
-    logger.error("  1. FastSurfer:")
+    logger.error("  1. FastSurfer (preferred):")
     logger.error("     - Clone: git clone https://github.com/Deep-MI/FastSurfer.git")
     logger.error("     - Set: export FASTSURFER_HOME=/path/to/FastSurfer")
+    logger.error("     - Note: requires 'pandas' in your python environment")
     logger.error("\n  2. FreeSurfer:")
     logger.error("     - Install FreeSurfer from: https://surfer.nmr.mgh.harvard.edu/")
     logger.error("     - Set: export FREESURFER_HOME=/path/to/FreeSurfer")
@@ -290,6 +317,10 @@ def map_lesion_to_segmentation(subjects_dir: Path, subject_id: str,
     output_path = subjects_dir / subject_id / output_file
     mask_path = subjects_dir / subject_id / "inpainting" / "inpainting_mask.nii.gz"
     
+    if not input_path.exists():
+        logger.warning(f"  Skipping: {input_file} not found at {input_path}")
+        return False
+
     report_path = subjects_dir / subject_id / report_file if report_file else None
     lut_path = _find_lut_file(fs_home) if report_file else None
 
@@ -570,7 +601,12 @@ def surface_masking(lit_path: Path, subjects_dir: Path, subject_id: str,
     seglut = str(lit_path / "postprocessing" / "hemi.DKTatlaslookup_lesion.txt")
     
     out_annot = str(subjects_dir / subject_id / output_file.format(hemi=hemisphere))
-    to_annot = str(subjects_dir / subject_id / input_file.format(hemi=hemisphere))
+    to_annot_path = subjects_dir / subject_id / input_file.format(hemi=hemisphere)
+    to_annot = str(to_annot_path)
+
+    if not to_annot_path.exists():
+        logger.warning(f"  Skipping: {input_file.format(hemi=hemisphere)} not found at {to_annot_path}")
+        return False
     
     report_path = subjects_dir / subject_id / report_file.format(hemi=hemisphere) if report_file else None
     ctab_path = subjects_dir / subject_id / output_ctab.format(hemi=hemisphere) if output_ctab else None
@@ -838,9 +874,9 @@ def main():
         if seg_map.get('map_lesion', False):
             logger.info(f"Processing: {seg_map['name']}")
             report_file = seg_map.get('report_file')
-            map_lesion_to_segmentation(subjects_dir, subject_id, seg_map['input_file'], 
-                                       seg_map['output_file'], report_file, fs_home)
-            if report_file:
+            success = map_lesion_to_segmentation(subjects_dir, subject_id, seg_map['input_file'], 
+                                               seg_map['output_file'], report_file, fs_home)
+            if success and report_file:
                 mapping_reports.append((seg_map['output_file'], report_file))
     
     # Run all segstats calls (unless skipped)
@@ -918,14 +954,14 @@ def main():
                 logger.info(f"Processing: {surf_map['name']}")
                 report_file = surf_map.get('report_file')
                 output_ctab = surf_map.get('output_ctab')
-                for hemisphere in ["lh", "rh"]:
-                    logger.info(f"  Hemisphere: {hemisphere}")
-                    surface_masking(lit_path, subjects_dir, subject_id, hemisphere, 
-                                    surf_map['input_file'], surf_map['output_file'], 
-                                    report_file, output_ctab)
-                    if report_file:
-                        surface_reports.append((surf_map['output_file'].format(hemi=hemisphere), 
-                                              report_file.format(hemi=hemisphere)))
+            for hemisphere in ["lh", "rh"]:
+                logger.info(f"  Hemisphere: {hemisphere}")
+                success = surface_masking(lit_path, subjects_dir, subject_id, hemisphere, 
+                                        surf_map['input_file'], surf_map['output_file'], 
+                                        report_file, output_ctab)
+                if success and report_file:
+                    surface_reports.append((surf_map['output_file'].format(hemi=hemisphere), 
+                                          report_file.format(hemi=hemisphere)))
 
         # Create symlinks for .mapped.annot to stay consistent with FastSurfer/FreeSurfer naming
         for hemisphere in ["lh", "rh"]:

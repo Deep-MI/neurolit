@@ -27,7 +27,7 @@ from lapy import TriaMesh
 from scipy import sparse
 from scipy.ndimage import binary_dilation
 
-from LIT.utils.logging import get_logger
+from lit.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -190,8 +190,8 @@ def write_surface_report(
             else:
                 f.write("# Index    LabelName\n")
                 for idx in sorted(labels):
-                    name = decoded_names[idx] if idx < len(decoded_names) else "Unknown"
-                    f.write(f"{idx:8d}    {name}\n")
+                    name = decoded_names[int(idx)] if int(idx) < len(decoded_names) else "Unknown"
+                    f.write(f"{int(idx):8d}    {name}\n")
             f.write("\n")
 
     logger.info(f"Surface anatomy report written to: {output_path}")

@@ -49,6 +49,9 @@ dependencies = [
     "torch>=2.0.0",
     "tqdm>=4.65.0",
     "typing-extensions>=4.0.0",
+    "lapy>=1.5.0",
+    "pandas>=1.5.3",
+    "scikit-image>=0.19.3"
 ]
 
 [project.optional-dependencies]

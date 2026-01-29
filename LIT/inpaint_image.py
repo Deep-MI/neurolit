@@ -33,11 +33,11 @@ from monai.networks.schedulers import DDIMScheduler, DDPMScheduler
 from numpy.typing import NDArray
 from torch.amp import autocast  # previous: from torch.cuda.amp import autocast
 
-from LIT.data import conform
-from LIT.inference import OffsetTwoAndHalfDInpaintingInferer
-from LIT.networks.DiffusionUnet import DiffusionModelUNetVINN
-from LIT.utils.logging import get_logger
-from LIT.utils.plotting import plot_batch, plot_inpainting
+from lit.data import conform
+from lit.inference import OffsetTwoAndHalfDInpaintingInferer
+from lit.networks.DiffusionUnet import DiffusionModelUNetVINN
+from lit.utils.logging import get_logger
+from lit.utils.plotting import plot_batch, plot_inpainting
 
 logger = get_logger(__name__)
 

@@ -1,7 +1,7 @@
 Postprocessing Module
 =====================
 
-.. automodule:: LIT.postprocessing
+.. automodule:: lit.postprocessing
    :members:
    :undoc-members:
    :show-inheritance:
@@ -17,7 +17,7 @@ Submodules
 lesion_to_segmentation
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. automodule:: LIT.postprocessing.lesion_to_segmentation
+.. automodule:: lit.postprocessing.lesion_to_segmentation
    :members:
    :undoc-members:
    :show-inheritance:
@@ -33,7 +33,7 @@ Mask lesions in volumetric segmentation files.
 lesion_to_surface
 ~~~~~~~~~~~~~~~~~
 
-.. automodule:: LIT.postprocessing.lesion_to_surface
+.. automodule:: lit.postprocessing.lesion_to_surface
    :members:
    :undoc-members:
    :show-inheritance:
@@ -54,7 +54,7 @@ Masking Segmentations
 
 .. code-block:: python
 
-   from LIT.postprocessing.lesion_to_segmentation import mask_segmentation
+   from lit.postprocessing.lesion_to_segmentation import mask_segmentation
    
    # Apply lesion mask to segmentation
    mask_segmentation(
@@ -79,7 +79,7 @@ Masking Surfaces
 
 .. code-block:: python
 
-   from LIT.postprocessing.lesion_to_surface import project_mask_to_surface
+   from lit.postprocessing.lesion_to_surface import project_mask_to_surface
    
    # Project lesion mask to surface
    project_mask_to_surface(
@@ -113,8 +113,8 @@ Batch Processing
 
 .. code-block:: python
 
-   from LIT.postprocessing.lesion_to_segmentation import mask_segmentation
-   from LIT.postprocessing.lesion_to_surface import project_mask_to_surface
+   from lit.postprocessing.lesion_to_segmentation import mask_segmentation
+   from lit.postprocessing.lesion_to_surface import project_mask_to_surface
    from pathlib import Path
    
    subjects = ['sub-01', 'sub-02', 'sub-03']
