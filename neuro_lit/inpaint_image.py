@@ -15,11 +15,7 @@
 import argparse
 import os
 import sys
-import warnings
 from pathlib import Path
-
-# Suppress the cuda.cudart deprecation warning (triggered by torch/onnxruntime)
-warnings.filterwarnings("ignore", category=FutureWarning, module="cuda.cudart")
 
 # supress warning on loading matplotlib
 import matplotlib
@@ -33,11 +29,11 @@ from monai.networks.schedulers import DDIMScheduler, DDPMScheduler
 from numpy.typing import NDArray
 from torch.amp import autocast  # previous: from torch.cuda.amp import autocast
 
-from lit.data import conform
-from lit.inference import OffsetTwoAndHalfDInpaintingInferer
-from lit.networks.DiffusionUnet import DiffusionModelUNetVINN
-from lit.utils.logging import get_logger
-from lit.utils.plotting import plot_batch, plot_inpainting
+from neuro_lit.data import conform
+from neuro_lit.inference import OffsetTwoAndHalfDInpaintingInferer
+from neuro_lit.networks.DiffusionUnet import DiffusionModelUNetVINN
+from neuro_lit.utils.logging import get_logger
+from neuro_lit.utils.plotting import plot_batch, plot_inpainting
 
 logger = get_logger(__name__)
 

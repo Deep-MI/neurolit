@@ -86,7 +86,7 @@ Using DiffusionUNet
 
 .. code-block:: python
 
-   from lit.networks.DiffusionUnet import DiffusionUNet
+   from neuro_lit.networks.DiffusionUnet import DiffusionUNet
    import torch
    
    # Create model
@@ -114,7 +114,7 @@ Loading Pre-trained Weights
 
 .. code-block:: python
 
-   from lit.networks.DiffusionUnet import DiffusionUNet
+   from neuro_lit.networks.DiffusionUnet import DiffusionUNet
    import torch
    
    # Create model
@@ -130,7 +130,7 @@ Custom Model Configuration
 
 .. code-block:: python
 
-   from lit.networks.DiffusionUnet import DiffusionUNet
+   from neuro_lit.networks.DiffusionUnet import DiffusionUNet
    
    # Create custom model
    model = DiffusionUNet(
@@ -148,7 +148,7 @@ Training Example
 
 .. code-block:: python
 
-   from lit.networks.DiffusionUnet import DiffusionUNet
+   from neuro_lit.networks.DiffusionUnet import DiffusionUNet
    import torch
    import torch.nn as nn
    import torch.optim as optim
@@ -179,7 +179,7 @@ Model Summary
 
 .. code-block:: python
 
-   from lit.networks.DiffusionUnet import DiffusionUNet
+   from neuro_lit.networks.DiffusionUnet import DiffusionUNet
    
    model = DiffusionUNet()
    

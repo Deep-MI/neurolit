@@ -50,10 +50,10 @@ Common Functions
 
 .. code-block:: python
 
-   from lit.cli import run_lit
-   from lit.inpaint_image import main as inpaint
-   from lit.data.conform import conform
-   from lit.utils.download_checkpoints import download_models
+   from neuro_lit.cli import run_lit
+   from neuro_lit.inpaint_image import main as inpaint
+   from neuro_lit.data.conform import conform
+   from neuro_lit.utils.download_checkpoints import download_models
 
 Most Used Classes
 ~~~~~~~~~~~~~~~~~

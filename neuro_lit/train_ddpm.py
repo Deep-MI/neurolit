@@ -37,13 +37,13 @@ from monai import transforms
 from monai.data import DataLoader
 from monai.networks.schedulers import DDPMScheduler
 from monai.utils import set_determinism
-from torch.cuda.amp import GradScaler, autocast
+from torch.amp import GradScaler, autocast
 from tqdm import tqdm
 
-from lit.data.datasets import SlicedDataset, get_base_dataset
-from lit.inference import DiffusionInfererVINN
-from lit.networks.DiffusionUnet import DiffusionModelUNetVINN
-from lit.utils import plot_batch
+from neuro_lit.data.datasets import SlicedDataset, get_base_dataset
+from neuro_lit.inference import DiffusionInfererVINN
+from neuro_lit.networks.DiffusionUnet import DiffusionModelUNetVINN
+from neuro_lit.utils import plot_batch
 
 
 def argument_parser():
@@ -213,7 +213,7 @@ if __name__ == "__main__":
 
             optimizer.zero_grad(set_to_none=True)
 
-            with autocast(enabled=True, cache_enabled=False):
+            with autocast(device_type='cuda', enabled=True, cache_enabled=False):
                 # Generate random noise
                 noise = torch.randn_like(images).to(device)
 
@@ -246,7 +246,7 @@ if __name__ == "__main__":
                 if IS_VINN: scale_factors =  get_scale_factors(images)
                 if FP16: images = images.to(torch.float16)
                 noise = torch.randn_like(images).to(device)
-                with autocast(enabled=True, cache_enabled=True), torch.no_grad():
+                with autocast(device_type='cuda', enabled=True, cache_enabled=True), torch.no_grad():
                     timesteps = torch.randint(
                         0, inferer.scheduler.num_train_timesteps, (images.shape[0],), device=images.device
                     ).long()
@@ -267,7 +267,7 @@ if __name__ == "__main__":
             
             image = image.to(device)
             scheduler.set_timesteps(num_inference_steps=NUM_REVERSE_DIFFUSION_STEPS)
-            with autocast(enabled=True, cache_enabled=True), torch.no_grad(): # TODO: add no_grad()? maybe remove autocast?
+            with autocast(device_type='cuda', enabled=True, cache_enabled=True), torch.no_grad(): # TODO: add no_grad()? maybe remove autocast?
                 if IS_VINN:
                     scale_factors = torch.ones((1, 2 if TWO_D else 3), device=image.device) / internal_res_mm if not FIXED_SIZE else torch.ones((1, 3)
                                                                             , device=image.device) # 1mm resolution with IMAGE_SHAPE size

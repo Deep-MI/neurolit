@@ -71,7 +71,7 @@ Conforming Images
 
 .. code-block:: python
 
-   from lit.data.conform import conform_image
+   from neuro_lit.data.conform import conform_image
    
    # Conform a single image
    conform_image(
@@ -86,7 +86,7 @@ Using Datasets
 
 .. code-block:: python
 
-   from lit.data.datasets import BrainDataset
+   from neuro_lit.data.datasets import BrainDataset
    from torch.utils.data import DataLoader
    
    # Create dataset
@@ -113,7 +113,7 @@ Applying Transforms
 
 .. code-block:: python
 
-   from lit.data.transforms import Compose, RandomFlip, Normalize, ToTensor
+   from neuro_lit.data.transforms import Compose, RandomFlip, Normalize, ToTensor
    
    # Define transform pipeline
    transform = Compose([
@@ -133,7 +133,7 @@ Custom Transforms
 
 .. code-block:: python
 
-   from lit.data.transforms import Compose
+   from neuro_lit.data.transforms import Compose
    
    class CustomTransform:
        def __call__(self, image):
@@ -152,7 +152,7 @@ Batch Conforming
 
 .. code-block:: python
 
-   from lit.data.conform import conform_image
+   from neuro_lit.data.conform import conform_image
    from pathlib import Path
    
    input_dir = Path('raw_data')

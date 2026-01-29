@@ -46,7 +46,7 @@ LIT is available on Test PyPI as a beta release.
 .. code-block:: bash
 
    # Install the package
-   pip install -i https://test.pypi.org/simple/ lesion-inpainting-tool
+   pip install -i https://test.pypi.org/simple/ neuro-lit
 
 **Download Model Checkpoints:**
 

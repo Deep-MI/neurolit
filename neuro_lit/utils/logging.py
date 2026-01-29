@@ -1,9 +1,5 @@
 import logging
 import sys
-import warnings
-
-# Suppress the cuda.cudart deprecation warning (triggered by torch/onnxruntime)
-warnings.filterwarnings("ignore", category=FutureWarning, module="cuda.cudart")
 
 
 def get_logger(name: str = "LIT") -> logging.Logger:

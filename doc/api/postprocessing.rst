@@ -54,7 +54,7 @@ Masking Segmentations
 
 .. code-block:: python
 
-   from lit.postprocessing.lesion_to_segmentation import mask_segmentation
+   from neuro_lit.postprocessing.lesion_to_segmentation import mask_segmentation
    
    # Apply lesion mask to segmentation
    mask_segmentation(
@@ -79,7 +79,7 @@ Masking Surfaces
 
 .. code-block:: python
 
-   from lit.postprocessing.lesion_to_surface import project_mask_to_surface
+   from neuro_lit.postprocessing.lesion_to_surface import project_mask_to_surface
    
    # Project lesion mask to surface
    project_mask_to_surface(
@@ -113,8 +113,8 @@ Batch Processing
 
 .. code-block:: python
 
-   from lit.postprocessing.lesion_to_segmentation import mask_segmentation
-   from lit.postprocessing.lesion_to_surface import project_mask_to_surface
+   from neuro_lit.postprocessing.lesion_to_segmentation import mask_segmentation
+   from neuro_lit.postprocessing.lesion_to_surface import project_mask_to_surface
    from pathlib import Path
    
    subjects = ['sub-01', 'sub-02', 'sub-03']

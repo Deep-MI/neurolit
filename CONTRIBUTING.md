@@ -42,7 +42,7 @@ Edit `pyproject.toml` and increment the version number:
 
 ```toml
 [project]
-name = "lesion-inpainting-tool"
+name = "neuro-lit"
 version = "0.5.2"  # Increment this
 ```
 
@@ -90,7 +90,7 @@ python3 -m venv test_env
 source test_env/bin/activate
 
 # Install from Test PyPI
-pip install -i https://test.pypi.org/simple/ lesion-inpainting-tool
+pip install -i https://test.pypi.org/simple/ neuro-lit
 
 # Download model checkpoints
 lit-download-models
@@ -153,7 +153,7 @@ If you get an error about a file already existing, you need to increment the ver
 Test PyPI doesn't have all the packages that main PyPI has. When installing from Test PyPI, you may need to allow pip to fall back to main PyPI for dependencies:
 
 ```bash
-pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ lesion-inpainting-tool
+pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ neuro-lit
 ```
 
 #### Issue: Package not found immediately after upload
@@ -170,21 +170,21 @@ If you encounter errors, ensure that:
 
 The codebase now uses consistent paths for both pip and git installations:
 - Model checkpoints are stored in platform-specific locations via `platformdirs`
-  - Linux: `~/.local/share/LIT/weights`
-  - macOS: `~/Library/Application Support/LIT/weights`
-  - Windows: `C:\Users\<user>\AppData\Local\Deep-MI\LIT\weights`
+  - Linux: `~/.local/share/neuro-lit/weights`
+  - macOS: `~/Library/Application Support/neuro-lit/weights`
+  - Windows: `C:\Users\<user>\AppData\Local\Deep-MI\neuro-lit\weights`
 
 Make sure to test both installation methods before publishing:
 
 ```bash
 # Test pip installation
-pip install -i https://test.pypi.org/simple/ lesion-inpainting-tool
+pip install -i https://test.pypi.org/simple/ neuro-lit
 lit-download-models  # Optional: pre-download models
 run-lit --input_image test.nii.gz --mask_image mask.nii.gz --output_directory test_output
 
 # Test git clone (uses same model location)
-git clone https://github.com/Deep-MI/LIT.git
-cd LIT
+git clone https://github.com/Deep-MI/neuro-lit.git
+cd neuro-lit
 lit-download-models  # Optional: pre-download models
 ./LIT/scripts/run_lit.sh --input_image test.nii.gz --mask_image mask.nii.gz --output_directory test_output
 ```
@@ -266,8 +266,8 @@ python3 -m pytest
 ## Project Structure
 
 ```
-LIT/
-├── LIT/                    # Main package directory
+neuro-lit/
+├── neuro_lit/             # Main package directory
 │   ├── scripts/           # Shell scripts including run_lit.sh
 │   ├── utils/             # Utility modules
 │   ├── inpaint_image.py   # Core inpainting functionality

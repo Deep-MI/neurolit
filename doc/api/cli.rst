@@ -45,7 +45,7 @@ Basic Usage
 
 .. code-block:: python
 
-   from lit.cli import run_lit
+   from neuro_lit.cli import run_lit
    import sys
    
    # Simulate command-line arguments

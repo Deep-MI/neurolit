@@ -93,7 +93,7 @@ For programmatic access, use the direct inpainting function:
 
 .. code-block:: python
 
-   from lit.inpaint_image import main as inpaint
+   from neuro_lit.inpaint_image import main as inpaint
    import argparse
    
    # Prepare arguments

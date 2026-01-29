@@ -37,7 +37,7 @@ Basic Inpainting
 
 .. code-block:: python
 
-   from lit.inpaint_image import main
+   from neuro_lit.inpaint_image import main
    import argparse
    
    args = argparse.Namespace(
@@ -56,7 +56,7 @@ Custom Parameters
 
 .. code-block:: python
 
-   from lit.inpaint_image import main
+   from neuro_lit.inpaint_image import main
    import argparse
    
    # Use custom parameters
@@ -100,8 +100,8 @@ Preprocessing Pipeline
 
 .. code-block:: python
 
-   from lit.inpaint_image import main
-   from lit.data.conform import conform_image
+   from neuro_lit.inpaint_image import main
+   from neuro_lit.data.conform import conform_image
    import argparse
    
    # Step 1: Conform image

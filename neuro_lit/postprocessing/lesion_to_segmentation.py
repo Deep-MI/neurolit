@@ -23,7 +23,7 @@ import nibabel.processing
 import numpy as np
 from scipy import ndimage
 
-from lit.utils.logging import get_logger
+from neuro_lit.utils.logging import get_logger
 
 logger = get_logger(__name__)
 

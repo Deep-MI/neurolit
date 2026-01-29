@@ -12,16 +12,12 @@ import logging
 import os
 import subprocess
 import sys
-import warnings
 from pathlib import Path
 from typing import Any
 
-# Suppress the cuda.cudart deprecation warning (triggered by torch/onnxruntime)
-warnings.filterwarnings("ignore", category=FutureWarning, module="cuda.cudart")
-
-from lit.postprocessing.lesion_to_segmentation import main as lesion_to_segmentation_main
-from lit.postprocessing.lesion_to_surface import main as lesion_to_surface_main
-from lit.utils.logging import get_logger
+from neuro_lit.postprocessing.lesion_to_segmentation import main as lesion_to_segmentation_main
+from neuro_lit.postprocessing.lesion_to_surface import main as lesion_to_surface_main
+from neuro_lit.utils.logging import get_logger
 
 logger = get_logger(__name__)
 

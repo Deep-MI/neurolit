@@ -54,7 +54,7 @@ Downloading Models
 
 .. code-block:: python
 
-   from lit.utils.download_checkpoints import download_models
+   from neuro_lit.utils.download_checkpoints import download_models
    
    # Download all models
    download_models(force=False)  # Skip if already downloaded
@@ -75,7 +75,7 @@ Getting Model Paths
 
 .. code-block:: python
 
-   from lit.utils.download_checkpoints import get_model_path
+   from neuro_lit.utils.download_checkpoints import get_model_path
    
    # Get path to specific model
    axial_path = get_model_path('axial')
@@ -89,7 +89,7 @@ Plotting Results
 
 .. code-block:: python
 
-   from lit.utils.plotting import plot_comparison
+   from neuro_lit.utils.plotting import plot_comparison
    import nibabel as nib
    
    # Load images
@@ -111,7 +111,7 @@ Plotting Slices
 
 .. code-block:: python
 
-   from lit.utils.plotting import plot_slices
+   from neuro_lit.utils.plotting import plot_slices
    import nibabel as nib
    
    # Load image
@@ -129,7 +129,7 @@ Mask Overlay
 
 .. code-block:: python
 
-   from lit.utils.plotting import plot_mask_overlay
+   from neuro_lit.utils.plotting import plot_mask_overlay
    import nibabel as nib
    
    # Load data
@@ -150,7 +150,7 @@ Custom Visualization
 
 .. code-block:: python
 
-   from lit.utils.plotting import plot_slices
+   from neuro_lit.utils.plotting import plot_slices
    import matplotlib.pyplot as plt
    import nibabel as nib
    
@@ -179,7 +179,7 @@ Batch Visualization
 
 .. code-block:: python
 
-   from lit.utils.plotting import plot_comparison
+   from neuro_lit.utils.plotting import plot_comparison
    from pathlib import Path
    import nibabel as nib
    

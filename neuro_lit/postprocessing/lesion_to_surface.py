@@ -27,7 +27,7 @@ from lapy import TriaMesh
 from scipy import sparse
 from scipy.ndimage import binary_dilation
 
-from lit.utils.logging import get_logger
+from neuro_lit.utils.logging import get_logger
 
 logger = get_logger(__name__)
 

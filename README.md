@@ -53,7 +53,7 @@ The same interface as above can be accessed from pypi (currently on test-pypi)
 
 ```bash
 # Install the package
-pip install -i https://test.pypi.org/simple/ lesion-inpainting-tool
+pip install -i https://test.pypi.org/simple/ neuro-lit
 
 # Download model checkpoints (recommended - download once, ~500MB)
 lit-download-models
@@ -87,7 +87,7 @@ export FREESURFER_HOME=/path/to/freesurfer
 source $FREESURFER_HOME/SetUpFreeSurfer.sh
 
 # Run unified postprocessing
-python3 LIT/scripts/lesion_postprocessing.py \
+python3 neuro_lit/scripts/lesion_postprocessing.py \
     -sid SUBJECT_ID \
     -sd /path/to/subjects_dir
 ```
@@ -112,7 +112,7 @@ For more granular control, individual scripts are available:
 You can now generate comprehensive anatomy reports during the lesion mapping step:
 
 ```bash
-python LIT/postprocessing/lesion_to_segmentation.py \
+python neuro_lit/postprocessing/lesion_to_segmentation.py \
     -i aparc+aseg.mgz \
     -m lesion_mask.nii.gz \
     -o aparc+aseg+lesion.mgz \
@@ -129,7 +129,7 @@ This will identify:
 
 ```bash
 # Replace /fastsurfer_output and /inpainting_output with the actual paths
-python LIT/postprocessing/lesion_to_segmentation.py \
+python neuro_lit/postprocessing/lesion_to_segmentation.py \
     -i "/fastsurfer_output/mri/aparc+aseg.mgz" \
     -m "/inpainting_output/inpainting_volumes/inpainting_mask.nii.gz" \
     -o "/fastsurfer_output/mri/aparc+aseg+lesion.mgz" \
@@ -142,13 +142,13 @@ python LIT/postprocessing/lesion_to_segmentation.py \
 ```bash
 # Replace /fastsurfer_output and /inpainting_output with the actual paths
 hemisphere="lh"
-python LIT/postprocessing/lesion_to_surface.py \
+python neuro_lit/postprocessing/lesion_to_surface.py \
     --inseg "/inpainting_output/inpainting_volumes/inpainting_mask.nii.gz" \
     --insurf "/fastsurfer_output/surf/$hemisphere.white.preaparc" \
     --incort "/fastsurfer_output/label/$hemisphere.cortex.label" \
     --out_annot "/fastsurfer_output/label/$hemisphere.lesion.annot" \
-    --surflut "LIT/postprocessing/DKTatlaslookup_lesion.txt" \
-    --seglut "LIT/postprocessing/hemi.DKTatlaslookup_lesion.txt" \
+    --surflut "neuro_lit/postprocessing/DKTatlaslookup_lesion.txt" \
+    --seglut "neuro_lit/postprocessing/hemi.DKTatlaslookup_lesion.txt" \
     --projmm 0 \
     --dilation 3 \
     --to_annot "/fastsurfer_output/label/$hemisphere.aparc.DKTatlas.annot"
@@ -167,7 +167,7 @@ Anatomy reports can be generated during the mapping step (see above). For more d
 
 ## Training
 
-The training script can be found [here](lit/train_ddpm.py). The same docker image can be used for training, but you need to mount the training data directory using the `-v` flag. Note that training data are excpected to be conformed (with the script [conform.py](lit/data/conform.py)).
+The training script can be found [here](neuro_lit/train_ddpm.py). The same docker image can be used for training, but you need to mount the training data directory using the `-v` flag. Note that training data are excpected to be conformed (with the script [conform.py](neuro_lit/data/conform.py)).
 
 ## Documentation
 

@@ -11,7 +11,7 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 # This works for git clones; for pip installs it points to site-packages
 PROJ_DIR=$(realpath $SCRIPT_DIR/../..)
 
-VERSION="$(python3 -c 'import LIT; print(LIT.__version__)')"
+VERSION="$(python3 -c 'import neuro_lit; print(neuro_lit.__version__)' 2>/dev/null || python3 -c 'import LIT; print(LIT.__version__)' 2>/dev/null || echo '0.5.1')"
 VERSION="${VERSION/version = /}"
 VERSION="${VERSION//\"/}"
 
@@ -152,7 +152,7 @@ if [ ! -z "$MASK_IMAGE" ]; then
     mkdir -p "$OUT_DIR/inpainting_volumes"
 
     # Download checkpoints (uses platformdirs for consistent location)
-    python3 -m LIT.utils.download_checkpoints
+    python3 -m neuro_lit.utils.download_checkpoints
 
     # Check for required model files
     for model in "$CKPT_CORONAL" "$CKPT_AXIAL" "$CKPT_SAGITTAL"; do
@@ -164,7 +164,7 @@ if [ ! -z "$MASK_IMAGE" ]; then
 
     
     # Assemble inpainting command
-    inpainting_command="python3 -m LIT.inpaint_image \
+    inpainting_command="python3 -m neuro_lit.inpaint_image \
 --input_image \"$INPUT_IMAGE\" \
 --mask_image \"$MASK_IMAGE\" \
 --out_dir \"$OUT_DIR\" \
