@@ -166,7 +166,7 @@ If you encounter errors, ensure that:
 
 1. **`platformdirs` is installed**: Required for determining the correct data directory
 2. **Models are downloaded**: Run `lit-download-models` or let them download automatically on first use
-3. **All dependencies are installed**: Check `requirements.txt` and `pyproject.toml`
+3. **All dependencies are installed**: Check `pyproject.toml`
 
 The codebase now uses consistent paths for both pip and git installations:
 - Model checkpoints are stored in platform-specific locations via `platformdirs`
@@ -208,17 +208,17 @@ python3 -m twine upload dist/*
 After installing via pip, the following command-line tools are available:
 
 ### `run-lit`
-Main command to run LIT with the full pipeline (wrapper around `run_lit.sh`).
+Main command to run the LIT inpainting.
 
 ```bash
 run-lit --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output_directory output_dir
 ```
 
-### `inpaint-image`
-Direct access to the core inpainting functionality.
+### `lesion-postprocessing`
+Integrate lesion masks into FastSurfer/FreeSurfer outputs.
 
 ```bash
-inpaint-image --input_image T1w.nii.gz --mask_image mask.nii.gz --out_dir output_dir
+lesion-postprocessing --subject-id SUBJECT_ID --subjects-dir /path/to/subjects_dir
 ```
 
 ### `lit-download-models`
@@ -262,21 +262,6 @@ python3 -m pytest
 4. Update documentation (README.md, etc.) as needed
 5. Commit with clear, descriptive messages
 6. Create a pull request to the dev branch
-
-## Project Structure
-
-```
-neuro-lit/
-├── neuro_lit/             # Main package directory
-│   ├── scripts/           # Shell scripts including run_lit.sh
-│   ├── utils/             # Utility modules
-│   ├── inpaint_image.py   # Core inpainting functionality
-│   └── cli.py             # Command-line interface
-├── tests/                 # Test files
-├── pyproject.toml         # Package configuration
-├── requirements.txt       # Development dependencies
-└── README.md              # User documentation
-```
 
 ## Documentation
 

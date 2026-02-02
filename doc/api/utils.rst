@@ -1,7 +1,7 @@
 Utils Module
 ============
 
-.. automodule:: lit.utils
+.. automodule:: neuro_lit.utils
    :members:
    :undoc-members:
    :show-inheritance:
@@ -17,7 +17,7 @@ Submodules
 download_checkpoints
 ~~~~~~~~~~~~~~~~~~~~
 
-.. automodule:: lit.utils.download_checkpoints
+.. automodule:: neuro_lit.utils.download_checkpoints
    :members:
    :undoc-members:
    :show-inheritance:
@@ -33,7 +33,7 @@ Download and manage model checkpoints.
 plotting
 ~~~~~~~~
 
-.. automodule:: lit.utils.plotting
+.. automodule:: neuro_lit.utils.plotting
    :members:
    :undoc-members:
    :show-inheritance:

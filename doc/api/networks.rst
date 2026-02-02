@@ -1,7 +1,7 @@
 Networks Module
 ===============
 
-.. automodule:: lit.networks
+.. automodule:: neuro_lit.networks
    :members:
    :undoc-members:
    :show-inheritance:
@@ -9,7 +9,7 @@ Networks Module
 Overview
 --------
 
-The networks module contains neural network architectures used in lit.
+The networks module contains neural network architectures used in neuro_lit.
 
 Submodules
 ----------
@@ -17,7 +17,7 @@ Submodules
 DiffusionUnet
 ~~~~~~~~~~~~~
 
-.. automodule:: lit.networks.DiffusionUnet
+.. automodule:: neuro_lit.networks.DiffusionUnet
    :members:
    :undoc-members:
    :show-inheritance:
@@ -33,7 +33,7 @@ U-Net architecture for diffusion-based inpainting.
 interpolation_layer
 ~~~~~~~~~~~~~~~~~~~
 
-.. automodule:: lit.networks.interpolation_layer
+.. automodule:: neuro_lit.networks.interpolation_layer
    :members:
    :undoc-members:
    :show-inheritance:

@@ -94,7 +94,6 @@ full = [
 
 [project.scripts]
 run-lit = "neuro_lit.cli:run_lit"
-inpaint-image = "neuro_lit.inpaint_image:main"
 lit-download-models = "neuro_lit.utils.download_checkpoints:main"
 lesion-postprocessing = "neuro_lit.scripts.lesion_postprocessing:main"
 

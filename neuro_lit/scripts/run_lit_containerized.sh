@@ -10,7 +10,6 @@ Usage: run_lit_containerized.sh --input_image <input_t1w_volume> --mask_image <l
 
 run_lit_containerized.sh takes a T1 full head image and creates:
      (i)  an inpainted T1w image using a lesion mask
-     (ii) (optional) whole brain segmentation and cortical surface reconstruction using FastSurferVINN
 
 FLAGS:
   -h, --help
@@ -25,12 +24,11 @@ FLAGS:
       Path to the lesion mask volume (same dimensions as input_image, >0 for lesion, 0 for background)
   -o, --output_directory <output_directory>
       Path to the output directory
+  --singularity
+      Use singularity instead of docker
 
 Examples:
   ./run_lit_containerized.sh -i t1w.nii.gz -m lesion.nii.gz -o ./output
-  ./run_lit_containerized.sh -i t1w.nii.gz -m lesion.nii.gz -o ./output --fastsurfer --gpus 0
-
-
 
 REFERENCES:
 
@@ -52,12 +50,9 @@ PROJ_DIR=$(realpath $SCRIPT_DIR/../..)
 
 POSITIONAL_ARGS=()
 
-VERSION="$(python3 -c 'import neuro_lit; print(neuro_lit.__version__)' 2>/dev/null || python3 -c 'import LIT; print(LIT.__version__)' 2>/dev/null || echo '0.5.1')"
+VERSION="$(python3 -c 'import neuro_lit; print(neuro_lit.__version__)')"
 VERSION="${VERSION/version = /}"
 VERSION="${VERSION//\"/}"
-
-# Initialize RUN_FASTSURFER to false by default
-RUN_FASTSURFER=false
 
 # Initialize USE_SINGULARITY to false by default
 USE_SINGULARITY=false
@@ -84,10 +79,6 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    --fastsurfer)
-      RUN_FASTSURFER=true
-      shift # past value
-      ;;
     -h|--help)
       usage
       exit
@@ -103,11 +94,6 @@ while [[ $# -gt 0 ]]; do
       fi
       echo "$VERSION$HASH"
       exit
-      ;;
-    --fs_license)
-      fs_license="$2"
-      shift # past argument
-      shift # past value
       ;;
     --singularity)
       USE_SINGULARITY=true
@@ -151,30 +137,6 @@ if [ -z "$GPUS" ]; then
   GPUS="all"
 fi
 
-fs_license=""
-
-# try to find license file, using default locations
-if [ "$RUN_FASTSURFER" = true ]; then
-  if [ -z "$fs_license" ]; then
-    for license_path in \
-      "$PROJ_DIR/fs_license/license.txt" \
-      "$FREESURFER_HOME/license.txt" \
-      "$FREESURFER_HOME/.license"; do
-      if [ -f "$license_path" ]; then
-        fs_license="$license_path"
-        break
-      fi
-    done
-    if [ -z "$fs_license" ]; then
-      echo "Error: FreeSurfer license file not found"
-      exit 1
-    fi
-  fi
-  POSITIONAL_ARGS+=("--fastsurfer")
-else
-  fs_license=/dev/null
-fi
-
 # Run command based on the containerization tool
 if [ "$USE_SINGULARITY" = true ]; then
   if [ ! -f "$PROJ_DIR/containerization/deepmi_lit.simg" ]; then
@@ -192,7 +154,6 @@ if [ "$USE_SINGULARITY" = true ]; then
     -B "${INPUT_IMAGE}":"${INPUT_IMAGE}":ro \
     -B "${MASK_IMAGE}":"${MASK_IMAGE}":ro \
     -B "${OUT_DIR}":"${OUT_DIR}" \
-    -B "${fs_license:-/dev/null}":/fs_license/license.txt:ro \
     $PROJ_DIR/containerization/deepmi_lit.simg \
     /inpainting/LIT/scripts/run_lit.sh -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" "${POSITIONAL_ARGS[@]}"
 else
@@ -202,6 +163,5 @@ else
     -v "${MASK_IMAGE}":"${MASK_IMAGE}":ro \
     -v "${OUT_DIR}":"${OUT_DIR}" \
     -u "$(id -u):$(id -g)" \
-    -v "${fs_license:-/dev/null}":/fs_license/license.txt:ro \
     deepmi/lit:$VERSION -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" "${POSITIONAL_ARGS[@]}"
 fi

@@ -3,53 +3,53 @@
     {
       "name": "aparc.DKTatlas+aseg",
       "input_file": "mri/aparc.DKTatlas+aseg.deep.mgz",
-      "output_file": "mri/aparc.DKTatlas+aseg+lesion.deep.mgz",
+      "output_file": "mri/aparc.DKTatlas+aseg.deep.mgz",
       "report_file": "stats/aparc.DKTatlas+aseg+lesion.anatomy_report.txt",
       "map_lesion": true
     },
     {
       "name": "aseg.auto_noCCseg",
       "input_file": "mri/aseg.auto_noCCseg.mgz",
-      "output_file": "mri/aseg.auto_noCCseg+lesion.mgz",
+      "output_file": "mri/aseg.auto_noCCseg.mgz",
       "map_lesion": true
     },
     {
       "name": "aseg",
       "input_file": "mri/aseg.mgz",
-      "output_file": "mri/aseg+lesion.mgz",
+      "output_file": "mri/aseg.mgz",
       "report_file": "stats/aseg+lesion.anatomy_report.txt",
       "map_lesion": true
     },
     {
       "name": "aseg.presurf.hypos",
       "input_file": "mri/aseg.presurf.hypos.mgz",
-      "output_file": "mri/aseg.presurf.hypos+lesion.mgz",
+      "output_file": "mri/aseg.presurf.hypos.mgz",
       "map_lesion": true
     },
     {
       "name": "wmparc.DKTatlas.mapped",
       "input_file": "mri/wmparc.DKTatlas.mapped.mgz",
-      "output_file": "mri/wmparc.DKTatlas.mapped+lesion.mgz",
+      "output_file": "mri/wmparc.DKTatlas.mapped.mgz",
       "map_lesion": true
     },
     {
       "name": "hypothalamus.HypVINN",
       "input_file": "mri/hypothalamus.HypVINN.nii.gz",
-      "output_file": "mri/hypothalamus.HypVINN+lesion.nii.gz",
+      "output_file": "mri/hypothalamus.HypVINN.nii.gz",
       "map_lesion": true
     },
     {
       "name": "cerebellum.CerebNet",
       "input_file": "mri/cerebellum.CerebNet.nii.gz",
-      "output_file": "mri/cerebellum.CerebNet+lesion.nii.gz",
+      "output_file": "mri/cerebellum.CerebNet.nii.gz",
       "map_lesion": true
     }
   ],
   "segstats_calls": [
     {
       "name": "cerebellum.CerebNet",
-      "segfile": "mri/cerebellum.CerebNet+lesion.nii.gz",
-      "segstatsfile": "stats/cerebellum.CerebNet+lesion.stats",
+      "segfile": "mri/cerebellum.CerebNet.nii.gz",
+      "segstatsfile": "stats/cerebellum.CerebNet.stats",
       "normfile": "mri/orig_nu.mgz",
       "pvfile": "mri/orig_nu.mgz",
       "lut": "config/FreeSurferColorLUT.txt",
@@ -65,8 +65,8 @@
     },
     {
       "name": "hypothalamus.HypVINN",
-      "segfile": "mri/hypothalamus.HypVINN+lesion.nii.gz",
-      "segstatsfile": "stats/hypothalamus.HypVINN+lesion.stats",
+      "segfile": "mri/hypothalamus.HypVINN.nii.gz",
+      "segstatsfile": "stats/hypothalamus.HypVINN.stats",
       "normfile": "mri/orig_nu.mgz",
       "lut": "config/FreeSurferColorLUT.txt",
       "empty": true,
@@ -75,8 +75,8 @@
     },
     {
       "name": "aseg+DKT.VINN",
-      "segfile": "mri/aparc.DKTatlas+aseg+lesion.deep.mgz",
-      "segstatsfile": "stats/aseg+DKT+lesion.VINN.stats",
+      "segfile": "mri/aparc.DKTatlas+aseg.deep.mgz",
+      "segstatsfile": "stats/aseg+DKT.VINN.stats",
       "normfile": "mri/orig_nu.mgz",
       "lut": "config/FreeSurferColorLUT.txt",
       "empty": true,
@@ -88,8 +88,8 @@
     },
     {
       "name": "aseg.VINN",
-      "segfile": "mri/aseg.auto_noCCseg+lesion.mgz",
-      "segstatsfile": "stats/aseg+lesion.VINN.stats",
+      "segfile": "mri/aseg.auto_noCCseg.mgz",
+      "segstatsfile": "stats/aseg.VINN.stats",
       "normfile": "mri/orig_nu.mgz",
       "lut": "config/FreeSurferColorLUT.txt",
       "empty": true,
@@ -97,13 +97,13 @@
       "ids": [2, 4, 3, 5, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 24, 26, 28, 31, 41, 42, 43, 44, 46, 47, 49, 50, 51, 52, 53, 54, 58, 60, 63, 77, 99],
       "measures": {
         "import_all": true,
-        "file": "stats/aseg+DKT+lesion.VINN.stats"
+        "file": "stats/aseg+DKT.VINN.stats"
       }
     },
     {
       "name": "aseg",
-      "segfile": "mri/aseg+lesion.mgz",
-      "segstatsfile": "stats/aseg+lesion.stats",
+      "segfile": "mri/aseg.mgz",
+      "segstatsfile": "stats/aseg.stats",
       "pvfile": "mri/norm.mgz",
       "normfile": "mri/norm.mgz",
       "excludeid": [0, 2, 3, 41, 42],
@@ -116,20 +116,20 @@
     },
     {
       "name": "brainvol",
-      "segfile": "mri/aseg+lesion.mgz",
-      "segstatsfile": "stats/brainvol+lesion.stats",
+      "segfile": "mri/aseg.mgz",
+      "segstatsfile": "stats/brainvol.stats",
       "pvfile": "mri/norm.mgz",
       "measure_only": true,
       "measures": {
-        "file": "stats/aseg+lesion.stats",
+        "file": "stats/aseg.stats",
         "import": ["BrainSeg", "BrainSegNotVent", "SupraTentorial", "SupraTentorialNotVent", "SubCortGray", "lhCortex", "rhCortex", "Cortex", "TotalGray", "lhCerebralWhiteMatter", "rhCerebralWhiteMatter", "CerebralWhiteMatter", "Mask"],
         "compute": ["SupraTentorialNotVentVox", "BrainSegNotVentSurf", "VentricleChoroidVol"]
       }
     },
     {
       "name": "aseg.presurf.hypos",
-      "segfile": "mri/aseg.presurf.hypos+lesion.mgz",
-      "segstatsfile": "stats/aseg.presurf.hypos+lesion.stats",
+      "segfile": "mri/aseg.presurf.hypos.mgz",
+      "segstatsfile": "stats/aseg.presurf.hypos.stats",
       "normfile": "mri/norm.mgz",
       "pvfile": "mri/norm.mgz",
       "excludeid": [0, 2, 3, 41, 42],
@@ -138,24 +138,23 @@
       "empty": true,
       "volume_precision": 1,
       "measures": {
-        "file": "stats/aseg+lesion.stats",
+        "file": "stats/aseg.stats",
         "import_all": true
       }
     },
     {
       "name": "wmparc.DKTatlas.mapped",
-      "segfile": "mri/wmparc.DKTatlas.mapped+lesion.mgz",
-      "segstatsfile": "stats/wmparc.DKTatlas.mapped+lesion.stats",
+      "segfile": "mri/wmparc.DKTatlas.mapped.mgz",
+      "segstatsfile": "stats/wmparc.DKTatlas.mapped.stats",
       "pvfile": "mri/norm.mgz",
       "normfile": "mri/norm.mgz",
       "lut": "WMParcStatsLUT.txt",
       "lut_absolute": true,
       "volume_precision": 1,
       "measures": {
-        "file": "stats/brainvol+lesion.stats",
+        "file": "stats/brainvol.stats",
         "import": ["Mask", "VentricleChoroidVol", "rhCerebralWhiteMatter", "lhCerebralWhiteMatter", "CerebralWhiteMatter"]
       }
     }
   ]
 }
-

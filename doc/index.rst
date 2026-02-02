@@ -5,7 +5,7 @@ Welcome to LIT's Documentation!
 
 **LIT (Lesion Inpainting Tool)** is a tool for inpainting lesions in brain MRI images, independent of their shape or appearance, for further downstream analysis.
 
-This tool can be run standalone or in conjunction with FastSurfer for whole brain segmentation and cortical surface reconstruction. It can also mask tumor regions in the FastSurfer outputs.
+LIT with FastSurfer can be run by directly running `FastSurfer <https://deep-mi.org/fastsurfer/>`_. For other tools and FreeSurfer use the LIT repository.
 
 .. image:: overview.png
    :alt: LIT Overview
@@ -54,35 +54,21 @@ Using PyPI Package
 
    installation
    usage
-   integration
    training
 
 .. toctree::
    :maxdepth: 2
-   :caption: API Reference
-
-   api/modules
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Getting Started
-
-   QUICKSTART
-   README
-
-.. toctree::
-   :maxdepth: 1
    :caption: Development
 
    contributing
-   changelog
+   api/modules
+   documentation
 
 .. toctree::
    :maxdepth: 1
    :caption: Reference
 
    citation
-   license
 
 Indices and tables
 ==================

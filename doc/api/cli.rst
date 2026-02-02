@@ -1,7 +1,7 @@
 Command-Line Interface
 ======================
 
-.. automodule:: lit.cli
+.. automodule:: neuro_lit.cli
    :members:
    :undoc-members:
    :show-inheritance:
@@ -17,7 +17,7 @@ Main Functions
 run_lit
 ~~~~~~~
 
-:py:func:`lit.cli.run_lit`
+:py:func:`neuro_lit.cli.run_lit`
 
 Entry point for the main ``run-lit`` command. This is the primary interface for running the full LIT pipeline.
 

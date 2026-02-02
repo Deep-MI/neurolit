@@ -1,7 +1,7 @@
 Data Module
 ===========
 
-.. automodule:: lit.data
+.. automodule:: neuro_lit.data
    :members:
    :undoc-members:
    :show-inheritance:
@@ -17,7 +17,7 @@ Submodules
 conform
 ~~~~~~~
 
-.. automodule:: lit.data.conform
+.. automodule:: neuro_lit.data.conform
    :members:
    :undoc-members:
    :show-inheritance:
@@ -33,7 +33,7 @@ Image conforming utilities for standardizing brain MRI images.
 datasets
 ~~~~~~~~
 
-.. automodule:: lit.data.datasets
+.. automodule:: neuro_lit.data.datasets
    :members:
    :undoc-members:
    :show-inheritance:
@@ -48,7 +48,7 @@ PyTorch dataset classes for brain MRI data.
 transforms
 ~~~~~~~~~~
 
-.. automodule:: lit.data.transforms
+.. automodule:: neuro_lit.data.transforms
    :members:
    :undoc-members:
    :show-inheritance:

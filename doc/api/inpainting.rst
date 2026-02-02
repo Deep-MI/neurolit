@@ -1,7 +1,7 @@
 Inpainting Module
 =================
 
-.. automodule:: lit.inpaint_image
+.. automodule:: neuro_lit.inpaint_image
    :members:
    :undoc-members:
    :show-inheritance:
@@ -17,15 +17,15 @@ Main Function
 main
 ~~~~
 
-:py:func:`lit.inpaint_image.main`
+:py:func:`neuro_lit.inpaint_image.main`
 
-Entry point for the ``inpaint-image`` command. Provides direct access to inpainting functionality.
+Core inpainting functionality.
 
 **Usage:**
 
 .. code-block:: bash
 
-   inpaint-image --input_image T1w.nii.gz \\
+   python3 -m neuro_lit.inpaint_image --input_image T1w.nii.gz \\
                  --mask_image mask.nii.gz \\
                  --out_dir output
 
@@ -135,11 +135,10 @@ Batch Processing
        subject_id = subject_dir.name
        
        cmd = [
-           'inpaint-image',
+           'python3', '-m', 'neuro_lit.inpaint_image',
            '--input_image', str(subject_dir / 'T1w.nii.gz'),
            '--mask_image', str(subject_dir / 'lesion_mask.nii.gz'),
-           '--out_dir', str(output_dir / subject_id),
-           '--device', 'cuda'
+           '--out_dir', str(output_dir / subject_id)
        ]
        
        subprocess.run(cmd, check=True)

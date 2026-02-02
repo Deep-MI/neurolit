@@ -14,33 +14,6 @@ This section contains detailed API documentation for all LIT modules.
    postprocessing
    utils
 
-Module Overview
----------------
-
-LIT Package Structure
-~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: text
-
-   LIT/
-   ├── cli.py                  # Command-line interface
-   ├── inference.py            # Main inference pipeline
-   ├── inpaint_image.py        # Core inpainting functionality
-   ├── train_ddpm.py           # Training script
-   ├── data/                   # Data processing modules
-   │   ├── conform.py         # Image conforming
-   │   ├── datasets.py        # Dataset classes
-   │   └── transforms.py      # Data transformations
-   ├── networks/              # Neural network architectures
-   │   ├── DiffusionUnet.py   # U-Net for diffusion
-   │   └── interpolation_layer.py  # Custom layers
-   ├── postprocessing/        # Postprocessing tools
-   │   ├── lesion_to_segmentation.py  # Mask segmentations
-   │   └── lesion_to_surface.py       # Mask surfaces
-   └── utils/                 # Utility functions
-       ├── download_checkpoints.py  # Model downloading
-       ├── plotting.py              # Visualization
-       └── logging.py               # Console logging helpers
 
 Quick Reference
 ---------------
@@ -58,16 +31,16 @@ Common Functions
 Most Used Classes
 ~~~~~~~~~~~~~~~~~
 
-* :class:`lit.networks.DiffusionUnet.DiffusionUNet`
-* :class:`lit.data.datasets.BrainDataset`
-* :class:`lit.data.transforms.Compose`
+* :class:`neuro_lit.networks.DiffusionUnet.DiffusionUNet`
+* :class:`neuro_lit.data.datasets.BrainDataset`
+* :class:`neuro_lit.data.transforms.Compose`
 
 Entry Points
 ~~~~~~~~~~~~
 
 The package provides three main entry points:
 
-1. **run-lit**: Full pipeline wrapper
-2. **inpaint-image**: Direct inpainting
-3. **lit-download-models**: Download model checkpoints
+1. **lit-download-models**: Download model checkpoints
+2. **run-lit**: Main LIT command
+3. **lesion-postprocessing**: FastSurfer/FreeSurfer integration pipeline
 

@@ -10,6 +10,7 @@ import argparse
 import json
 import logging
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -86,6 +87,31 @@ def load_config(config_path: Path) -> dict[str, Any]:
     
     with open(config_path) as f:
         return json.load(f)
+
+
+def ensure_backup(file_path: Path) -> Path | None:
+    """Ensure a backup of the original file exists before overwriting it.
+
+    Adds '.lit' before the extension(s).
+    """
+    if not file_path.exists():
+        return None
+
+    # Construct backup name (e.g., file.mgz -> file.lit.mgz, file.nii.gz -> file.lit.nii.gz)
+    if file_path.name.endswith(".nii.gz"):
+        ext = ".nii.gz"
+    else:
+        ext = file_path.suffix
+
+    stem = file_path.name[:-len(ext)] if ext else file_path.name
+    backup_name = f"{stem}.lit{ext}"
+    backup_path = file_path.with_name(backup_name)
+
+    if not backup_path.exists():
+        logger.info(f"  Creating backup: {file_path.name} -> {backup_name}")
+        shutil.copy2(file_path, backup_path)
+
+    return backup_path
 
 
 def validate_segstats_installation() -> tuple[Path | None, bool]:
@@ -317,7 +343,16 @@ def map_lesion_to_segmentation(subjects_dir: Path, subject_id: str,
         logger.warning(f"  Skipping: {input_file} not found at {input_path}")
         return False
 
+    # Handle backup if input and output are the same
+    if input_path == output_path:
+        backup_path = ensure_backup(input_path)
+        if backup_path:
+            # Use backup as input for the mapping
+            input_path = backup_path
+
     report_path = subjects_dir / subject_id / report_file if report_file else None
+    if report_path:
+        ensure_backup(report_path)
     lut_path = _find_lut_file(fs_home) if report_file else None
 
     lesion_to_segmentation_main(
@@ -492,6 +527,13 @@ def run_segstats(fastsurfer_path: Path | None, subjects_dir: Path, subject_id: s
     cmd = build_segstats_command(fastsurfer_path, subjects_dir, subject_id, config, 
                                  fs_home, python_cmd, use_mri_segstats)
     
+    # Ensure backups for output files
+    subj_path = subjects_dir / subject_id
+    if 'segstatsfile' in config:
+        ensure_backup(subj_path / config['segstatsfile'])
+    if 'sum' in config:
+        ensure_backup(subj_path / config['sum'])
+
     if use_mri_segstats:
         # Note: mri_segstats does not support measures subcommand
         if 'measures' in config:
@@ -540,6 +582,11 @@ def build_surfstats_command(subjects_dir: Path, subject_id: str, hemisphere: str
 def run_surfstats(subjects_dir: Path, subject_id: str, hemisphere: str, 
                   config: dict[str, Any]) -> bool:
     """Run surface-based anatomical statistics."""
+    # Ensure backup for statsfile
+    if 'statsfile' in config:
+        stats_path = subjects_dir / subject_id / config['statsfile'].format(hemi=hemisphere)
+        ensure_backup(stats_path)
+
     cmd = build_surfstats_command(subjects_dir, subject_id, hemisphere, config)
     env = os.environ.copy()
     env["SUBJECTS_DIR"] = str(subjects_dir)
@@ -596,16 +643,28 @@ def surface_masking(lit_path: Path, subjects_dir: Path, subject_id: str,
     surflut = str(lit_path / "postprocessing" / "DKTatlaslookup_lesion.txt")
     seglut = str(lit_path / "postprocessing" / "hemi.DKTatlaslookup_lesion.txt")
     
-    out_annot = str(subjects_dir / subject_id / output_file.format(hemi=hemisphere))
+    out_annot_path = subjects_dir / subject_id / output_file.format(hemi=hemisphere)
+    out_annot = str(out_annot_path)
     to_annot_path = subjects_dir / subject_id / input_file.format(hemi=hemisphere)
     to_annot = str(to_annot_path)
 
     if not to_annot_path.exists():
         logger.warning(f"  Skipping: {input_file.format(hemi=hemisphere)} not found at {to_annot_path}")
         return False
+
+    # Handle backup if input and output are the same
+    if to_annot_path == out_annot_path:
+        backup_path = ensure_backup(to_annot_path)
+        if backup_path:
+            # Use backup as input for the mapping
+            to_annot = str(backup_path)
     
     report_path = subjects_dir / subject_id / report_file.format(hemi=hemisphere) if report_file else None
+    if report_path:
+        ensure_backup(report_path)
     ctab_path = subjects_dir / subject_id / output_ctab.format(hemi=hemisphere) if output_ctab else None
+    if ctab_path:
+        ensure_backup(ctab_path)
 
     # Call the main function with all parameters
     lesion_to_surface_main(
@@ -920,19 +979,6 @@ def main():
             run_segstats(fastsurfer_path, subjects_dir, subject_id, segstats_config, 
                         fs_home, call_use_mri_segstats, args.python_cmd)
 
-        # Create legacy link for combined stats to stay consistent with FastSurfer
-        aseg_vinn_stats = subjects_dir / subject_id / "stats" / "aseg+DKT+lesion.VINN.stats"
-        aseg_stats = subjects_dir / subject_id / "stats" / "aseg+DKT+lesion.stats"
-        if aseg_vinn_stats.exists():
-            if aseg_stats.exists() or aseg_stats.is_symlink():
-                logger.info(f"Link or file {aseg_stats.name} already exists, skipping symlink creation.")
-            else:
-                logger.info(f"Creating legacy symlink: {aseg_stats.name} -> {aseg_vinn_stats.name}")
-                try:
-                    # Use relative symlink (target is in the same directory)
-                    os.symlink(aseg_vinn_stats.name, aseg_stats)
-                except Exception as e:
-                    logger.warning(f"Failed to create symlink: {e}")
     else:
         logger.info("=" * 60)
         logger.info("STEP 2: Skipping segstats (--skip-segstats enabled)")
@@ -950,28 +996,14 @@ def main():
                 logger.info(f"Processing: {surf_map['name']}")
                 report_file = surf_map.get('report_file')
                 output_ctab = surf_map.get('output_ctab')
-            for hemisphere in ["lh", "rh"]:
-                logger.info(f"  Hemisphere: {hemisphere}")
-                success = surface_masking(lit_path, subjects_dir, subject_id, hemisphere, 
-                                        surf_map['input_file'], surf_map['output_file'], 
-                                        report_file, output_ctab)
-                if success and report_file:
-                    surface_reports.append((surf_map['output_file'].format(hemi=hemisphere), 
-                                          report_file.format(hemi=hemisphere)))
-
-        # Create symlinks for .mapped.annot to stay consistent with FastSurfer/FreeSurfer naming
-        for hemisphere in ["lh", "rh"]:
-            src = subjects_dir / subject_id / "label" / f"{hemisphere}.aparc.DKTatlas.lesion.annot"
-            dst = subjects_dir / subject_id / "label" / f"{hemisphere}.aparc.DKTatlas.lesion.mapped.annot"
-            if src.exists():
-                if dst.exists() or dst.is_symlink():
-                    logger.info(f"Link or file {dst.name} already exists, skipping symlink creation.")
-                else:
-                    logger.info(f"Creating mapped annotation symlink: {dst.name} -> {src.name}")
-                    try:
-                        os.symlink(src.name, dst)
-                    except Exception as e:
-                        logger.warning(f"Failed to create symlink: {e}")
+                for hemisphere in ["lh", "rh"]:
+                    logger.info(f"  Hemisphere: {hemisphere}")
+                    success = surface_masking(lit_path, subjects_dir, subject_id, hemisphere, 
+                                            surf_map['input_file'], surf_map['output_file'], 
+                                            report_file, output_ctab)
+                    if success and report_file:
+                        surface_reports.append((surf_map['output_file'].format(hemi=hemisphere), 
+                                              report_file.format(hemi=hemisphere)))
 
     # Run surface-related segstats (after surface masking)
     if surface_segstats_calls:

@@ -85,7 +85,7 @@ For development or if you want to modify the code:
    cd LIT
    
    # Install dependencies
-   pip install -r requirements.txt
+   pip install -r pyproject.toml
    
    # Install the package in development mode
    pip install -e .
@@ -149,15 +149,3 @@ If PyTorch doesn't detect your GPU:
 1. Check that CUDA is installed: ``nvidia-smi``
 2. Verify PyTorch CUDA support: ``python -c "import torch; print(torch.cuda.is_available())"``
 3. Install the correct PyTorch version for your CUDA version from `pytorch.org <https://pytorch.org/get-started/locally/>`_
-
-Import Errors
-~~~~~~~~~~~~~
-
-If you encounter import errors:
-
-1. Ensure all dependencies are installed: ``pip install -r requirements.txt``
-2. Check that you're using Python >= 3.8: ``python --version``
-3. Try creating a fresh virtual environment
-
-For additional help, please open an issue on the `GitHub repository <https://github.com/Deep-MI/LIT/issues>`_.
-

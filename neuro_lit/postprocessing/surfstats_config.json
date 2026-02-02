@@ -9,7 +9,7 @@
     {
       "name": "aparc.DKTatlas",
       "input_file": "label/{hemi}.aparc.DKTatlas.annot",
-      "output_file": "label/{hemi}.aparc.DKTatlas.lesion.annot",
+      "output_file": "label/{hemi}.aparc.DKTatlas.annot",
       "report_file": "stats/{hemi}.aparc.DKTatlas.anatomy_report.txt",
       "output_ctab": "label/aparc.annot.mapped.lesion.ctab",
       "map_lesion": true
@@ -17,7 +17,7 @@
     {
       "name": "BA_exvivo",
       "input_file": "label/{hemi}.BA_exvivo.annot",
-      "output_file": "label/{hemi}.BA_exvivo.lesion.annot",
+      "output_file": "label/{hemi}.BA_exvivo.annot",
       "report_file": "stats/{hemi}.BA_exvivo.anatomy_report.txt",
       "output_ctab": "label/BA_exvivo.lesion.ctab",
       "map_lesion": true
@@ -25,7 +25,7 @@
     {
       "name": "BA_exvivo.thresh",
       "input_file": "label/{hemi}.BA_exvivo.thresh.annot",
-      "output_file": "label/{hemi}.BA_exvivo.lesion.thresh.annot",
+      "output_file": "label/{hemi}.BA_exvivo.thresh.annot",
       "report_file": "stats/{hemi}.BA_exvivo.thresh.anatomy_report.txt",
       "output_ctab": "label/BA_exvivo.thresh.lesion.ctab",
       "map_lesion": true
@@ -33,7 +33,7 @@
     {
       "name": "mpm.vpnl",
       "input_file": "label/{hemi}.mpm.vpnl.annot",
-      "output_file": "label/{hemi}.mpm.vpnl.lesion.annot",
+      "output_file": "label/{hemi}.mpm.vpnl.annot",
       "report_file": "stats/{hemi}.mpm.vpnl.anatomy_report.txt",
       "map_lesion": true
     }
@@ -41,9 +41,9 @@
   "surfstats_calls": [
     {
       "name": "aparc.DKTatlas.mapped",
-      "statsfile": "stats/{hemi}.aparc.DKTatlas.mapped+lesion.stats",
+      "statsfile": "stats/{hemi}.aparc.DKTatlas.stats",
       "cortex": "label/{hemi}.cortex.label",
-      "annot": "label/{hemi}.aparc.DKTatlas.lesion.mapped.annot",
+      "annot": "label/{hemi}.aparc.DKTatlas.annot",
       "ctab": "label/aparc.annot.mapped.lesion.ctab",
       "surface": "white",
       "th3": true,
@@ -52,8 +52,8 @@
     },
     {
       "name": "BA_exvivo",
-      "statsfile": "stats/{hemi}.BA_exvivo.lesion.stats",
-      "annot": "label/{hemi}.BA_exvivo.lesion.annot",
+      "statsfile": "stats/{hemi}.BA_exvivo.stats",
+      "annot": "label/{hemi}.BA_exvivo.annot",
       "ctab": "label/BA_exvivo.lesion.ctab",
       "surface": "white",
       "mgz": true,
@@ -61,8 +61,8 @@
     },
     {
       "name": "BA_exvivo.thresh",
-      "statsfile": "stats/{hemi}.BA_exvivo.lesion.thresh.stats",
-      "annot": "label/{hemi}.BA_exvivo.lesion.thresh.annot",
+      "statsfile": "stats/{hemi}.BA_exvivo.thresh.stats",
+      "annot": "label/{hemi}.BA_exvivo.thresh.annot",
       "ctab": "label/BA_exvivo.thresh.lesion.ctab",
       "surface": "white",
       "mgz": true,

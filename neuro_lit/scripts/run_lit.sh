@@ -3,7 +3,6 @@
 set -e
 
 # Initialize default values
-RUN_FASTSURFER=false
 DILATE=0
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
@@ -11,19 +10,18 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 # This works for git clones; for pip installs it points to site-packages
 PROJ_DIR=$(realpath $SCRIPT_DIR/../..)
 
-VERSION="$(python3 -c 'import neuro_lit; print(neuro_lit.__version__)' 2>/dev/null || python3 -c 'import LIT; print(LIT.__version__)' 2>/dev/null || echo '0.5.1')"
+VERSION="$(python3 -c 'import neuro_lit; print(neuro_lit.__version__)' 2>/dev/null)"
 VERSION="${VERSION/version = /}"
 VERSION="${VERSION//\"/}"
 
 function usage() {
-    echo "Usage: $0 -i <input_t1w> -m <lesion_mask> -o <output_dir> [--fastsurfer] [--fs_license <path>]"
+    echo "Usage: $0 -i <input_t1w> -m <lesion_mask> -o <output_dir>"
     echo "Required arguments:"
     echo "  -i, --input_image     : Input T1w image"
     echo "  -m, --lesion_mask     : Lesion mask"
     echo "  -o, --sd              : Output directory"
     echo "Optional arguments:"
-    echo "  --fastsurfer          : Run FastSurfer (default: false)"
-    echo "  --fs_license          : Path to FreeSurfer license"
+    echo "  --dilate              : Number of times to dilate the lesion mask (default: 0)"
     echo "Other arguments:"
     echo "  --version             : Print version number and exit"
     echo ""
@@ -58,14 +56,6 @@ while [[ $# -gt 0 ]]; do
     --dilate)
       DILATE="$2"
       shift 2
-      ;;
-    --fs_license)
-      fs_license="$(realpath "$2")"
-      shift 2
-      ;;
-    --fastsurfer)
-      RUN_FASTSURFER=true
-      shift
       ;;
     -h|--help)
       usage
@@ -117,34 +107,6 @@ CKPT_AXIAL="$WEIGHTS_DIR/model_axial.pt"
 CKPT_SAGITTAL="$WEIGHTS_DIR/model_sagittal.pt"
 INPAINTED_IMG="$OUT_DIR/inpainting_volumes/inpainting_result.nii.gz"
 
-
-
-# Handle FastSurfer setup
-if [ "$RUN_FASTSURFER" = true ]; then
-    # Check for FASTSURFER_HOME
-    if [ -z "$FASTSURFER_HOME" ]; then
-        echo "Error: Requested FastSurfer but FASTSURFER_HOME environment variable not set"
-        exit 1
-    fi
-
-    # Handle license file
-    if [ -z "$fs_license" ]; then
-        for license_path in \
-            "$PROJ_DIR/fs_license/license.txt" \
-            "$FREESURFER_HOME/license.txt" \
-            "$FREESURFER_HOME/.license"; do
-            if [ -f "$license_path" ]; then
-                fs_license="$license_path"
-                break
-            fi
-        done
-        if [ -z "$fs_license" ]; then
-            echo "Error: FreeSurfer license file not found"
-            exit 1
-        fi
-    fi
-fi
-
 # Run inpainting if mask is provided
 if [ ! -z "$MASK_IMAGE" ]; then
   if [ ! -e "$INPAINTED_IMG" ]; then
@@ -184,43 +146,5 @@ if [ ! -z "$MASK_IMAGE" ]; then
   fi
 fi
 
-# Exit if not running FastSurfer
-if [ "$RUN_FASTSURFER" = false ]; then
-  echo "Finished inpainting"
-  exit 0
-fi
-
-# Setup FastSurfer paths
-S_DIR=$(basename "$OUT_DIR")
-OUT_DIR=$(dirname "$OUT_DIR")
-
-# Validate inpainted image exists
-if [ ! -f "$INPAINTED_IMG" ]; then
-  echo "Error: Inpainted file not found: $INPAINTED_IMG"
-  exit 1
-fi
-
-# Run FastSurfer
-fastsurfer_command="$FASTSURFER_HOME/run_fastsurfer.sh --sid $S_DIR --sd $OUT_DIR"
-[ ! -z "$fs_license" ] && fastsurfer_command="$fastsurfer_command --fs_license $fs_license"
-fastsurfer_command="$fastsurfer_command --t1 ${MASK_IMAGE:+$INPAINTED_IMG}"
-fastsurfer_command="$fastsurfer_command ${POSITIONAL_ARGS[*]}"
-
-# Set PYTHONPATH
-export PYTHONPATH="$PROJ_DIR:${PYTHONPATH:+$PYTHONPATH:}$FASTSURFER_HOME/FastSurferCNN"
-
-# Run FastSurfer and post-processing
-if [ ! -f "$OUT_DIR/$S_DIR/scripts/recon-surf.done" ]; then
-  eval "$fastsurfer_command"
-  cd "$PROJ_DIR"
-else
-  echo "FastSurfer already ran"
-fi
-
-# Handle post-processing
-if [ -f "$MASK_IMAGE" ]; then
-  echo "Running lesion postprocessing..."
-  python3 "$SCRIPT_DIR/lesion_postprocessing.py" \
-    -sid "$S_DIR" \
-    -sd "$OUT_DIR"
-fi
+echo "Finished inpainting"
+exit 0

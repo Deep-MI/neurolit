@@ -1,7 +1,7 @@
 Usage Guide
 ===========
 
-This guide covers the basic and advanced usage of lit.
+This guide covers the basic and advanced usage of neuro_lit.
 
 Basic Usage
 -----------
@@ -39,35 +39,6 @@ If you installed via pip:
        --output_directory output_directory \\
        --dilate 2
 
-Understanding the Outputs
---------------------------
-
-LIT produces several output files in the ``inpainting_volumes`` subdirectory:
-
-Output Files
-~~~~~~~~~~~~
-
-* **Inpainted T1w image:** The main output with lesions inpainted
-* **Inpainting mask:** The (dilated) mask used for inpainting in the same space as the input
-* **Cropped inpainted image:** The inpainted T1w where the lesion is cropped out
-
-File Structure
-~~~~~~~~~~~~~~
-
-.. code-block:: text
-
-   output_directory/
-   └── inpainting_volumes/
-       ├── T1w_inpainted.nii.gz
-       ├── inpainting_mask.nii.gz
-       └── T1w_inpainted_cropped.nii.gz
-
-.. note::
-   If the source image was isotropic, the output images will have the same resolution as the input image. The area outside of the lesion mask is preserved, except for robust rescaling of intensity values.
-
-Advanced Usage
---------------
-
 Mask Dilation
 ~~~~~~~~~~~~~
 
@@ -78,13 +49,41 @@ We recommend performing mask dilation to account for potential undersegmentation
    run-lit --input_image T1w.nii.gz \\
           --mask_image lesion_mask.nii.gz \\
           --output_directory output \\
-          --dilate 3  # Dilate mask by 3 voxels
+          --dilate 2  # Dilate mask by 2 voxels
 
 **When to use dilation:**
 
-* **Undersegmentation:** Increase dilation (2-5 voxels)
-* **Oversegmentation:** Use less or no dilation
-* **Uncertain boundaries:** Use moderate dilation (2-3 voxels)
+* **Undersegmentation:** Increase dilation
+* **Uncertain boundaries:** Use moderate dilation
+
+Understanding the Outputs
+--------------------------
+
+LIT produces several output files in the ``inpainting_volumes`` subdirectory:
+
+Output Files
+~~~~~~~~~~~~
+
+* **inpainting_result.nii.gz**: The main output with lesions inpainted.
+* **inpainting_mask.nii.gz**: The (dilated) mask used for inpainting in the same space as the input.
+* **inpainting_original_image.nii.gz**: The conformed original input image.
+
+File Structure
+~~~~~~~~~~~~~~
+
+.. code-block:: text
+
+   output_directory/
+   └── inpainting_volumes/
+       ├── inpainting_result.nii.gz
+       ├── inpainting_mask.nii.gz
+       └── inpainting_original_image.nii.gz
+
+.. note::
+   If the source image was isotropic, the output images will have the same resolution as the input image. The area outside of the lesion mask is preserved, except for robust rescaling of intensity values.
+
+Advanced Usage
+--------------
 
 Direct Inpainting (Python API)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -109,23 +108,8 @@ For programmatic access, use the direct inpainting function:
    # Run inpainting
    inpaint(args)
 
-GPU vs CPU
-~~~~~~~~~~
-
-By default, LIT uses GPU if available. To force CPU mode:
-
-.. code-block:: bash
-
-   run-lit --input_image T1w.nii.gz \\
-          --mask_image lesion_mask.nii.gz \\
-          --output_directory output \\
-          --device cpu
-
-.. warning::
-   CPU mode is significantly slower than GPU mode (10-20x slower).
-
 Batch Processing
-----------------
+~~~~~~~~~~~~~~~~
 
 For processing multiple subjects, create a simple loop:
 
@@ -172,7 +156,7 @@ Command-Line Interface Reference
 run-lit
 ~~~~~~~
 
-Main command to run the full LIT pipeline.
+Main command to run the LIT inpainting.
 
 .. code-block:: text
 
@@ -183,25 +167,6 @@ Options:
    --mask_image PATH         Path to lesion mask [required]
    --output_directory PATH   Output directory [required]
    --dilate INTEGER          Number of dilation iterations [default: 0]
-   --device TEXT            Device to use (cuda/cpu) [default: cuda]
-   --help                   Show this message and exit
-
-inpaint-image
-~~~~~~~~~~~~~
-
-Direct access to core inpainting functionality.
-
-.. code-block:: text
-
-   inpaint-image [OPTIONS]
-
-Options:
-   --input_image PATH        Path to input T1w image [required]
-   --mask_image PATH         Path to lesion mask [required]
-   --out_dir PATH           Output directory [required]
-   --device TEXT            Device to use (cuda/cpu) [default: cuda]
-   --batch_size INTEGER     Batch size for processing [default: 16]
-   --num_samples INTEGER    Number of diffusion samples [default: 100]
    --help                   Show this message and exit
 
 lit-download-models
@@ -217,30 +182,43 @@ Options:
    --force                  Force re-download even if models exist
    --help                   Show this message and exit
 
+lesion-postprocessing
+~~~~~~~~~~~~~~~~~~~~~
+
+Integrate lesion masks into FastSurfer/FreeSurfer outputs.
+
+.. code-block:: text
+
+   lesion-postprocessing [OPTIONS]
+
+Options:
+   --subject-id TEXT        Subject ID [required]
+   --subjects-dir PATH      Subjects directory [required]
+   --skip-segstats          Skip volumetric statistics
+   --skip-surface-masking   Skip surface masking
+   --help                   Show this message and exit
+
 Best Practices
 --------------
 
 Input Data
 ~~~~~~~~~~
 
-1. **Image Format:** NIfTI format (.nii.gz or .nii) is recommended
-2. **Image Quality:** Use high-quality T1-weighted images (1mm isotropic preferred)
-3. **Mask Quality:** Ensure lesion masks are accurate; undersegmentation is better than oversegmentation
-4. **Preprocessing:** Skull-stripping is not required but can improve results
+1. **Image Quality:** Use high-quality T1-weighted images (0.8-1 mm isotropic preferred)
+2. **Mask Quality:** Ensure lesion masks are accurate; oversegmentation is better than undersegmentation.
 
 Performance
 ~~~~~~~~~~~
 
-1. **GPU Usage:** Always use GPU when available for significant speedup
+1. **GPU Usage:** Use GPU when available for significant speedup, processing with CPU is not recommended.
 2. **Batch Size:** Increase batch size on high-memory GPUs (default: 16)
-3. **Dilation:** Use 2-3 voxels of dilation for most cases
+3. **Mask Size:** Larger lesion masks require longer inference.
 
 Quality Control
 ~~~~~~~~~~~~~~~
 
-1. **Visual Inspection:** Always visually inspect inpainting results
-2. **Boundary Check:** Pay attention to lesion boundaries
-3. **Intensity Matching:** Verify that inpainted regions match surrounding tissue
+1. **Visual Inspection:** It is recommended to visually inspect inpainting results.
+2. **Boundary Check:** Errors can happen especially at the lesion boundaries if the lesion is undersegmented, increasing dilation can help.
 
 Postprocessing
 --------------
@@ -250,7 +228,7 @@ LIT provides tools to integrate lesion masks into FastSurfer/FreeSurfer segmenta
 Unified Postprocessing Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The recommended way to run postprocessing is using the unified ``lesion_postprocessing.py`` script. This script handles mapping the lesion mask to multiple segmentation files, running volume statistics (segstats), and performing surface masking.
+The recommended way to run postprocessing is using the unified ``lesion-postprocessing`` command. This script handles mapping the lesion mask to multiple segmentation files, running volume statistics (segstats), and performing surface masking.
 
 .. code-block:: bash
 
@@ -260,7 +238,7 @@ The recommended way to run postprocessing is using the unified ``lesion_postproc
    source $FREESURFER_HOME/SetUpFreeSurfer.sh
 
    # Run unified postprocessing
-   python3 lesion_postprocessing.py \\
+   lesion-postprocessing \\
        --subject-id SUBJECT_ID \\
        --subjects-dir /path/to/subjects_dir
 
@@ -280,8 +258,6 @@ For granular control, you can run individual scripts:
 
 1. **lesion_to_segmentation.py**: Inserts lesion labels into volumetric segmentation and generates anatomy reports.
 2. **lesion_to_surface.py**: Projects lesion masks onto cortical surfaces.
-
-See the :doc:`integration` guide for detailed examples of using these individual tools.
 
 Common Issues
 -------------

@@ -88,7 +88,7 @@ def options_parse():
 
 def get_surface_anatomy_info(
     existing_labels: npt.NDArray[np.integer],
-    target_mask: npt.NDArray[np.bool_],
+    target_mask: npt.NDArray[bool],
     adjM: sparse.csr_matrix
 ) -> tuple[set[int], set[int], set[int]]:
     """
@@ -98,7 +98,7 @@ def get_surface_anatomy_info(
     ----------
     existing_labels : npt.NDArray[np.integer]
         Original annotation labels (indices into ctab).
-    target_mask : npt.NDArray[np.bool_]
+    target_mask : npt.NDArray[bool]
         Binary mask of the lesion on the surface.
     adjM : sparse.csr_matrix
         Adjacency matrix of the surface mesh.
