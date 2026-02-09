@@ -1,6 +1,6 @@
-# Lesion Inpainting Tool (LIT) 🔥
+# Neuro Lesion Inpainting Tool (neuroLIT) 🔥
 
-![teaser](https://github.com/Deep-MI/LIT/blob/dev/doc/overview.png)
+![teaser](https://github.com/Deep-MI/neurolit/blob/dev/doc/overview.png)
 
 ## Overview
 This repository contains sourcecode and documentation related to our publication [**FastSurfer-LIT: Lesion Inpainting Tool for Whole Brain MRI Segmentation With Tumors, Cavities and Abnormalities**](https://doi.org/10.1162/imag_a_00446).
@@ -52,13 +52,13 @@ The same interface as above can be accessed from pypi:
 
 ```bash
 # Install the package
-pip install neuro-lit
+pip install neurolit
 
-# Download model checkpoints (recommended - download once, ~500MB)
+# Download model checkpoints (recommended - download once, ~700MB)
 lit-download-models
 
 # Run LIT
-run-lit --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output_directory output_directory --dilate 2
+lit-inpainting --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output_directory output_directory --dilate 2
 ```
 
 **Note:** If you skip the `lit-download-models` step, models will be automatically downloaded on first use.
@@ -66,9 +66,9 @@ run-lit --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output_direct
 
 ## Integration with FastSurfer
 
-LIT is integrated into [FastSurfer](https://github.com/deep-mi/FastSurfer) for whole brain segmentation and cortical surface reconstruction of images with lesions. 
+LIT is being integrated into [FastSurfer](https://github.com/deep-mi/FastSurfer) for whole brain segmentation and cortical surface reconstruction of images with lesions. 
 
-For standalone usage with FastSurfer, LIT provides post-processing scripts for integrating lesions into FastSurfer/FreeSurfer outputs. We recommend using the unified `lesion-postprocessing` script which handles mapping the lesion mask to multiple segmentation files, running volume statistics (segstats), and performing surface masking.
+For standalone usage with FastSurfer, LIT provides post-processing scripts for integrating lesions into FastSurfer/FreeSurfer outputs. We recommend using the unified `lit-postprocessing` script which handles mapping the lesion mask to multiple segmentation files, running volume statistics (segstats), and performing surface masking.
 
 ### Postprocessing
 
@@ -79,7 +79,7 @@ export FREESURFER_HOME=/path/to/freesurfer
 source $FREESURFER_HOME/SetUpFreeSurfer.sh
 
 # Run unified postprocessing
-lesion-postprocessing \
+lit-postprocessing \
     -sid SUBJECT_ID \
     -sd /path/to/subjects_dir
 ```
@@ -94,11 +94,11 @@ lesion-postprocessing \
 
 ## Training
 
-The training script can be found [here](neuro_lit/train_ddpm.py). The same docker image can be used for training, but you need to mount the training data directory using the `-v` flag. Note that training data are excpected to be conformed (with the script [conform.py](neuro_lit/data/conform.py)).
+The training script can be found [here](neurolit/train_ddpm.py). The same docker image can be used for training, but you need to mount the training data directory using the `-v` flag. Note that training data are excpected to be conformed (with the script [conform.py](neurolit/data/conform.py)).
 
 ## Documentation
 
-Comprehensive documentation is available in the `doc/` directory. To build and view:
+Comprehensive documentation is available in the `doc/` directory and will be made public at [DeepMI.org/neurolit](https://Deep-MI.org/neurolit). To build and view:
 
 ```bash
 # Install documentation dependencies
@@ -115,7 +115,6 @@ Documentation includes:
 - Installation guides
 - Usage tutorials
 - API reference
-- Training instructions
 - Contributing guidelines
 
 ## References

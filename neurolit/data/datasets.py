@@ -6,7 +6,7 @@ from monai import transforms
 from monai.data import CacheDataset
 from torch.utils.data import Dataset
 
-from neuro_lit.data import conform
+from neurolit.data import conform
 
 
 def get_test_sample():

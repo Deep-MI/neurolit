@@ -1,7 +1,7 @@
 Inference Module
 ================
 
-.. automodule:: neuro_lit.inference
+.. automodule:: neurolit.inference
    :members:
    :undoc-members:
    :show-inheritance:
@@ -14,8 +14,8 @@ The inference module exposes the inferer classes that implement LIT's diffusion-
 Key Concepts
 ------------
 
-* :py:class:`neuro_lit.inference.InpaintingInferer`
-* :py:class:`neuro_lit.inference.SliceWiseInpaintingInferer`
-* :py:class:`neuro_lit.inference.TwoAndHalfDInpaintingInferer`
+* :py:class:`neurolit.inference.InpaintingInferer`
+* :py:class:`neurolit.inference.SliceWiseInpaintingInferer`
+* :py:class:`neurolit.inference.TwoAndHalfDInpaintingInferer`
 
-Use the command-line entry points defined in :py:mod:`neuro_lit.cli` and :py:mod:`neuro_lit.inpaint_image` when you prefer packaged invocations of these inferers.
+Use the command-line entry points defined in :py:mod:`neurolit.cli` and :py:mod:`neurolit.inpaint_image` when you prefer packaged invocations of these inferers.

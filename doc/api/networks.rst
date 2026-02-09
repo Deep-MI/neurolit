@@ -1,7 +1,7 @@
 Networks Module
 ===============
 
-.. automodule:: neuro_lit.networks
+.. automodule:: neurolit.networks
    :members:
    :undoc-members:
    :show-inheritance:
@@ -9,7 +9,7 @@ Networks Module
 Overview
 --------
 
-The networks module contains neural network architectures used in neuro_lit.
+The networks module contains neural network architectures used in neuroLIT.
 
 Submodules
 ----------
@@ -17,7 +17,7 @@ Submodules
 DiffusionUnet
 ~~~~~~~~~~~~~
 
-.. automodule:: neuro_lit.networks.DiffusionUnet
+.. automodule:: neurolit.networks.DiffusionUnet
    :members:
    :undoc-members:
    :show-inheritance:
@@ -33,7 +33,7 @@ U-Net architecture for diffusion-based inpainting.
 interpolation_layer
 ~~~~~~~~~~~~~~~~~~~
 
-.. automodule:: neuro_lit.networks.interpolation_layer
+.. automodule:: neurolit.networks.interpolation_layer
    :members:
    :undoc-members:
    :show-inheritance:
@@ -86,7 +86,7 @@ Using DiffusionUNet
 
 .. code-block:: python
 
-   from neuro_lit.networks.DiffusionUnet import DiffusionUNet
+   from neurolit.networks.DiffusionUnet import DiffusionUNet
    import torch
    
    # Create model
@@ -114,7 +114,7 @@ Loading Pre-trained Weights
 
 .. code-block:: python
 
-   from neuro_lit.networks.DiffusionUnet import DiffusionUNet
+   from neurolit.networks.DiffusionUnet import DiffusionUNet
    import torch
    
    # Create model
@@ -130,7 +130,7 @@ Custom Model Configuration
 
 .. code-block:: python
 
-   from neuro_lit.networks.DiffusionUnet import DiffusionUNet
+   from neurolit.networks.DiffusionUnet import DiffusionUNet
    
    # Create custom model
    model = DiffusionUNet(
@@ -148,7 +148,7 @@ Training Example
 
 .. code-block:: python
 
-   from neuro_lit.networks.DiffusionUnet import DiffusionUNet
+   from neurolit.networks.DiffusionUnet import DiffusionUNet
    import torch
    import torch.nn as nn
    import torch.optim as optim
@@ -179,7 +179,7 @@ Model Summary
 
 .. code-block:: python
 
-   from neuro_lit.networks.DiffusionUnet import DiffusionUNet
+   from neurolit.networks.DiffusionUnet import DiffusionUNet
    
    model = DiffusionUNet()
    

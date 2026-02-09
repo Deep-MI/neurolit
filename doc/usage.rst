@@ -1,7 +1,7 @@
 Usage Guide
 ===========
 
-This guide covers the basic and advanced usage of neuro_lit.
+This guide covers the basic and advanced usage of neuroLIT.
 
 Basic Usage
 -----------
@@ -33,7 +33,7 @@ If you installed via pip:
 
 .. code-block:: bash
 
-   run-lit \\
+   lit-inpainting \\
        --input_image T1w.nii.gz \\
        --mask_image lesion_mask.nii.gz \\
        --output_directory output_directory \\
@@ -46,7 +46,7 @@ We recommend performing mask dilation to account for potential undersegmentation
 
 .. code-block:: bash
 
-   run-lit --input_image T1w.nii.gz \\
+   lit-inpainting --input_image T1w.nii.gz \\
           --mask_image lesion_mask.nii.gz \\
           --output_directory output \\
           --dilate 2  # Dilate mask by 2 voxels
@@ -92,7 +92,7 @@ For programmatic access, use the direct inpainting function:
 
 .. code-block:: python
 
-   from neuro_lit.inpaint_image import main as inpaint
+   from neurolit.inpaint_image import main as inpaint
    import argparse
    
    # Prepare arguments
@@ -122,7 +122,7 @@ For processing multiple subjects, create a simple loop:
    
    for sub in "${subjects[@]}"; do
        echo "Processing $sub..."
-       run-lit \\
+       lit-inpainting \\
            --input_image data/${sub}/T1w.nii.gz \\
            --mask_image data/${sub}/lesion_mask.nii.gz \\
            --output_directory output/${sub} \\
@@ -142,7 +142,7 @@ Or using Python:
    for subject in subjects:
        print(f"Processing {subject}...")
        cmd = [
-           "run-lit",
+           "lit-inpainting",
            "--input_image", str(data_dir / subject / "T1w.nii.gz"),
            "--mask_image", str(data_dir / subject / "lesion_mask.nii.gz"),
            "--output_directory", f"output/{subject}",
@@ -153,14 +153,14 @@ Or using Python:
 Command-Line Interface Reference
 ---------------------------------
 
-run-lit
+lit-inpainting
 ~~~~~~~
 
 Main command to run the LIT inpainting.
 
 .. code-block:: text
 
-   run-lit [OPTIONS]
+   lit-inpainting [OPTIONS]
 
 Options:
    --input_image PATH        Path to input T1w image [required]
@@ -182,14 +182,14 @@ Options:
    --force                  Force re-download even if models exist
    --help                   Show this message and exit
 
-lesion-postprocessing
+lit-postprocessing
 ~~~~~~~~~~~~~~~~~~~~~
 
 Integrate lesion masks into FastSurfer/FreeSurfer outputs.
 
 .. code-block:: text
 
-   lesion-postprocessing [OPTIONS]
+   lit-postprocessing [OPTIONS]
 
 Options:
    --subject-id TEXT        Subject ID [required]
@@ -228,7 +228,7 @@ LIT provides tools to integrate lesion masks into FastSurfer/FreeSurfer segmenta
 Unified Postprocessing Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The recommended way to run postprocessing is using the unified ``lesion-postprocessing`` command. This script handles mapping the lesion mask to multiple segmentation files, running volume statistics (segstats), and performing surface masking.
+The recommended way to run postprocessing is using the unified ``lit-postprocessing`` command. This script handles mapping the lesion mask to multiple segmentation files, running volume statistics (segstats), and performing surface masking.
 
 .. code-block:: bash
 
@@ -238,7 +238,7 @@ The recommended way to run postprocessing is using the unified ``lesion-postproc
    source $FREESURFER_HOME/SetUpFreeSurfer.sh
 
    # Run unified postprocessing
-   lesion-postprocessing \\
+   lit-postprocessing \\
        --subject-id SUBJECT_ID \\
        --subjects-dir /path/to/subjects_dir
 

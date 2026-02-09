@@ -18,6 +18,7 @@
 
 # IMPORTS
 import optparse
+import warnings
 
 import nibabel as nib
 import nibabel.freesurfer.io as fs
@@ -27,7 +28,7 @@ from lapy import TriaMesh
 from scipy import sparse
 from scipy.ndimage import binary_dilation
 
-from neuro_lit.utils.logging import get_logger
+from neurolit.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -542,13 +543,15 @@ def replace_labels(img_labels, img_lut, surf_lut):
     surf_names : np.ndarray[str] shape(m,)
         Names of label regions.
     """
-    surflut = np.loadtxt(surf_lut, usecols=(0,2,3,4,5), dtype="int")
-    surf_ids = surflut[:,0]
-    surf_ctab =  surflut[:,1:5]
-    surf_names = np.loadtxt(surf_lut, usecols=(1), dtype="str")
-    imglut = np.loadtxt(img_lut, usecols=(0,2,3,4,5), dtype="int")
-    img_ids = imglut[:,0]
-    img_names = np.loadtxt(img_lut, usecols=(1), dtype="str")
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore', category=UserWarning, message='.*contained no data.*')
+        surflut = np.loadtxt(surf_lut, usecols=(0,2,3,4,5), dtype="int", comments='#')
+        surf_ids = surflut[:,0]
+        surf_ctab =  surflut[:,1:5]
+        surf_names = np.loadtxt(surf_lut, usecols=(1), dtype="str", comments='#')
+        imglut = np.loadtxt(img_lut, usecols=(0,2,3,4,5), dtype="int", comments='#')
+        img_ids = imglut[:,0]
+        img_names = np.loadtxt(img_lut, usecols=(1), dtype="str", comments='#')
     assert (np.all(img_names == surf_names)), "Label names in the LUTs do not agree!"
     lut = np.zeros((img_labels.max()+1,), dtype = img_labels.dtype)
     lut[img_ids] = surf_ids
@@ -777,6 +780,9 @@ def main(insurf: str, inseg: str, incort: str, surflut: str, seglut: str,
             raise ValueError("More than one label in surface, cannot append to existing annot file.")
         elif len(labels_in_surf) == 1:
             logger.info('No label found in surface, leaving LUT and outvolume unchanged.')
+            if report:
+                logger.info("Generating empty surface anatomy report...")
+                write_surface_report(report, set(), set(), set(), existing_surfnames)
             labels = existing_labels
             surfctab = existing_surfctab
             surfnames = existing_surfnames

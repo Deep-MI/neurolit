@@ -50,7 +50,7 @@ PROJ_DIR=$(realpath $SCRIPT_DIR/../..)
 
 POSITIONAL_ARGS=()
 
-VERSION="$(python3 -c 'import neuro_lit; print(neuro_lit.__version__)')"
+VERSION="$(python3 -c 'import neurolit; print(neurolit.__version__)')"
 VERSION="${VERSION/version = /}"
 VERSION="${VERSION//\"/}"
 

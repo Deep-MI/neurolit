@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "neuro-lit"
-version = "0.5.1"
+name = "neurolit"
+version = "0.6.0"
 description = "Lesion Inpainting Tool"
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -84,24 +84,24 @@ quicktest = [
     'pytest>=8.2.2',
 ]
 all = [
-    'neuro-lit[doc]',
-    'neuro-lit[style]',
-    'neuro-lit[quicktest]',
+    'neurolit[doc]',
+    'neurolit[style]',
+    'neurolit[quicktest]',
 ]
 full = [
-    'neuro-lit[all]',
+    'neurolit[all]',
 ]
 
 [project.scripts]
-run-lit = "neuro_lit.cli:run_lit"
-lit-download-models = "neuro_lit.utils.download_checkpoints:main"
-lesion-postprocessing = "neuro_lit.scripts.lesion_postprocessing:main"
+lit-inpainting = "neurolit.cli:run_lit"
+lit-download-models = "neurolit.utils.download_checkpoints:main"
+lit-postprocessing = "neurolit.scripts.lesion_postprocessing:main"
 
 [project.urls]
-homepage = "https://github.com/Deep-MI/neuro-lit"
-documentation = "https://github.com/Deep-MI/neuro-lit"
-source = "https://github.com/Deep-MI/neuro-lit"
-tracker = "https://github.com/Deep-MI/neuro-lit/issues"
+homepage = "https://github.com/Deep-MI/neurolit"
+documentation = "https://github.com/Deep-MI/neurolit"
+source = "https://github.com/Deep-MI/neurolit"
+tracker = "https://github.com/Deep-MI/neurolit/issues"
 
 [tool.setuptools]
 include-package-data = true
@@ -111,13 +111,13 @@ where = ["."]
 exclude = ["build*", "dist*", "*.egg-info", "tests*", "doc*", "containerization*"]
 
 [tool.setuptools.package-data]
-neuro_lit = ["scripts/run_lit.sh"]
+neurolit = ["scripts/run_lit.sh", "postprocessing/*.json"]
 
 [tool.pydocstyle]
 convention = 'numpy'
 ignore-decorators = '(copy_doc|property|.*setter|.*getter|pyqtSlot|Slot)'
 match = '^(?!setup|__init__|test_).*\.py'
-match-dir = '^neuro_lit.*'
+match-dir = '^neurolit.*'
 add_ignore = 'D100,D104,D107'
 
 [tool.ruff]
@@ -140,6 +140,9 @@ select = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
+"neurolit/inpaint_image.py" = ["E402"]  # Allow warning filter before imports (breaks import block)
+"neurolit/inference.py" = ["E402"]  # Allow warning filter before imports (breaks import block)
+"neurolit/train_ddpm.py" = ["E402"]  # Allow warning filter before imports (breaks import block)
 
 [tool.pytest.ini_options]
 minversion = '6.0'

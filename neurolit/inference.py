@@ -14,15 +14,20 @@
 
 
 import math
+import warnings
 from collections.abc import Callable
 
-import monai
-import numpy as np
-import torch
-from monai.inferers import DiffusionInferer
-from tqdm import tqdm
+# Suppress FutureWarning about deprecated cuda.cudart module
+# Must be before torch/monai imports to catch the warning during import
+warnings.filterwarnings("ignore", category=FutureWarning, message=".*cuda.cudart.*")  # noqa: E402
 
-from neuro_lit.utils.logging import get_logger
+import monai  # noqa: E402
+import numpy as np  # noqa: E402
+import torch  # noqa: E402
+from monai.inferers import DiffusionInferer  # noqa: E402
+from tqdm import tqdm  # noqa: E402
+
+from neurolit.utils.logging import get_logger  # noqa: E402
 
 logger = get_logger(__name__)
 

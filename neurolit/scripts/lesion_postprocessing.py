@@ -16,9 +16,9 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from neuro_lit.postprocessing.lesion_to_segmentation import main as lesion_to_segmentation_main
-from neuro_lit.postprocessing.lesion_to_surface import main as lesion_to_surface_main
-from neuro_lit.utils.logging import get_logger
+from neurolit.postprocessing.lesion_to_segmentation import main as lesion_to_segmentation_main
+from neurolit.postprocessing.lesion_to_surface import main as lesion_to_surface_main
+from neurolit.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -92,9 +92,10 @@ def load_config(config_path: Path) -> dict[str, Any]:
 def ensure_backup(file_path: Path) -> Path | None:
     """Ensure a backup of the original file exists before overwriting it.
 
-    Adds '.lit' before the extension(s).
+    Adds '.lit' before the extension(s). Handles symlinks by creating a 
+    corresponding .lit symlink.
     """
-    if not file_path.exists():
+    if not file_path.exists(follow_symlinks=False):
         return None
 
     # Construct backup name (e.g., file.mgz -> file.lit.mgz, file.nii.gz -> file.lit.nii.gz)
@@ -109,7 +110,47 @@ def ensure_backup(file_path: Path) -> Path | None:
 
     if not backup_path.exists():
         logger.info(f"  Creating backup: {file_path.name} -> {backup_name}")
-        shutil.copy2(file_path, backup_path)
+        if file_path.is_symlink():
+            target = os.readlink(file_path)
+            target_path = Path(target)
+            # If target is relative and in the same directory, lit-ify it
+            if not target_path.is_absolute():
+                if target_path.name.endswith(".nii.gz"):
+                    t_ext = ".nii.gz"
+                else:
+                    t_ext = target_path.suffix
+                t_stem = target_path.name[:-len(t_ext)] if t_ext else target_path.name
+                t_backup_name = f"{t_stem}.lit{t_ext}"
+                os.symlink(t_backup_name, backup_path)
+            else:
+                os.symlink(target, backup_path)
+        else:
+            shutil.copy2(file_path, backup_path)
+
+    # Also look for other symlinks in the same directory that point to this file
+    # and create corresponding .lit symlinks for them.
+    try:
+        parent = file_path.parent
+        # Resolve file_path to absolute for comparison
+        abs_file_path = file_path.resolve()
+        
+        for item in parent.iterdir():
+            if item.is_symlink() and item.name != backup_name and not item.name.endswith(".lit" + ext):
+                try:
+                    if item.resolve() == abs_file_path:
+                        # This symlink points to our file! Create a .lit version of it.
+                        s_ext = ".nii.gz" if item.name.endswith(".nii.gz") else item.suffix
+                        s_stem = item.name[:-len(s_ext)] if s_ext else item.name
+                        s_backup_name = f"{s_stem}.lit{s_ext}"
+                        s_backup_path = item.with_name(s_backup_name)
+                        if not s_backup_path.exists():
+                            logger.info(f"  Creating backup symlink: {item.name} -> {s_backup_name}")
+                            # Point the new .lit symlink to the .lit backup of the target
+                            os.symlink(backup_name, s_backup_path)
+                except (OSError, RuntimeError):
+                    continue
+    except (OSError, RuntimeError):
+        pass
 
     return backup_path
 
@@ -582,9 +623,27 @@ def build_surfstats_command(subjects_dir: Path, subject_id: str, hemisphere: str
 def run_surfstats(subjects_dir: Path, subject_id: str, hemisphere: str, 
                   config: dict[str, Any]) -> bool:
     """Run surface-based anatomical statistics."""
+    subj_path = subjects_dir / subject_id
+    
+    # Check if required files exist before running
+    required_files = []
+    if 'cortex' in config:
+        required_files.append(subj_path / config['cortex'].format(hemi=hemisphere))
+    if 'annot' in config:
+        required_files.append(subj_path / config['annot'].format(hemi=hemisphere))
+    
+    # Also check pial/white surface
+    surf_name = config.get('surface', 'white')
+    required_files.append(subj_path / "surf" / f"{hemisphere}.{surf_name}")
+
+    for f in required_files:
+        if not f.exists():
+            logger.warning(f"  Skipping surface stats for {hemisphere}: {f.name} not found.")
+            return False
+
     # Ensure backup for statsfile
     if 'statsfile' in config:
-        stats_path = subjects_dir / subject_id / config['statsfile'].format(hemi=hemisphere)
+        stats_path = subj_path / config['statsfile'].format(hemi=hemisphere)
         ensure_backup(stats_path)
 
     cmd = build_surfstats_command(subjects_dir, subject_id, hemisphere, config)
@@ -754,7 +813,7 @@ def generate_lesion_impact_summary(subjects_dir: Path, subject_id: str,
     Optional[Path]
         Path to the generated summary report, or None if no reports found.
     """
-    logger.info("Generating professional lesion impact summary (YAML)...")
+    logger.info("Generating lesion impact summary (YAML)...")
     
     summary_path = subjects_dir / subject_id / "stats" / "lesion_impact_summary.yaml"
     
@@ -1006,7 +1065,7 @@ def main():
                                               report_file.format(hemi=hemisphere)))
 
     # Run surface-related segstats (after surface masking)
-    if surface_segstats_calls:
+    if not args.skip_surface_masking and surface_segstats_calls:
         logger.info("=" * 60)
         logger.info("STEP 4: Running surface segstats (mri_segstats)")
         logger.info("=" * 60)
@@ -1033,7 +1092,7 @@ def main():
                         fs_home, True, args.python_cmd)
 
     # Run surface-based statistics
-    if surf_config.get("surfstats_calls"):
+    if not args.skip_surface_masking and surf_config.get("surfstats_calls"):
         logger.info("=" * 60)
         logger.info("STEP 5: Running surface statistics")
         logger.info("=" * 60)

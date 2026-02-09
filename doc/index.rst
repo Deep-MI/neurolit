@@ -39,13 +39,13 @@ Using PyPI Package
 .. code-block:: bash
 
    # Install the package
-   pip install -i https://test.pypi.org/simple/ neuro-lit
+   pip install -i https://test.pypi.org/simple/ neurolit
    
    # Download model checkpoints
    lit-download-models
    
    # Run LIT
-   run-lit --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz \\
+   lit-inpainting --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz \\
        --output_directory output_directory --dilate 2
 
 .. toctree::

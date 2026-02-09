@@ -15,25 +15,30 @@
 import argparse
 import os
 import sys
+import warnings
 from pathlib import Path
 
-# supress warning on loading matplotlib
-import matplotlib
-import nibabel as nib
-import nibabel.processing
-import numpy as np
-import torch
-import torch.nn.functional as F
-from monai import transforms
-from monai.networks.schedulers import DDIMScheduler, DDPMScheduler
-from numpy.typing import NDArray
-from torch.amp import autocast  # previous: from torch.cuda.amp import autocast
+# Suppress FutureWarning about deprecated cuda.cudart module
+# Must be before torch/monai imports to catch the warning during import
+warnings.filterwarnings("ignore", category=FutureWarning, message=".*cuda.cudart.*")  # noqa: E402
 
-from neuro_lit.data import conform
-from neuro_lit.inference import OffsetTwoAndHalfDInpaintingInferer
-from neuro_lit.networks.DiffusionUnet import DiffusionModelUNetVINN
-from neuro_lit.utils.logging import get_logger
-from neuro_lit.utils.plotting import plot_batch, plot_inpainting
+# supress warning on loading matplotlib
+import matplotlib  # noqa: E402
+import nibabel as nib  # noqa: E402
+import nibabel.processing  # noqa: E402
+import numpy as np  # noqa: E402
+import torch  # noqa: E402
+import torch.nn.functional as F  # noqa: E402
+from monai import transforms  # noqa: E402
+from monai.networks.schedulers import DDIMScheduler, DDPMScheduler  # noqa: E402
+from numpy.typing import NDArray  # noqa: E402
+from torch.amp import autocast  # noqa: E402  # previous: from torch.cuda.amp import autocast
+
+from neurolit.data import conform  # noqa: E402
+from neurolit.inference import OffsetTwoAndHalfDInpaintingInferer  # noqa: E402
+from neurolit.networks.DiffusionUnet import DiffusionModelUNetVINN  # noqa: E402
+from neurolit.utils.logging import get_logger  # noqa: E402
+from neurolit.utils.plotting import plot_batch, plot_inpainting  # noqa: E402
 
 logger = get_logger(__name__)
 

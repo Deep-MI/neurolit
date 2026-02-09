@@ -4,7 +4,7 @@
       "name": "aparc.DKTatlas+aseg",
       "input_file": "mri/aparc.DKTatlas+aseg.deep.mgz",
       "output_file": "mri/aparc.DKTatlas+aseg.deep.mgz",
-      "report_file": "stats/aparc.DKTatlas+aseg+lesion.anatomy_report.txt",
+      "report_file": "stats/aparc.DKTatlas+aseg.lesion_report.txt",
       "map_lesion": true
     },
     {
@@ -17,13 +17,7 @@
       "name": "aseg",
       "input_file": "mri/aseg.mgz",
       "output_file": "mri/aseg.mgz",
-      "report_file": "stats/aseg+lesion.anatomy_report.txt",
-      "map_lesion": true
-    },
-    {
-      "name": "aseg.presurf.hypos",
-      "input_file": "mri/aseg.presurf.hypos.mgz",
-      "output_file": "mri/aseg.presurf.hypos.mgz",
+      "report_file": "stats/aseg.lesion_report.txt",
       "map_lesion": true
     },
     {
@@ -124,22 +118,6 @@
         "file": "stats/aseg.stats",
         "import": ["BrainSeg", "BrainSegNotVent", "SupraTentorial", "SupraTentorialNotVent", "SubCortGray", "lhCortex", "rhCortex", "Cortex", "TotalGray", "lhCerebralWhiteMatter", "rhCerebralWhiteMatter", "CerebralWhiteMatter", "Mask"],
         "compute": ["SupraTentorialNotVentVox", "BrainSegNotVentSurf", "VentricleChoroidVol"]
-      }
-    },
-    {
-      "name": "aseg.presurf.hypos",
-      "segfile": "mri/aseg.presurf.hypos.mgz",
-      "segstatsfile": "stats/aseg.presurf.hypos.stats",
-      "normfile": "mri/norm.mgz",
-      "pvfile": "mri/norm.mgz",
-      "excludeid": [0, 2, 3, 41, 42],
-      "lut": "ASegStatsLUT.txt",
-      "lut_absolute": true,
-      "empty": true,
-      "volume_precision": 1,
-      "measures": {
-        "file": "stats/aseg.stats",
-        "import_all": true
       }
     },
     {

@@ -1,7 +1,7 @@
 Inpainting Module
 =================
 
-.. automodule:: neuro_lit.inpaint_image
+.. automodule:: neurolit.inpaint_image
    :members:
    :undoc-members:
    :show-inheritance:
@@ -17,7 +17,7 @@ Main Function
 main
 ~~~~
 
-:py:func:`neuro_lit.inpaint_image.main`
+:py:func:`neurolit.inpaint_image.main`
 
 Core inpainting functionality.
 
@@ -25,7 +25,7 @@ Core inpainting functionality.
 
 .. code-block:: bash
 
-   python3 -m neuro_lit.inpaint_image --input_image T1w.nii.gz \\
+   python3 -m neurolit.inpaint_image --input_image T1w.nii.gz \\
                  --mask_image mask.nii.gz \\
                  --out_dir output
 
@@ -37,7 +37,7 @@ Basic Inpainting
 
 .. code-block:: python
 
-   from neuro_lit.inpaint_image import main
+   from neurolit.inpaint_image import main
    import argparse
    
    args = argparse.Namespace(
@@ -56,7 +56,7 @@ Custom Parameters
 
 .. code-block:: python
 
-   from neuro_lit.inpaint_image import main
+   from neurolit.inpaint_image import main
    import argparse
    
    # Use custom parameters
@@ -100,8 +100,8 @@ Preprocessing Pipeline
 
 .. code-block:: python
 
-   from neuro_lit.inpaint_image import main
-   from neuro_lit.data.conform import conform_image
+   from neurolit.inpaint_image import main
+   from neurolit.data.conform import conform_image
    import argparse
    
    # Step 1: Conform image
@@ -135,7 +135,7 @@ Batch Processing
        subject_id = subject_dir.name
        
        cmd = [
-           'python3', '-m', 'neuro_lit.inpaint_image',
+           'python3', '-m', 'neurolit.inpaint_image',
            '--input_image', str(subject_dir / 'T1w.nii.gz'),
            '--mask_image', str(subject_dir / 'lesion_mask.nii.gz'),
            '--out_dir', str(output_dir / subject_id)

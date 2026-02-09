@@ -46,7 +46,7 @@ LIT is available on Test PyPI as a beta release.
 .. code-block:: bash
 
    # Install the package
-   pip install -i https://test.pypi.org/simple/ neuro-lit
+   pip install -i https://test.pypi.org/simple/ neurolit
 
 **Download Model Checkpoints:**
 
@@ -118,7 +118,7 @@ After installation, verify that LIT is working correctly:
 .. code-block:: bash
 
    # Check installed version
-   run-lit --help
+   lit-inpainting --help
    
    # Check if models are downloaded
    ls ~/.local/share/LIT/weights/  # On Linux

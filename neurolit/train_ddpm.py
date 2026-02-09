@@ -29,21 +29,26 @@
 import argparse
 import os
 import time
+import warnings
 
-import monai
-import torch
-import torch.nn.functional as F
-from monai import transforms
-from monai.data import DataLoader
-from monai.networks.schedulers import DDPMScheduler
-from monai.utils import set_determinism
-from torch.amp import GradScaler, autocast
-from tqdm import tqdm
+# Suppress FutureWarning about deprecated cuda.cudart module
+# Must be before torch/monai imports to catch the warning during import
+warnings.filterwarnings("ignore", category=FutureWarning, message=".*cuda.cudart.*")  # noqa: E402
 
-from neuro_lit.data.datasets import SlicedDataset, get_base_dataset
-from neuro_lit.inference import DiffusionInfererVINN
-from neuro_lit.networks.DiffusionUnet import DiffusionModelUNetVINN
-from neuro_lit.utils import plot_batch
+import monai  # noqa: E402
+import torch  # noqa: E402
+import torch.nn.functional as F  # noqa: E402
+from monai import transforms  # noqa: E402
+from monai.data import DataLoader  # noqa: E402
+from monai.networks.schedulers import DDPMScheduler  # noqa: E402
+from monai.utils import set_determinism  # noqa: E402
+from torch.amp import GradScaler, autocast  # noqa: E402
+from tqdm import tqdm  # noqa: E402
+
+from neurolit.data.datasets import SlicedDataset, get_base_dataset  # noqa: E402
+from neurolit.inference import DiffusionInfererVINN  # noqa: E402
+from neurolit.networks.DiffusionUnet import DiffusionModelUNetVINN  # noqa: E402
+from neurolit.utils import plot_batch  # noqa: E402
 
 
 def argument_parser():

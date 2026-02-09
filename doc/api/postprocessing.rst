@@ -6,14 +6,14 @@ The postprocessing module provides tools for integrating lesion masks into FastS
 Overview
 --------
 
-The recommended way to run postprocessing is via the ``lesion-postprocessing`` command-line tool.
+The recommended way to run postprocessing is via the ``lit-postprocessing`` command-line tool.
 
 Command-Line Usage
 ~~~~~~~~~~~~~~~~~~
 
 .. code-block:: bash
 
-   lesion-postprocessing \
+   lit-postprocessing \
        --subject-id SUBJECT_ID \
        --subjects-dir /path/to/subjects_dir
 
@@ -23,4 +23,4 @@ This tool performs the following steps:
 3. Runs volumetric statistics (``segstats``) for the lesion-masked volumes.
 4. Projects the lesion mask onto cortical surfaces and performs surface masking.
 
-For more details on configuration, see ``segstats_config.json`` and ``surfstats_config.json`` in the ``neuro_lit/postprocessing`` directory.
+For more details on configuration, see ``segstats_config.json`` and ``surfstats_config.json`` in the ``neurolit/postprocessing`` directory.

@@ -1,7 +1,7 @@
 Command-Line Interface
 ======================
 
-.. automodule:: neuro_lit.cli
+.. automodule:: neurolit.cli
    :members:
    :undoc-members:
    :show-inheritance:
@@ -14,18 +14,18 @@ The CLI module provides command-line interfaces for running LIT operations.
 Main Functions
 --------------
 
-run_lit
+lit-inpainting
 ~~~~~~~
 
-:py:func:`neuro_lit.cli.run_lit`
+:py:func:`neurolit.cli.run_lit`
 
-Entry point for the main ``run-lit`` command. This is the primary interface for running the full LIT pipeline.
+Entry point for the main ``lit-inpainting`` command. This is the primary interface for running the full LIT pipeline.
 
 **Usage:**
 
 .. code-block:: bash
 
-   run-lit --input_image T1w.nii.gz \\
+   lit-inpainting --input_image T1w.nii.gz \\
           --mask_image lesion_mask.nii.gz \\
           --output_directory output
 
@@ -45,12 +45,12 @@ Basic Usage
 
 .. code-block:: python
 
-   from neuro_lit.cli import run_lit
+   from neurolit.cli import run_lit
    import sys
    
    # Simulate command-line arguments
    sys.argv = [
-       'run-lit',
+       'run_lit',
        '--input_image', 'T1w.nii.gz',
        '--mask_image', 'mask.nii.gz',
        '--output_directory', 'output'
@@ -66,7 +66,7 @@ Programmatic Usage
    import subprocess
    
    cmd = [
-       'run-lit',
+       'run_lit',
        '--input_image', 'T1w.nii.gz',
        '--mask_image', 'mask.nii.gz',
        '--output_directory', 'output',
