@@ -26,7 +26,7 @@ By default, this uses Docker. To use Singularity instead:
 
 .. code-block:: bash
 
-   ./LIT/scripts/run_lit_containerized.sh --use_singularity \\
+   ./LIT/scripts/run_lit_containerized.sh --singularity \\
        --input_image T1w.nii.gz \\
        --mask_image lesion_mask.nii.gz \\
        --output_directory output_directory

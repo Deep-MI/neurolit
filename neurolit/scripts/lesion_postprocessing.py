@@ -130,27 +130,29 @@ def ensure_backup(file_path: Path) -> Path | None:
     # Also look for other symlinks in the same directory that point to this file
     # and create corresponding .lit symlinks for them.
     try:
-        parent = file_path.parent
-        # Resolve file_path to absolute for comparison
         abs_file_path = file_path.resolve()
-        
-        for item in parent.iterdir():
-            if item.is_symlink() and item.name != backup_name and not item.name.endswith(".lit" + ext):
-                try:
-                    if item.resolve() == abs_file_path:
-                        # This symlink points to our file! Create a .lit version of it.
-                        s_ext = ".nii.gz" if item.name.endswith(".nii.gz") else item.suffix
-                        s_stem = item.name[:-len(s_ext)] if s_ext else item.name
-                        s_backup_name = f"{s_stem}.lit{s_ext}"
-                        s_backup_path = item.with_name(s_backup_name)
-                        if not s_backup_path.exists():
-                            logger.info(f"  Creating backup symlink: {item.name} -> {s_backup_name}")
-                            # Point the new .lit symlink to the .lit backup of the target
-                            os.symlink(backup_name, s_backup_path)
-                except (OSError, RuntimeError):
-                    continue
-    except (OSError, RuntimeError):
-        pass
+        for item in file_path.parent.iterdir():
+            if not item.is_symlink():
+                continue
+            if item.name == backup_name or item.name.endswith(".lit" + ext):
+                continue
+
+            try:
+                if item.resolve() == abs_file_path:
+                    # This symlink points to our file! Create a .lit version of it.
+                    s_ext = ".nii.gz" if item.name.endswith(".nii.gz") else item.suffix
+                    s_stem = item.name[:-len(s_ext)] if s_ext else item.name
+                    s_backup_name = f"{s_stem}.lit{s_ext}"
+                    s_backup_path = item.with_name(s_backup_name)
+                    if not s_backup_path.exists():
+                        logger.info(f"  Creating backup symlink: {item.name} -> {s_backup_name}")
+                        # Point the new .lit symlink to the .lit backup of the target
+                        os.symlink(backup_name, s_backup_path)
+            except (OSError, RuntimeError) as e:
+                logger.debug(f"Could not resolve symlink {item}: {e}")
+                continue
+    except (OSError, RuntimeError) as e:
+        logger.debug(f"Could not search for related symlinks in {file_path.parent}: {e}")
 
     return backup_path
 

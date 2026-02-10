@@ -6,12 +6,6 @@ We welcome contributions to LIT! This guide will help you get started.
 Getting Started
 ---------------
 
-**Prerequisites:**
-
-* Python >= 3.8
-* Git
-* Familiarity with PyTorch and brain MRI analysis
-
 **Setup:**
 
 .. code-block:: bash

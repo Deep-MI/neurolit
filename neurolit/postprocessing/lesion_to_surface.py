@@ -37,8 +37,8 @@ HELPTEXT = """
 Script to sample labels from image to surface and clean up. 
 
 USAGE:
-sample_parc --inseg <segimg> --insurf <surf> --incort <cortex.label>
-            --seglut <seglut> --surflut <surflut> --outaparc <out_aparc>
+lesion_to_surface --inseg <segimg> --insurf <surf> --incort <cortex.label>
+            --seglut <seglut> --surflut <surflut> --out_annot <out_annot>
             --projmm <float> --radius <float> --to_annot <annot>
             --dilation <int> --report <report_path>
 

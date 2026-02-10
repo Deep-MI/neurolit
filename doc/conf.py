@@ -11,6 +11,8 @@ import neurolit
 # Add the project root to the Python path
 sys.path.insert(0, os.path.abspath('..'))
 
+import neurolit
+
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
@@ -38,7 +40,7 @@ extensions = [
 ]
 
 # Napoleon settings
-napoleon_google_docstring = True
+napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = True
 napoleon_include_private_with_doc = False
