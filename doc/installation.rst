@@ -84,15 +84,11 @@ For development or if you want to modify the code:
    git clone https://github.com/Deep-MI/LIT.git
    cd LIT
    
-   # Install dependencies
-   pip install -r pyproject.toml
-   
-   # Install the package in development mode
+   # Install the package and its dependencies in development mode
    pip install -e .
    
    # Download model checkpoints
    lit-download-models
-
 System Requirements
 -------------------
 
