@@ -15,7 +15,7 @@ Main Functions
 --------------
 
 lit-inpainting
-~~~~~~~
+~~~~~~~~~~~~~~
 
 :py:func:`neurolit.cli.run_lit`
 

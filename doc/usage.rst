@@ -154,7 +154,7 @@ Command-Line Interface Reference
 ---------------------------------
 
 lit-inpainting
-~~~~~~~
+~~~~~~~~~~~~~~
 
 Main command to run the LIT inpainting.
 
