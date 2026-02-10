@@ -52,6 +52,17 @@ from neurolit.utils import plot_batch  # noqa: E402
 
 
 def argument_parser():
+    """Return the argument parser configured for DDPM training runs.
+
+    Args
+    ----
+    None
+
+    Returns
+    -------
+    argparse.Namespace
+        Parsed command-line arguments.
+    """
     parser = argparse.ArgumentParser(description='Train a 3D DDPM model')
     parser.add_argument('--out_dir', type=str, default='debug_run', help='experiment output directory')
     parser.add_argument('--slice_dim', type=str, default=None, help='slice dimension for 2D training')
@@ -60,6 +71,24 @@ def argument_parser():
 
 
 def get_transforms(IMAGE_SHAPE, PATCH_DATASET, FIXED_SIZE, ISVINN=True):
+    """Build MONAI transforms used for the training and validation loaders.
+
+    Args
+    ----
+    IMAGE_SHAPE : tuple[int, ...]
+        Desired spatial size for crops or resized volumes.
+    PATCH_DATASET : bool
+        Whether to sample random patches from the images.
+    FIXED_SIZE : bool
+        Whether to enforce a fixed spatial size through resizing.
+    ISVINN : bool, optional
+        Whether VINN preprocessing is expected, by default True.
+
+    Returns
+    -------
+    monai.transforms.Compose
+        Transformation pipeline for loading and normalizing the data.
+    """
     tr = [
         transforms.LoadImaged(keys=['image'],reader="nibabelreader", image_only=True, dtype=torch.float16, ensure_channel_first=True),
         transforms.ScaleIntensityd(keys=['image']),
@@ -117,6 +146,18 @@ if __name__ == "__main__":
         internal_res_mm = 256 / INTERNAL_SHAPE[0]
 
         def get_scale_factors(images):
+            """Compute VINN scale factors from the metadata of `images`.
+
+            Args
+            ----
+            images : torch.Tensor | monai.data.meta_tensor.MetaTensor
+                Batch containing ``meta['delta']`` spacing information.
+
+            Returns
+            -------
+            torch.Tensor
+                Scale factors adjusted for the internal VINN resolution.
+            """
             if not FIXED_SIZE:
                 sf = internal_res_mm / images.meta['delta']
                 if sf.dim() == 1:

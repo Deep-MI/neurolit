@@ -97,6 +97,8 @@ full = [
 lit-inpainting = "neurolit.cli:run_lit"
 lit-download-models = "neurolit.utils.download_checkpoints:main"
 lit-postprocessing = "neurolit.scripts.lesion_postprocessing:main"
+lit-lesion-to-surface = "neurolit.postprocessing.lesion_to_surface:cli"
+lit-lesion-to-segmentation = "neurolit.postprocessing.lesion_to_segmentation:cli"
 
 [project.urls]
 homepage = "https://github.com/Deep-MI/neurolit"

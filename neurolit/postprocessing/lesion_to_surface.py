@@ -809,7 +809,7 @@ def main(insurf: str, inseg: str, incort: str, surflut: str, seglut: str,
             write_ctab(out_ctab, surfctab, surfnames)
 
 
-if __name__ == "__main__":
+def cli():
     # Command Line options are error checking done here
     options = options_parse()
     main(
@@ -826,3 +826,7 @@ if __name__ == "__main__":
         report=options.report,
         out_ctab=options.out_ctab
     )
+
+
+if __name__ == "__main__":
+    cli()

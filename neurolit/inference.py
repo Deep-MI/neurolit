@@ -34,6 +34,18 @@ logger = get_logger(__name__)
 
 class InpaintingInferer:
 
+    """Coordinate diffusion-based inpainting iterations.
+
+    Args
+    ----
+    inference_steps : int
+        Number of denoising timesteps to execute.
+    scheduler : monai.inferers.DiffusionInferer
+        Scheduler that defines the diffusion timestep sequence.
+    diffusion_model : torch.nn.Module
+        Model used to predict noise residuals at each timestep.
+    """
+
     def __init__(self, inference_steps, scheduler, diffusion_model):
         self.scheduler = scheduler
         self.scheduler.set_timesteps(num_inference_steps=inference_steps)
@@ -46,14 +58,31 @@ class InpaintingInferer:
                  num_resample_steps=10, num_resample_jumps=5, get_intermediates=False,
                  scale_factor=None,
                  *args, **kwargs):
-        """
-        Run inference on `inputs` with the `network` model.
+        """Inpaint masked regions by alternating forward and backward diffusion.
 
-        Args:
-            inputs: input of the model inference.
-            network: model for inference.
-            args: optional args to be passed to ``network``.
-            kwargs: optional keyword args to be passed to ``network``.
+        Args
+        ----
+        mask : torch.Tensor
+            Binary mask tensor where zeros indicate known voxels.
+        image_masked : torch.Tensor
+            Image tensor with masked regions that need inpainting.
+        num_resample_steps : int, optional
+            Number of resampling loops per timestep, by default 10.
+        num_resample_jumps : int, optional
+            Number of timesteps to skip before resampling, by default 5.
+        get_intermediates : bool, optional
+            Whether to record intermediate outputs, by default False.
+        scale_factor : Any, optional
+            Optional scaling factors passed to the diffusion model.
+        *args : Any
+            Additional positional arguments forwarded to downstream calls.
+        **kwargs : Any
+            Additional keyword arguments forwarded to downstream calls.
+
+        Returns
+        -------
+        torch.Tensor | tuple[torch.Tensor, list[torch.Tensor]]
+            Denoised tensor, optionally paired with intermediate buffers.
         """
         assert(set(np.unique(mask)) == set((0,1))), f'mask is not binary but has values {np.unique(mask)}'
         assert(mask.device == image_masked.device), 'mask and input must be on the same device'
@@ -112,13 +141,40 @@ class InpaintingInferer:
             return image_inpainted
 
     def sample_forward_diffusion(self, image, t): # add noise at 
+        """Add noise to `image` at timestep `t`.
+
+        Args
+        ----
+        image : torch.Tensor
+            Tensor to perturb for forward diffusion.
+        t : int | torch.Tensor
+            Current timestep identifier.
+
+        Returns
+        -------
+        torch.Tensor
+            Noised tensor for the current timestep.
+        """
         noise = torch.randn((image.shape), device=image.device)
-        #timesteps_prev = torch.tensor((t,), device=image.device).long()
         # sqrt(alpha) * sample + (1-sqrt(alpha)) * noise
         noised_image = self.scheduler.add_noise(original_samples=image, noise=noise, timesteps=t)
         return noised_image
     
     def diffusion_forward(self, image, t):
+        """Apply a single forward diffusion update using the scheduler betas.
+
+        Args
+        ----
+        image : torch.Tensor
+            Current reconstruction tensor.
+        t : int | torch.Tensor
+            Current timestep index.
+
+        Returns
+        -------
+        torch.Tensor
+            Tensor after applying forward diffusion noise.
+        """
         noise = torch.randn((image.shape),device=image.device)
         # sqrt(1-beta) * image + sqrt(beta) * noise
         image_inpainted = (torch.sqrt(1 - self.scheduler.betas[t]) * image + torch.sqrt(self.scheduler.betas[t]) * noise)
@@ -127,10 +183,23 @@ class InpaintingInferer:
 
 
     def diffusion_backward(self, image, t, sf=None): # TODO: add jumps
+        """Denoise `image` at timestep `t` with the diffusion model prediction.
+
+        Args
+        ----
+        image : torch.Tensor
+            Tensor to denoise.
+        t : torch.Tensor
+            Timestep tensor provided to the scheduler.
+        sf : Any, optional
+            Optional scale factors forwarded to the diffusion model, by default None.
+
+        Returns
+        -------
+        torch.Tensor
+            Reconstruction for timestep ``t-1``.
+        """
         # the model outputs the noise
-        #if sf is None:
-        #    model_output = self.model(image, timesteps=torch.tensor((t,),device=image.device).long())
-        #else:
         model_output = self.model(image, scale_factors=sf, timesteps=torch.tensor((t,),device=image.device).long())
         # use model output to denoise and add noise again
         image_inpainted_prev_unknown, _ = self.scheduler.step(model_output, t.item(), image)
@@ -147,12 +216,42 @@ class InpaintingInferer:
 
 class SliceWiseInpaintingInferer(InpaintingInferer):
 
+    """Process the volume one slice batch at a time along a fixed axis.
+
+    Args
+    ----
+    dimensions : int
+        Dimension index along which to extract slices.
+    diffusion_model : torch.nn.Module
+        Model that predicts diffusion noise for each slice.
+    scheduler : monai.inferers.DiffusionInferer
+        Scheduler controlling the timestep sequence.
+    inference_steps : int
+        Number of diffusion timesteps to run for each slice.
+    """
+
     def __init__(self, dimensions, diffusion_model, scheduler, inference_steps):
         super().__init__(inference_steps, scheduler, diffusion_model)
         self.dimension = dimensions
         self.slice_thickness = diffusion_model.in_channels
 
     def get_slice_from_volume(self, volume, slice_cut, dimension): # TODO: make sure channel dimension is always first
+        """Extract a slab centered at `slice_cut`.
+
+        Args
+        ----
+        volume : torch.Tensor
+            Volume tensor to sample from.
+        slice_cut : int
+            Center index of the desired slice block.
+        dimension : int
+            Spatial dimension to slice along.
+
+        Returns
+        -------
+        torch.Tensor
+            Extracted slice tensor with thickness matching the model channels.
+        """
         threed_to_twod_slice = [slice(None), slice(None), slice(None)]
         threed_to_twod_slice[dimension] = slice(slice_cut-self.slice_thickness//2, slice_cut+self.slice_thickness//2+1)
         threed_to_twod_slice = tuple(threed_to_twod_slice)
@@ -162,6 +261,22 @@ class SliceWiseInpaintingInferer(InpaintingInferer):
     
     @staticmethod
     def slice_selector(start_idx, end_idx, dimension):
+        """Build a slab tuple for the requested range.
+
+        Args
+        ----
+        start_idx : int
+            Starting slice index (inclusive).
+        end_idx : int
+            Ending slice index (exclusive).
+        dimension : int
+            Spatial axis to apply the slice.
+
+        Returns
+        -------
+        tuple[slice]
+            Tuple that can be used to index the volume.
+        """
         selected_slice = [slice(None), slice(None), slice(None)]
         selected_slice[dimension] = slice(start_idx, end_idx)
         selected_slice = tuple(selected_slice)
@@ -170,6 +285,24 @@ class SliceWiseInpaintingInferer(InpaintingInferer):
 
     
     def get_inference_slices(self, mask, image_masked, dimension, offset=0):
+        """Collect slice batches and indices for inference along `dimension`.
+
+        Args
+        ----
+        mask : torch.Tensor
+            Binary mask tensor for the entire volume.
+        image_masked : torch.Tensor
+            Volume tensor with masked regions to inpaint.
+        dimension : int
+            Spatial axis for extracting slices.
+        offset : int, optional
+            Offset applied to avoid checkerboard artifacts, by default 0.
+
+        Returns
+        -------
+        tuple[torch.Tensor, torch.Tensor, list[int], torch.Tensor]
+            Batched slices, batched masks, the slice centers, and the pre-populated output tensor.
+        """
         chosen_slices = np.arange(self.slice_thickness // 2 - offset, 
                                   image_masked.shape[dimension]- self.slice_thickness // 2 + offset, 
                                   self.slice_thickness)
@@ -207,7 +340,34 @@ class SliceWiseInpaintingInferer(InpaintingInferer):
                     get_intermediates=False, 
                     scale_factor=None,
                     *args, **kwargs):
+        """Inpaint the volume slice-wise.
 
+        Args
+        ----
+        mask : torch.Tensor
+            Binary mask volume indicating known voxels.
+        image_masked : torch.Tensor
+            Prefiltered volume with masked regions to inpaint.
+        batch_size : int, optional
+            Number of slices to process per batch, by default 1.
+        num_resample_steps : int, optional
+            Resampling loops per timestep, by default 10.
+        num_resample_jumps : int, optional
+            Timesteps between resampling events, by default 5.
+        get_intermediates : bool, optional
+            Whether to collect intermediate reconstructions, by default False.
+        scale_factor : Any, optional
+            Scale factors forwarded to the diffusion model, by default None.
+        *args : Any
+            Additional positional arguments forwarded to the parent class.
+        **kwargs : Any
+            Additional keyword arguments forwarded to the parent class.
+
+        Returns
+        -------
+        torch.Tensor | tuple[torch.Tensor, torch.Tensor]
+            Reconstructed volume, optionally with intermediate slices.
+        """
         intermediates = []
 
         batched_slices, batched_masks, batch_slice_indices, image_inpainted = self.get_inference_slices(mask, image_masked, self.dimension)
@@ -264,6 +424,18 @@ class SliceWiseInpaintingInferer(InpaintingInferer):
 
 class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
 
+    """Aggregate slice-wise inpainting across axial, sagittal, and coronal views.
+
+    Args
+    ----
+    diffusion_model_dict : dict[str, torch.nn.Module]
+        Mapping from plane names to their diffusion models.
+    scheduler : monai.inferers.DiffusionInferer
+        Scheduler controlling the diffusion timesteps.
+    inference_steps : int
+        Number of diffusion steps to perform per slice.
+    """
+
     def __init__(self, diffusion_model_dict, scheduler, inference_steps):
         super().__init__(None, list(diffusion_model_dict.values())[0], scheduler, inference_steps)
         #super().super().__init__(inference_steps, scheduler, None)
@@ -278,7 +450,34 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
                            num_resample_steps: int, num_resample_jumps: int,
                            get_intermediates: bool, scale_factor=None,
                            verbose=True):
-        
+        """Inpaint the volume by switching views and offsets.
+
+        Args
+        ----
+        image_masked : torch.Tensor
+            Input tensor with masked regions to reconstruct.
+        mask : torch.Tensor
+            Binary mask tensor indicating the known region.
+        batch_size : int
+            Number of slices to process per batch.
+        inference_slices : dict
+            Precomputed slice batches and masks for each plane.
+        num_resample_steps : int
+            Number of resampling loops per timestep.
+        num_resample_jumps : int
+            Number of timesteps to skip before each resampling.
+        get_intermediates : bool
+            Whether to collect intermediate reconstructions.
+        scale_factor : Any, optional
+            Scale factors passed to the diffusion model, by default None.
+        verbose : bool, optional
+            Whether to show a progress bar, by default True.
+
+        Returns
+        -------
+        torch.Tensor | tuple[torch.Tensor, torch.Tensor]
+            Reconstructed volume or tuple with collected intermediates if requested.
+        """
         #image_inpainted = torch.randn(image_masked.shape, device=image_masked.device)
 
         # set mask to region to noise
@@ -364,14 +563,29 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
     @torch.no_grad()
     def denoise(self, t, mask: torch.Tensor, image_masked: torch.Tensor, image_inpainted: torch.Tensor,
                  num_resample_steps=10, num_resample_jumps=5, scale_factor=None):    
-        """
-        Run inference on `inputs` with the `network` model.
+        """Refine the unknown regions through backward and forward diffusion.
 
-        Args:
-            inputs: input of the model inference.
-            network: model for inference.
-            args: optional args to be passed to ``network``.
-            kwargs: optional keyword args to be passed to ``network``.
+        Args
+        ----
+        t : torch.Tensor
+            Current timestep identifier.
+        mask : torch.Tensor
+            Binary mask delineating known voxels.
+        image_masked : torch.Tensor
+            Reference tensor containing the known region.
+        image_inpainted : torch.Tensor
+            Current reconstruction that is being denoised.
+        num_resample_steps : int, optional
+            Number of resampling loops applied per timestep.
+        num_resample_jumps : int, optional
+            Number of timesteps to jump before a resampling iteration.
+        scale_factor : Any, optional
+            Optional scaling factors provided to the diffusion model.
+
+        Returns
+        -------
+        torch.Tensor
+            Tensor after the current denoising iteration.
         """
         #assert(set(np.unique(mask)) == set((0,1))), 'mask is not binary but has values {}'.format(np.unique(mask))
         #assert(mask.device), 'mask and input must be on the same device'
@@ -437,6 +651,30 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
     def __call__(self, mask: torch.Tensor, image_masked: torch.Tensor, batch_size=1, 
                  num_resample_steps=10, num_resample_jumps=5, get_intermediates=False, scale_factor=None):
 
+        """Prepare slice batches for all planes and run view-aggregated inference.
+
+        Args
+        ----
+        mask : torch.Tensor
+            Binary mask tensor that highlights the unknown regions.
+        image_masked : torch.Tensor
+            Volume tensor with the known regions preserved.
+        batch_size : int, optional
+            Batch size for slice inference, by default 1.
+        num_resample_steps : int, optional
+            Resampling iterations per timestep, by default 10.
+        num_resample_jumps : int, optional
+            Timesteps between resampling rounds, by default 5.
+        get_intermediates : bool, optional
+            Whether to collect intermediate outputs, by default False.
+        scale_factor : Any, optional
+            Optional scaling factors forwarded to the diffusion models.
+
+        Returns
+        -------
+        torch.Tensor | tuple[torch.Tensor, torch.Tensor]
+            Reconstructed volume, optionally paired with intermediates.
+        """
         if mask.dtype == torch.bool:
             mask = mask.int()
         else:
@@ -459,13 +697,49 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
 
 class OffsetTwoAndHalfDInpaintingInferer(TwoAndHalfDInpaintingInferer):
 
+    """Two-and-a-half dimensional inferer that alternates slicing offsets.
+
+    Args
+    ----
+    diffusion_model_dict : dict[str, torch.nn.Module]
+        Mapping from plane names to their diffusion models.
+    scheduler : monai.inferers.DiffusionInferer
+        Scheduler controlling the diffusion timesteps.
+    inference_steps : int
+        Number of timesteps per slice inference.
+    """
 
     def view_agg_inference(self, image_masked: torch.Tensor, mask: torch.Tensor, 
                            batch_size: int,
                            num_resample_steps: int, num_resample_jumps: int,
                            get_intermediates: bool, scale_factor=None,
                            verbose=True):
-        
+        """Inpaint the volume using offset slicing to avoid checkerboarding.
+
+        Args
+        ----
+        image_masked : torch.Tensor
+            Input tensor with masked regions to reconstruct.
+        mask : torch.Tensor
+            Binary mask tensor indicating the known region.
+        batch_size : int
+            Number of slices processed per batch.
+        num_resample_steps : int
+            Number of resampling loops per timestep.
+        num_resample_jumps : int
+            Timesteps between resampling events.
+        get_intermediates : bool
+            Whether to collect intermediate outputs.
+        scale_factor : Any, optional
+            Optional scaling factors for the diffusion model.
+        verbose : bool, optional
+            Whether progress information is displayed.
+
+        Returns
+        -------
+        torch.Tensor | tuple[torch.Tensor, torch.Tensor]
+            Reconstructed volume, optionally paired with intermediates.
+        """
         # set mask to region to noise
         image_inpainted = torch.where(
                     mask == 0, image_masked, torch.randn(image_masked.shape, device=image_masked.device)
@@ -546,6 +820,31 @@ class OffsetTwoAndHalfDInpaintingInferer(TwoAndHalfDInpaintingInferer):
     def __call__(self, mask: torch.Tensor, image_masked: torch.Tensor, batch_size=1, 
                  num_resample_steps=10, num_resample_jumps=5, get_intermediates=False, scale_factor=None):
 
+        """Prepare slices with alternating offsets and perform view aggregation.
+
+        Args
+        ----
+        mask : torch.Tensor
+            Binary mask tensor identifying regions to reconstruct.
+        image_masked : torch.Tensor
+            Image tensor with masked regions preserved.
+        batch_size : int, optional
+            Number of slices per batch, by default 1.
+        num_resample_steps : int, optional
+            Resampling loops per timestep, by default 10.
+        num_resample_jumps : int, optional
+            Timesteps between resampling events, by default 5.
+        get_intermediates : bool, optional
+            Whether to collect intermediate outputs, by default False.
+        scale_factor : Any, optional
+            Optional scaling factors passed to the diffusion model.
+
+        Returns
+        -------
+        torch.Tensor | tuple[torch.Tensor, torch.Tensor]
+            Reconstructed volume, optionally with intermediates.
+        """
+
         if mask.dtype == torch.bool:
             mask = mask.int()
         else:
@@ -563,9 +862,45 @@ class OffsetTwoAndHalfDInpaintingInferer(TwoAndHalfDInpaintingInferer):
 
 class AnomalyInferer(TwoAndHalfDInpaintingInferer):
 
+    """Detect anomalies by detecting deviations from the expected noise distribution.
+
+    Args
+    ----
+    diffusion_model_dict : dict[str, torch.nn.Module]
+        Mapping from plane names to their diffusion models.
+    scheduler : monai.inferers.DiffusionInferer
+        Scheduler controlling the diffusion timesteps.
+    inference_steps : int
+        Number of timesteps to run per reconstruction.
+    """
+
 
     def __call__(self, image: torch.Tensor, batch_size=1, starting_t=0,
                  num_resample_steps=10, num_resample_jumps=5, get_intermediates=False, scale_factor=None):
+        """Generate anomaly maps by denoising noise-injected copies of `image`.
+
+        Args
+        ----
+        image : torch.Tensor
+            Image tensor used as a reference for anomalous regions.
+        batch_size : int, optional
+            Batch size for slice inference, by default 1.
+        starting_t : int, optional
+            Starting timestep for denoising, by default 0.
+        num_resample_steps : int, optional
+            Resampling loops per timestep, by default 10.
+        num_resample_jumps : int, optional
+            Timesteps between resampling rounds, by default 5.
+        get_intermediates : bool, optional
+            Whether to collect intermediate outputs, by default False.
+        scale_factor : Any, optional
+            Optional scaling factors forwarded to the diffusion model.
+
+        Returns
+        -------
+        torch.Tensor | tuple[torch.Tensor, torch.Tensor]
+            Denoised tensor, optionally paired with intermediate samples.
+        """
 
         # unpack meta tensors (operating on torch tensors is faster)
         if isinstance(image, monai.data.meta_tensor.MetaTensor):
@@ -584,7 +919,34 @@ class AnomalyInferer(TwoAndHalfDInpaintingInferer):
                            num_resample_steps: int, num_resample_jumps: int,
                            get_intermediates: bool, scale_factor=None,
                            verbose=True):
-        
+        """Denoise the volume starting from `starting_t` for anomaly detection.
+
+        Args
+        ----
+        image : torch.Tensor
+            Image tensor to initialize the denoising process.
+        batch_size : int
+            Number of slices processed per batch.
+        inference_slices : dict
+            Precomputed slices for each anatomical plane.
+        starting_t : int
+            Timestep index from which denoising begins.
+        num_resample_steps : int
+            Number of resampling loops per timestep.
+        num_resample_jumps : int
+            Timesteps between resampling rounds.
+        get_intermediates : bool
+            Whether to collect intermediate outputs.
+        scale_factor : Any, optional
+            Optional scale factors, by default None.
+        verbose : bool, optional
+            Whether to show progress updates.
+
+        Returns
+        -------
+        torch.Tensor | tuple[torch.Tensor, torch.Tensor]
+            Denoised volume or tuple with intermediates when requested.
+        """
         # set mask to region to noise
         image_denoised = self.sample_forward_diffusion(image, torch.tensor(starting_t))
         
@@ -654,16 +1016,26 @@ class AnomalyInferer(TwoAndHalfDInpaintingInferer):
     @torch.no_grad()
     def denoise(self, t, image: torch.Tensor,
                  num_resample_steps=10, num_resample_jumps=5, scale_factor=None):    
-        """
-        Run inference on `inputs` with the `network` model.
+        """Denoise `image` for `starting_t` forward iterations.
 
-        Args:
-            inputs: input of the model inference.
-            network: model for inference.
-            args: optional args to be passed to ``network``.
-            kwargs: optional keyword args to be passed to ``network``.
-        """
+        Args
+        ----
+        t : torch.Tensor
+            Current timestep identifier.
+        image : torch.Tensor
+            Tensor being denoised.
+        num_resample_steps : int, optional
+            Number of resampling loops per timestep.
+        num_resample_jumps : int, optional
+            Timesteps between resampling events.
+        scale_factor : Any, optional
+            Optional scaling factors for the diffusion model.
 
+        Returns
+        -------
+        torch.Tensor
+            Tensor after the denoising iteration.
+        """
         image_denoised = image
 
     
@@ -690,6 +1062,12 @@ class AnomalyInferer(TwoAndHalfDInpaintingInferer):
 
 
 class DiffusionInfererVINN(DiffusionInferer):
+
+    """Sampler that extends MONAI's DiffusionInferer to support VINN conditioning.
+
+    The implementation handles VINN scale factors, optional conditioning modes, and
+    exposes helper sampling routines used during training and inference.
+    """
     
     def __call__(
         self,
@@ -702,16 +1080,29 @@ class DiffusionInfererVINN(DiffusionInferer):
         mode: str = "crossattn",
         
     ) -> torch.Tensor:
-        """
-        Implements the forward pass for a supervised training iteration.
+        """Implement the VINN forward pass for a training iteration.
 
-        Args:
-            inputs: Input image to which noise is added.
-            diffusion_model: diffusion model.
-            noise: random noise, of the same shape as the input.
-            timesteps: random timesteps.
-            condition: Conditioning for network input.
-            mode: Conditioning mode for the network.
+        Args
+        ----
+        inputs : torch.Tensor
+            Input image tensor to corrupt.
+        diffusion_model : Callable[..., torch.Tensor]
+            Model predicting the noise residual.
+        noise : torch.Tensor
+            Random noise tensor with the same shape as ``inputs``.
+        timesteps : torch.Tensor
+            Timestep identifiers for the scheduler.
+        scale_factors : torch.Tensor, optional
+            Optional VINN scale factors to condition the model.
+        condition : Any, optional
+            Conditioning tensor provided to the diffusion model.
+        mode : str, optional
+            Conditioning mode, either ``crossattn`` or ``concat``.
+
+        Returns
+        -------
+        torch.Tensor
+            Predicted noise residuals at the given timesteps.
         """
         if mode not in ["crossattn", "concat"]:
             raise NotImplementedError(f"{mode} condition is not supported")
@@ -742,16 +1133,33 @@ class DiffusionInfererVINN(DiffusionInferer):
         mode: str = "crossattn",
         verbose: bool = True,
     ) -> torch.Tensor:
-        """
-        Args:
-            input_noise: random noise, of the same shape as the desired sample.
-            diffusion_model: model to sample from.
-            scheduler: diffusion scheduler. If none provided will use the class attribute scheduler
-            save_intermediates: whether to return intermediates along the sampling change
-            intermediate_steps: if save_intermediates is True, saves every n steps
-            conditioning: Conditioning for network input.
-            mode: Conditioning mode for the network.
-            verbose: if true, prints the progression bar of the sampling process.
+        """Sample from the VINN diffusion model using the provided scheduler.
+
+        Args
+        ----
+        input_noise : torch.Tensor
+            Random noise tensor with the shape of the desired sample.
+        diffusion_model : Callable[..., torch.Tensor]
+            Model used for sampling.
+        scheduler : Any
+            Diffusion scheduler; if ``None`` uses the inferer's scheduler.
+        scale_factors : torch.Tensor, optional
+            Optional scale factors passed to the diffusion model.
+        save_intermediates : bool, optional
+            Whether to return intermediate tensors, by default False.
+        intermediate_steps : int, optional
+            Interval between saved intermediates when ``save_intermediates`` is True.
+        conditioning : torch.Tensor, optional
+            Optional conditioning tensor for the diffusion model.
+        mode : str, optional
+            Conditioning mode, either ``crossattn`` or ``concat``.
+        verbose : bool, optional
+            Whether to show a progress bar during sampling.
+
+        Returns
+        -------
+        torch.Tensor | tuple[torch.Tensor, list[torch.Tensor]]
+            Sampled tensor, optionally paired with accumulated intermediates.
         """
         if mode not in ["crossattn", "concat"]:
             raise NotImplementedError(f"{mode} condition is not supported")
@@ -811,16 +1219,37 @@ class DiffusionInfererVINN(DiffusionInferer):
         mode: str = "crossattn",
         verbose: bool = True,
     ) -> torch.Tensor:
-        """
-        Args:
-            input_noise: random noise, of the same shape as the desired sample.
-            diffusion_model: model to sample from.
-            scheduler: diffusion scheduler. If none provided will use the class attribute scheduler
-            save_intermediates: whether to return intermediates along the sampling change
-            intermediate_steps: if save_intermediates is True, saves every n steps
-            conditioning: Conditioning for network input.
-            mode: Conditioning mode for the network.
-            verbose: if true, prints the progression bar of the sampling process.
+        """Precondition the volume and then sample backward and forward with VINN.
+
+        Args
+        ----
+        input_noise : torch.Tensor
+            Random noise tensor similar to the desired output shape.
+        precond_img : torch.Tensor
+            Image used to precondition the schedule before sampling begins.
+        t_start : int
+            Timestep index to start the backward-forward sampling from.
+        diffusion_model : Callable[..., torch.Tensor]
+            VINN diffusion model used for prediction.
+        scheduler : Any
+            Scheduler to step through diffusion timesteps.
+        scale_factors : torch.Tensor, optional
+            Optional scaling factors for the diffusion model.
+        save_intermediates : bool, optional
+            Whether to return intermediate tensors, by default False.
+        intermediate_steps : int, optional
+            Interval between recorded intermediates when enabled.
+        conditioning : torch.Tensor, optional
+            Optional conditioning tensor for the diffusion model.
+        mode : str, optional
+            Conditioning mode, either ``crossattn`` or ``concat``.
+        verbose : bool, optional
+            Whether to display progress.
+
+        Returns
+        -------
+        torch.Tensor | tuple[torch.Tensor, list[torch.Tensor]]
+            Sampled tensor, optionally paired with saved intermediates.
         """
         if mode not in ["crossattn", "concat"]:
             raise NotImplementedError(f"{mode} condition is not supported")

@@ -169,7 +169,7 @@ def inpaint_volume(
     slice_input: bool = True,
     SAVE_VOLUMES: bool = True,
     SAVE_IMAGES: bool = True,
-    device: str = 'cuda',
+    device: str = "cuda",
     DDIM: bool = False,
     val_image_nib: NiftiImage | None = None
 ) -> torch.Tensor:
@@ -198,7 +198,7 @@ def inpaint_volume(
     SAVE_IMAGES : bool, optional
         Whether to persist intermediate images, by default ``True``.
     device : str, optional
-        Device identifier (e.g., ``'cuda'``), by default ``'cuda'``.
+        Device identifier (e.g., ``"cuda"``), by default ``"cuda"``.
     DDIM : bool, optional
         Whether to use DDIM sampling instead of DDPM, by default ``False``.
     val_image_nib : Optional[NiftiImage], optional
@@ -209,7 +209,6 @@ def inpaint_volume(
     torch.Tensor
         Inpainted volume with the same shape as the input.
     """
-
     # Input validation with type checking
     if not isinstance(models, dict):
         raise TypeError("models must be a dictionary")

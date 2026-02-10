@@ -271,7 +271,7 @@ def main(image: str, mask: str, output: str, report: str = None, lut: str = None
     nib.save(masked_img, output)
 
 
-if __name__ == '__main__':
+def cli():
     parser = argparse.ArgumentParser(description='Mask tumor from a volume and optionally generate anatomy report')
     parser.add_argument('-i','--image', help='Path to volume to mask', type=str, required=True)
     parser.add_argument('-m','--mask', help='Path to tumor mask', type=str, required=True)
@@ -281,3 +281,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     main(args.image, args.mask, args.output, args.report, args.lut)
+
+
+if __name__ == '__main__':
+    cli()
