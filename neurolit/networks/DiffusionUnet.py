@@ -89,7 +89,8 @@ class CrossAttention(nn.Module):
     """
     A cross attention layer.
 
-    Args:
+    Parameters
+    ----------
         query_dim: number of channels in the query.
         cross_attention_dim: number of channels in the context.
         num_attention_heads: number of heads to use for multi-head attention.
@@ -195,7 +196,8 @@ class BasicTransformerBlock(nn.Module):
     """
     A basic Transformer block.
 
-    Args:
+    Parameters
+    ----------
         num_channels: number of channels in the input and output.
         num_attention_heads: number of heads to use for multi-head attention.
         num_head_channels: number of channels in each attention head.
@@ -255,7 +257,8 @@ class SpatialTransformer(nn.Module):
     Transformer block for image-like data. First, project the input (aka embedding) and reshape to b, t, d. Then apply
     standard transformer action. Finally, reshape to image.
 
-    Args:
+    Parameters
+    ----------
         spatial_dims: number of spatial dimensions.
         in_channels: number of channels in the input and output.
         num_attention_heads: number of heads to use for multi-head attention.
@@ -363,7 +366,8 @@ class AttentionBlock(nn.Module):
     An attention block that allows spatial positions to attend to each other. Uses three q, k, v linear layers to
     compute attention.
 
-    Args:
+    Parameters
+    ----------
         spatial_dims: number of spatial dimensions.
         num_channels: number of input channels.
         num_head_channels: number of channels in each attention head.
@@ -479,7 +483,8 @@ def get_timestep_embedding(timesteps: torch.Tensor, embedding_dim: int, max_peri
     Create sinusoidal timestep embeddings following the implementation in Ho et al. "Denoising Diffusion Probabilistic
     Models" https://arxiv.org/abs/2006.11239.
 
-    Args:
+    Parameters
+    ----------
         timesteps: a 1-D Tensor of N indices, one per batch element.
         embedding_dim: the dimension of the output.
         max_period: controls the minimum frequency of the embeddings.
@@ -505,7 +510,8 @@ class Downsample(nn.Module):
     """
     Downsampling layer.
 
-    Args:
+    Parameters
+    ----------
         spatial_dims: number of spatial dimensions.
         num_channels: number of input channels.
         use_conv: if True uses Convolution instead of Pool average to perform downsampling. In case that use_conv is
@@ -551,7 +557,8 @@ class Upsample(nn.Module):
     """
     Upsampling layer with an optional convolution.
 
-    Args:
+    Parameters
+    ----------
         spatial_dims: number of spatial dimensions.
         num_channels: number of input channels.
         use_conv: if True uses Convolution instead of Pool average to perform downsampling.
@@ -606,7 +613,8 @@ class ResnetBlock(nn.Module):
     """
     Residual block with timestep conditioning.
 
-    Args:
+    Parameters
+    ----------
         spatial_dims: The number of spatial dimensions.
         in_channels: number of input channels.
         temb_channels: number of timestep embedding  channels.
@@ -716,7 +724,8 @@ class DownBlock(nn.Module):
     """
     Unet's down block containing resnet and downsamplers blocks.
 
-    Args:
+    Parameters
+    ----------
         spatial_dims: The number of spatial dimensions.
         in_channels: number of input channels.
         out_channels: number of output channels.
@@ -805,7 +814,8 @@ class AttnDownBlock(nn.Module):
     """
     Unet's down block containing resnet, downsamplers and self-attention blocks.
 
-    Args:
+    Parameters
+    ----------
         spatial_dims: The number of spatial dimensions.
         in_channels: number of input channels.
         out_channels: number of output channels.
@@ -911,7 +921,8 @@ class CrossAttnDownBlock(nn.Module):
     """
     Unet's down block containing resnet, downsamplers and cross-attention blocks.
 
-    Args:
+    Parameters
+    ----------
         spatial_dims: number of spatial dimensions.
         in_channels: number of input channels.
         out_channels: number of output channels.
@@ -1027,7 +1038,8 @@ class AttnMidBlock(nn.Module):
     """
     Unet's mid block containing resnet and self-attention blocks.
 
-    Args:
+    Parameters
+    ----------
         spatial_dims: The number of spatial dimensions.
         in_channels: number of input channels.
         temb_channels: number of timestep embedding channels.
@@ -1091,7 +1103,8 @@ class CrossAttnMidBlock(nn.Module):
     """
     Unet's mid block containing resnet and cross-attention blocks.
 
-    Args:
+    Parameters
+    ----------
         spatial_dims: The number of spatial dimensions.
         in_channels: number of input channels.
         temb_channels: number of timestep embedding channels
@@ -1163,7 +1176,8 @@ class UpBlock(nn.Module):
     """
     Unet's up block containing resnet and upsamplers blocks.
 
-    Args:
+    Parameters
+    ----------
         spatial_dims: The number of spatial dimensions.
         in_channels: number of input channels.
         prev_output_channel: number of channels from residual connection.
@@ -1254,7 +1268,8 @@ class AttnUpBlock(nn.Module):
     """
     Unet's up block containing resnet, upsamplers, and self-attention blocks.
 
-    Args:
+    Parameters
+    ----------
         spatial_dims: The number of spatial dimensions.
         in_channels: number of input channels.
         prev_output_channel: number of channels from residual connection.
@@ -1363,7 +1378,8 @@ class CrossAttnUpBlock(nn.Module):
     """
     Unet's up block containing resnet, upsamplers, and self-attention blocks.
 
-    Args:
+    Parameters
+    ----------
         spatial_dims: The number of spatial dimensions.
         in_channels: number of input channels.
         prev_output_channel: number of channels from residual connection.
@@ -1651,7 +1667,8 @@ class DiffusionModelUNetVINN(nn.Module):
     Rombach et al. "High-Resolution Image Synthesis with Latent Diffusion Models" https://arxiv.org/abs/2112.10752
     and Pinaya et al. "Brain Imaging Generation with Latent Diffusion Models" https://arxiv.org/abs/2209.07162
 
-    Args:
+    Parameters
+    ----------
         spatial_dims: number of spatial dimensions.
         in_channels: number of input channels.
         out_channels: number of output channels.
@@ -1669,6 +1686,7 @@ class DiffusionModelUNetVINN(nn.Module):
         classes.
         upcast_attention: if True, upcast attention operations to full precision.
         use_flash_attention: if True, use flash attention for a memory efficient attention mechanism.
+    
     """
 
     def __init__(
@@ -1915,13 +1933,20 @@ class DiffusionModelUNetVINN(nn.Module):
         mid_block_additional_residual: torch.Tensor | None = None,
     ) -> torch.Tensor:
         """
-        Args:
-            x: input tensor (N, C, SpatialDims).
-            timesteps: timestep tensor (N,).
-            context: context tensor (N, 1, ContextDim).
-            class_labels: context tensor (N, ).
-            down_block_additional_residuals: additional residual tensors for down blocks (N, C, FeatureMapsDims).
-            mid_block_additional_residual: additional residual tensor for mid block (N, C, FeatureMapsDims).
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input tensor (N, C, SpatialDims).
+        timesteps : torch.Tensor
+            Timestep tensor (N,).
+        context : torch.Tensor, optional
+            Context tensor (N, 1, ContextDim).
+        class_labels : torch.Tensor, optional
+            Class labels tensor (N, ).
+        down_block_additional_residuals : tuple[torch.Tensor], optional
+            Additional residual tensors for down blocks (N, C, FeatureMapsDims).
+        mid_block_additional_residual : torch.Tensor, optional
+            Additional residual tensor for mid block (N, C, FeatureMapsDims).
         """
         #self.interpol2.target_shape = x.shape[2:] # remember original shape
         output_shape = x.shape[2:]
@@ -2015,7 +2040,8 @@ class DiffusionModelEncoder(nn.Module):
     Classification Network based on the Encoder of the Diffusion Model, followed by fully connected layers. This network is based on
     Wolleb et al. "Diffusion Models for Medical Anomaly Detection" (https://arxiv.org/abs/2203.04306).
 
-    Args:
+    Parameters
+    ----------
         spatial_dims: number of spatial dimensions.
         in_channels: number of input channels.
         out_channels: number of output channels.
@@ -2145,11 +2171,16 @@ class DiffusionModelEncoder(nn.Module):
         class_labels: torch.Tensor | None = None,
     ) -> torch.Tensor:
         """
-        Args:
-            x: input tensor (N, C, SpatialDims).
-            timesteps: timestep tensor (N,).
-            context: context tensor (N, 1, ContextDim).
-            class_labels: context tensor (N, ).
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input tensor (N, C, SpatialDims).
+        timesteps : torch.Tensor
+            Timestep tensor (N,).
+        context : torch.Tensor, optional
+            Context tensor (N, 1, ContextDim).
+        class_labels : torch.Tensor, optional
+            Class labels tensor (N, ).
         """
         # 1. time
         t_emb = get_timestep_embedding(timesteps, self.block_out_channels[0])

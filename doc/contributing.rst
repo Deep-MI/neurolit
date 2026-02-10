@@ -89,19 +89,35 @@ Code Style
        output_dir: str,
        device: str = 'cuda'
    ) -> dict:
-       """
-       Process a brain MRI image.
-       
-       Args:
-           image_path: Path to input image
-           output_dir: Directory for outputs
-           device: Device to use ('cuda' or 'cpu')
-           
-       Returns:
+       """Process a brain MRI image.
+
+       Parameters
+       ----------
+       image_path : str
+           Path to input image
+       output_dir : str
+           Directory for outputs
+       device : str, optional
+           Device to use ('cuda' or 'cpu'), by default 'cuda'
+
+       Returns
+       -------
+       dict
            Dictionary containing results
-           
-       Raises:
-           ValueError: If image_path doesn't exist
+
+       Raises
+       ------
+       ValueError
+           If image_path doesn't exist
+
+       Examples
+       --------
+       >>> results = process_image(
+       ...     image_path='brain.nii.gz',
+       ...     output_dir='./outputs',
+       ...     device='cuda'
+       ... )
+       >>> print(results.keys())
        """
        # Implementation...
        return results

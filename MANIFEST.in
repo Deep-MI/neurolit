@@ -1,5 +1,0 @@
-include README.md
-include LICENSE
-include weights/*
-recursive-include neurolit/postprocessing *.json
-recursive-include neurolit/postprocessing *.txt

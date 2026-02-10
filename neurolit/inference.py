@@ -33,11 +33,13 @@ logger = get_logger(__name__)
 
 
 class InpaintingInferer:
-
     """Coordinate diffusion-based inpainting iterations.
 
-    Args
-    ----
+    This class manages the inference process for diffusion-based inpainting,
+    coordinating forward and backward diffusion steps to fill in masked regions.
+
+    Parameters
+    ----------
     inference_steps : int
         Number of denoising timesteps to execute.
     scheduler : monai.inferers.DiffusionInferer
@@ -54,14 +56,17 @@ class InpaintingInferer:
 
 
     @torch.no_grad()
-    def __call__(self, mask: torch.Tensor, image_masked: torch.Tensor, 
+    def __call__(self, mask: torch.Tensor, image_masked: torch.Tensor,
                  num_resample_steps=10, num_resample_jumps=5, get_intermediates=False,
                  scale_factor=None,
                  *args, **kwargs):
         """Inpaint masked regions by alternating forward and backward diffusion.
 
-        Args
-        ----
+        This method performs diffusion-based inpainting by iteratively denoising
+        the image while preserving known regions defined by the mask.
+
+        Parameters
+        ----------
         mask : torch.Tensor
             Binary mask tensor where zeros indicate known voxels.
         image_masked : torch.Tensor
@@ -143,8 +148,8 @@ class InpaintingInferer:
     def sample_forward_diffusion(self, image, t): # add noise at 
         """Add noise to `image` at timestep `t`.
 
-        Args
-        ----
+        Parameters
+        ----------
         image : torch.Tensor
             Tensor to perturb for forward diffusion.
         t : int | torch.Tensor
@@ -163,8 +168,8 @@ class InpaintingInferer:
     def diffusion_forward(self, image, t):
         """Apply a single forward diffusion update using the scheduler betas.
 
-        Args
-        ----
+        Parameters
+        ----------
         image : torch.Tensor
             Current reconstruction tensor.
         t : int | torch.Tensor
@@ -185,8 +190,8 @@ class InpaintingInferer:
     def diffusion_backward(self, image, t, sf=None): # TODO: add jumps
         """Denoise `image` at timestep `t` with the diffusion model prediction.
 
-        Args
-        ----
+        Parameters
+        ----------
         image : torch.Tensor
             Tensor to denoise.
         t : torch.Tensor
@@ -218,8 +223,8 @@ class SliceWiseInpaintingInferer(InpaintingInferer):
 
     """Process the volume one slice batch at a time along a fixed axis.
 
-    Args
-    ----
+    Parameters
+    ----------
     dimensions : int
         Dimension index along which to extract slices.
     diffusion_model : torch.nn.Module
@@ -238,8 +243,8 @@ class SliceWiseInpaintingInferer(InpaintingInferer):
     def get_slice_from_volume(self, volume, slice_cut, dimension): # TODO: make sure channel dimension is always first
         """Extract a slab centered at `slice_cut`.
 
-        Args
-        ----
+        Parameters
+        ----------
         volume : torch.Tensor
             Volume tensor to sample from.
         slice_cut : int
@@ -263,8 +268,8 @@ class SliceWiseInpaintingInferer(InpaintingInferer):
     def slice_selector(start_idx, end_idx, dimension):
         """Build a slab tuple for the requested range.
 
-        Args
-        ----
+        Parameters
+        ----------
         start_idx : int
             Starting slice index (inclusive).
         end_idx : int
@@ -287,8 +292,8 @@ class SliceWiseInpaintingInferer(InpaintingInferer):
     def get_inference_slices(self, mask, image_masked, dimension, offset=0):
         """Collect slice batches and indices for inference along `dimension`.
 
-        Args
-        ----
+        Parameters
+        ----------
         mask : torch.Tensor
             Binary mask tensor for the entire volume.
         image_masked : torch.Tensor
@@ -342,8 +347,8 @@ class SliceWiseInpaintingInferer(InpaintingInferer):
                     *args, **kwargs):
         """Inpaint the volume slice-wise.
 
-        Args
-        ----
+        Parameters
+        ----------
         mask : torch.Tensor
             Binary mask volume indicating known voxels.
         image_masked : torch.Tensor
@@ -426,8 +431,8 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
 
     """Aggregate slice-wise inpainting across axial, sagittal, and coronal views.
 
-    Args
-    ----
+    Parameters
+    ----------
     diffusion_model_dict : dict[str, torch.nn.Module]
         Mapping from plane names to their diffusion models.
     scheduler : monai.inferers.DiffusionInferer
@@ -452,8 +457,8 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
                            verbose=True):
         """Inpaint the volume by switching views and offsets.
 
-        Args
-        ----
+        Parameters
+        ----------
         image_masked : torch.Tensor
             Input tensor with masked regions to reconstruct.
         mask : torch.Tensor
@@ -565,8 +570,8 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
                  num_resample_steps=10, num_resample_jumps=5, scale_factor=None):    
         """Refine the unknown regions through backward and forward diffusion.
 
-        Args
-        ----
+        Parameters
+        ----------
         t : torch.Tensor
             Current timestep identifier.
         mask : torch.Tensor
@@ -653,8 +658,8 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
 
         """Prepare slice batches for all planes and run view-aggregated inference.
 
-        Args
-        ----
+        Parameters
+        ----------
         mask : torch.Tensor
             Binary mask tensor that highlights the unknown regions.
         image_masked : torch.Tensor
@@ -699,8 +704,8 @@ class OffsetTwoAndHalfDInpaintingInferer(TwoAndHalfDInpaintingInferer):
 
     """Two-and-a-half dimensional inferer that alternates slicing offsets.
 
-    Args
-    ----
+    Parameters
+    ----------
     diffusion_model_dict : dict[str, torch.nn.Module]
         Mapping from plane names to their diffusion models.
     scheduler : monai.inferers.DiffusionInferer
@@ -716,8 +721,8 @@ class OffsetTwoAndHalfDInpaintingInferer(TwoAndHalfDInpaintingInferer):
                            verbose=True):
         """Inpaint the volume using offset slicing to avoid checkerboarding.
 
-        Args
-        ----
+        Parameters
+        ----------
         image_masked : torch.Tensor
             Input tensor with masked regions to reconstruct.
         mask : torch.Tensor
@@ -822,8 +827,8 @@ class OffsetTwoAndHalfDInpaintingInferer(TwoAndHalfDInpaintingInferer):
 
         """Prepare slices with alternating offsets and perform view aggregation.
 
-        Args
-        ----
+        Parameters
+        ----------
         mask : torch.Tensor
             Binary mask tensor identifying regions to reconstruct.
         image_masked : torch.Tensor
@@ -864,8 +869,8 @@ class AnomalyInferer(TwoAndHalfDInpaintingInferer):
 
     """Detect anomalies by detecting deviations from the expected noise distribution.
 
-    Args
-    ----
+    Parameters
+    ----------
     diffusion_model_dict : dict[str, torch.nn.Module]
         Mapping from plane names to their diffusion models.
     scheduler : monai.inferers.DiffusionInferer
@@ -879,8 +884,8 @@ class AnomalyInferer(TwoAndHalfDInpaintingInferer):
                  num_resample_steps=10, num_resample_jumps=5, get_intermediates=False, scale_factor=None):
         """Generate anomaly maps by denoising noise-injected copies of `image`.
 
-        Args
-        ----
+        Parameters
+        ----------
         image : torch.Tensor
             Image tensor used as a reference for anomalous regions.
         batch_size : int, optional
@@ -921,8 +926,8 @@ class AnomalyInferer(TwoAndHalfDInpaintingInferer):
                            verbose=True):
         """Denoise the volume starting from `starting_t` for anomaly detection.
 
-        Args
-        ----
+        Parameters
+        ----------
         image : torch.Tensor
             Image tensor to initialize the denoising process.
         batch_size : int
@@ -1018,8 +1023,8 @@ class AnomalyInferer(TwoAndHalfDInpaintingInferer):
                  num_resample_steps=10, num_resample_jumps=5, scale_factor=None):    
         """Denoise `image` for `starting_t` forward iterations.
 
-        Args
-        ----
+        Parameters
+        ----------
         t : torch.Tensor
             Current timestep identifier.
         image : torch.Tensor
@@ -1082,8 +1087,8 @@ class DiffusionInfererVINN(DiffusionInferer):
     ) -> torch.Tensor:
         """Implement the VINN forward pass for a training iteration.
 
-        Args
-        ----
+        Parameters
+        ----------
         inputs : torch.Tensor
             Input image tensor to corrupt.
         diffusion_model : Callable[..., torch.Tensor]
@@ -1135,8 +1140,8 @@ class DiffusionInfererVINN(DiffusionInferer):
     ) -> torch.Tensor:
         """Sample from the VINN diffusion model using the provided scheduler.
 
-        Args
-        ----
+        Parameters
+        ----------
         input_noise : torch.Tensor
             Random noise tensor with the shape of the desired sample.
         diffusion_model : Callable[..., torch.Tensor]
@@ -1221,8 +1226,8 @@ class DiffusionInfererVINN(DiffusionInferer):
     ) -> torch.Tensor:
         """Precondition the volume and then sample backward and forward with VINN.
 
-        Args
-        ----
+        Parameters
+        ----------
         input_noise : torch.Tensor
             Random noise tensor similar to the desired output shape.
         precond_img : torch.Tensor

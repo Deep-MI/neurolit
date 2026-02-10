@@ -22,15 +22,19 @@ import torch
 
 def plot_batch(image_batch: torch.Tensor, image_path: str, slice_cut: None | list[int] = None) -> None:
     """Plot a batch of 2D or 3D images with different slice views.
-    
-    Args:
-        image_batch: Input batch of images to plot. Shape should be:
-            - For 3D: (batch_size, channels, H, W, D)
-            - For 2D: (batch_size, channels, H, W)
-        image_path: Path where to save the output plot
-        slice_cut: List of indices where to cut the slices. If None, uses middle slice.
-            For 3D: [x, y, z] indices
-            For 2D: [x, y] indices
+
+    Parameters
+    ----------
+    image_batch : torch.Tensor
+        Input batch of images to plot. Shape should be:
+        - For 3D: (batch_size, channels, H, W, D)
+        - For 2D: (batch_size, channels, H, W)
+    image_path : str
+        Path where to save the output plot
+    slice_cut : list of int, optional
+        List of indices where to cut the slices. If None, uses middle slice.
+        For 3D: [x, y, z] indices
+        For 2D: [x, y] indices
     """
     dim = len(image_batch.shape) - 2
     BATCH_SIZE = image_batch.shape[0]
@@ -70,13 +74,19 @@ def plot_learning_curve(n_epochs: int, epoch_loss_list: list[float],
                        val_epoch_loss_list: list[float], args: Any, 
                        VAL_INTERVAL: int) -> None:
     """Plot training and validation learning curves.
-    
-    Args:
-        n_epochs: Total number of epochs
-        epoch_loss_list: List of training losses for each epoch
-        val_epoch_loss_list: List of validation losses (recorded every VAL_INTERVAL)
-        args: Arguments object containing output directory information
-        VAL_INTERVAL: Interval at which validation was performed
+
+    Parameters
+    ----------
+    n_epochs : int
+        Total number of epochs
+    epoch_loss_list : list of float
+        List of training losses for each epoch
+    val_epoch_loss_list : list of float
+        List of validation losses (recorded every VAL_INTERVAL)
+    args : Any
+        Arguments object containing output directory information
+    VAL_INTERVAL : int
+        Interval at which validation was performed
     """
     plt.style.use("seaborn-v0_8")
     plt.title("Learning Curves", fontsize=20)
@@ -100,10 +110,13 @@ def plot_learning_curve(n_epochs: int, epoch_loss_list: list[float],
 
 def plot_scheduler(scheduler: Any, output_file: str) -> None:
     """Plot the scheduler's alpha values over time.
-    
-    Args:
-        scheduler: Diffusion scheduler object containing alphas_cumprod
-        output_file: Path where to save the output plot
+
+    Parameters
+    ----------
+    scheduler : Any
+        Diffusion scheduler object containing alphas_cumprod
+    output_file : str
+        Path where to save the output plot
     """
     plt.plot(scheduler.alphas_cumprod.cpu(), color=(2 / 255, 163 / 255, 163 / 255), linewidth=2)
     plt.xlabel("Timestep [t]")
@@ -115,14 +128,22 @@ def plot_inpainting(val_image: torch.Tensor, val_image_masked: torch.Tensor,
                    val_image_inpainted: torch.Tensor, out_file: str,
                    SLICE_CUT: torch.Tensor, cut_dim: int = 0) -> None:
     """Plot original, masked, and inpainted images side by side.
-    
-    Args:
-        val_image: Original image tensor
-        val_image_masked: Masked version of the image
-        val_image_inpainted: Inpainted result
-        out_file: Path where to save the output plot
-        SLICE_CUT: Index where to cut the slice for visualization
-        cut_dim: Dimension along which to take the slice (0=sagittal, 1=coronal, 2=axial)
+
+    Parameters
+    ----------
+    val_image : torch.Tensor
+        Original image tensor
+    val_image_masked : torch.Tensor
+        Masked version of the image
+    val_image_inpainted : torch.Tensor
+        Inpainted result
+    out_file : str
+        Path where to save the output plot
+    SLICE_CUT : torch.Tensor
+        Index where to cut the slice for visualization
+    cut_dim : int, optional
+        Dimension along which to take the slice (0=sagittal, 1=coronal, 2=axial).
+        Defaults to 0.
     """
     if len(val_image.shape) == 5:
         val_image = val_image[:, 0, ...]

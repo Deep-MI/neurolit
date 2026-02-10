@@ -38,14 +38,20 @@ def get_test_sample():
 
 def get_dataset(csv_file, transforms=None, size="standard"):
     """Get a dataset from a CSV file.
-    
-    Args:
-        csv_file (str): Path to CSV file containing file paths
-        transforms (callable, optional): Transforms to apply to the data. Defaults to None.
-        size (str, optional): If "small", only loads first 3 samples. Defaults to "standard".
-    
-    Returns:
-        CacheDataset: Dataset containing the loaded files
+
+    Parameters
+    ----------
+    csv_file : str
+        Path to CSV file containing file paths
+    transforms : callable, optional
+        Transforms to apply to the data. Defaults to None.
+    size : str, optional
+        If "small", only loads first 3 samples. Defaults to "standard".
+
+    Returns
+    -------
+    CacheDataset
+        Dataset containing the loaded files
     """
     with open(csv_file) as f:
         if size == 'small':
@@ -58,16 +64,21 @@ def get_dataset(csv_file, transforms=None, size="standard"):
 
 def get_base_dataset(size="big", transforms=None):
     """Get training and validation datasets from CSV files.
-    
-    Args:
-        size (str, optional): Size of training dataset to use. Must be one of ["big", "small", "standard"]. 
-            "big" uses 1268 subjects, "small" uses 120 subjects. Defaults to "big".
-        transforms (callable, optional): Transforms to apply to the data. Defaults to None.
 
-    Returns:
-        tuple: Tuple containing:
-            - train_dataset (CacheDataset): Training dataset
-            - val_dataset (CacheDataset): Validation dataset
+    Parameters
+    ----------
+    size : str, optional
+        Size of training dataset to use. Must be one of ["big", "small", "standard"].
+        "big" uses 1268 subjects, "small" uses 120 subjects. Defaults to "big".
+    transforms : callable, optional
+        Transforms to apply to the data. Defaults to None.
+
+    Returns
+    -------
+    train_dataset : CacheDataset
+        Training dataset
+    val_dataset : CacheDataset
+        Validation dataset
     """
     assert(size in ["big", "small", "standard"])
 
@@ -91,23 +102,36 @@ class SlicedDataset(Dataset):
     with a configurable thickness along a specified axis. Each slice is returned with the
     slice thickness as the channel dimension.
 
-    Args:
-        dataset (Dataset): Base dataset containing 3D images
-        thickness (int): Thickness of slices to extract (must be odd)
-        ax (int): Axis along which to extract slices (0=sagittal, 1=coronal, 2=axial)
-        slice_per_img (int, optional): Number of slices to extract per image. If None,
-            extracts all possible slices. Defaults to None.
-        transform (callable, optional): Transform to apply to extracted slices.
-            Defaults to None.
+    Parameters
+    ----------
+    dataset : Dataset
+        Base dataset containing 3D images
+    thickness : int
+        Thickness of slices to extract (must be odd)
+    ax : int
+        Axis along which to extract slices (0=sagittal, 1=coronal, 2=axial)
+    slice_per_img : int, optional
+        Number of slices to extract per image. If None, extracts all possible
+        slices. Defaults to None.
+    transform : callable, optional
+        Transform to apply to extracted slices. Defaults to None.
 
-    Attributes:
-        dataset (Dataset): The base dataset
-        thickness (int): Slice thickness
-        ax (int): Slicing axis
-        slice_per_img (list): Number of slices per image
-        transform (callable): Transform function
-        slice_per_img_cumsum (ndarray): Cumulative sum of slices per image
-        len (int): Total number of slices across all images
+    Attributes
+    ----------
+    dataset : Dataset
+        The base dataset
+    thickness : int
+        Slice thickness
+    ax : int
+        Slicing axis
+    slice_per_img : list
+        Number of slices per image
+    transform : callable
+        Transform function
+    slice_per_img_cumsum : ndarray
+        Cumulative sum of slices per image
+    len : int
+        Total number of slices across all images
     """
 
     def __init__(self, dataset, thickness, ax, slice_per_img=None, transform=None):
@@ -127,11 +151,15 @@ class SlicedDataset(Dataset):
     def get_slice_axis(self, slice_index):
         """Get slice indices for extracting a slice at the given index.
 
-        Args:
-            slice_index (int): Index of slice to extract
+        Parameters
+        ----------
+        slice_index : int
+            Index of slice to extract
 
-        Returns:
-            tuple: Tuple of slice objects for indexing the image array
+        Returns
+        -------
+        tuple
+            Tuple of slice objects for indexing the image array
         """
         slice_axis = [slice(None)] * (self.ax+2)
         slice_axis[self.ax+1] = slice(slice_index, slice_index + self.thickness)
@@ -146,12 +174,16 @@ class SlicedDataset(Dataset):
         Maps the flat index to an image and slice index, extracts the slice,
         and ensures the slice thickness becomes the channel dimension.
 
-        Args:
-            index (int): Index of slice to retrieve
+        Parameters
+        ----------
+        index : int
+            Index of slice to retrieve
 
-        Returns:
-            dict: Dictionary containing the slice under 'image' key and any additional
-                metadata from the base dataset
+        Returns
+        -------
+        dict
+            Dictionary containing the slice under 'image' key and any additional
+            metadata from the base dataset
         """
         img_index = np.searchsorted(self.slice_per_img_cumsum, index)
         slice_index = index - self.slice_per_img_cumsum[img_index-1] if img_index > 0 else index

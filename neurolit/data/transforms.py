@@ -7,11 +7,15 @@ from monai import transforms
 
 class Subsampled(transforms.MapTransform):
     """Transform that subsamples input data and pads to a specified size.
-    
-    Args:
-        keys (list): List of keys to apply transform to
-        spatial_size (tuple): Target spatial size for output (h,w,d)
-        size_reduction (int, optional): Factor by which to subsample. Defaults to 2.
+
+    Parameters
+    ----------
+    keys : list
+        List of keys to apply transform to
+    spatial_size : tuple
+        Target spatial size for output (h,w,d)
+    size_reduction : int, optional
+        Factor by which to subsample. Defaults to 2.
     """
 
     def __init__(self, keys: list[str], spatial_size: tuple[int, int, int], size_reduction: int = 2) -> None:
@@ -49,10 +53,13 @@ class Subsampled(transforms.MapTransform):
     
 class ScaleAugmentation(transforms.MapTransform):
     """Transform that randomly scales the voxel size metadata.
-    
-    Args:
-        keys (list): List of keys to apply transform to
-        scale_range (tuple): Range of possible scale factors (min, max)
+
+    Parameters
+    ----------
+    keys : list
+        List of keys to apply transform to
+    scale_range : tuple
+        Range of possible scale factors (min, max)
     """
 
     def __init__(self, keys: list[str], scale_range: tuple[float, float]) -> None:

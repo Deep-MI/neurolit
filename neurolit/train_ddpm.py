@@ -54,8 +54,8 @@ from neurolit.utils import plot_batch  # noqa: E402
 def argument_parser():
     """Return the argument parser configured for DDPM training runs.
 
-    Args
-    ----
+    Parameters
+    ----------
     None
 
     Returns
@@ -73,8 +73,8 @@ def argument_parser():
 def get_transforms(IMAGE_SHAPE, PATCH_DATASET, FIXED_SIZE, ISVINN=True):
     """Build MONAI transforms used for the training and validation loaders.
 
-    Args
-    ----
+    Parameters
+    ----------
     IMAGE_SHAPE : tuple[int, ...]
         Desired spatial size for crops or resized volumes.
     PATCH_DATASET : bool
@@ -148,8 +148,8 @@ if __name__ == "__main__":
         def get_scale_factors(images):
             """Compute VINN scale factors from the metadata of `images`.
 
-            Args
-            ----
+            Parameters
+            ----------
             images : torch.Tensor | monai.data.meta_tensor.MetaTensor
                 Batch containing ``meta['delta']`` spacing information.
 

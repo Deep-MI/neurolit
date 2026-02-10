@@ -6,8 +6,11 @@ from sys import argv
 def run_lit():
     """Run the packaged LIT CLI script with forwarded command-line arguments.
 
-    Args
-    ----
+    This function executes the packaged LIT CLI script, forwarding all
+    command-line arguments from the current process.
+
+    Parameters
+    ----------
     None
 
     Returns
