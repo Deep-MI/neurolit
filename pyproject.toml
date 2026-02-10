@@ -80,13 +80,13 @@ style = [
     'pydocstyle[toml]',
     'ruff',
 ]
-quicktest = [
+test = [
     'pytest>=8.2.2',
 ]
 all = [
     'neurolit[doc]',
     'neurolit[style]',
-    'neurolit[quicktest]',
+    'neurolit[test]',
 ]
 full = [
     'neurolit[all]',
@@ -122,10 +122,11 @@ add_ignore = 'D100,D104,D107'
 
 [tool.ruff]
 line-length = 150
-target-version = "py310"
+#target-version = "py310"
 extend-exclude = [
-    "build",
     "doc",
+    ".github",
+    "build",
 ]
 
 [tool.ruff.lint]
