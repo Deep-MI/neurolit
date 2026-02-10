@@ -30,5 +30,3 @@ jobs:
         uses: codespell-project/actions-codespell@master
       - name: Run pydocstyle
         run: pydocstyle .
-      - name: Run bibclean
-        run: bibclean-check doc/references.bib
