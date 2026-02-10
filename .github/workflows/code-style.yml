@@ -28,11 +28,6 @@ jobs:
         run: ruff check .
       - name: Run codespell
         uses: codespell-project/actions-codespell@master
-        with:
-          check_filenames: true
-          check_hidden: true
-          skip: './.git,./build,./.mypy_cache,./.pytest_cache,./doc/images,./Tutorial'
-          ignore_words_file: ./.codespellignore
       - name: Run pydocstyle
         run: pydocstyle .
       - name: Run bibclean

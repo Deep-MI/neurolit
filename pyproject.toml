@@ -145,6 +145,12 @@ select = [
 "neurolit/inference.py" = ["E402"]  # Allow warning filter before imports (breaks import block)
 "neurolit/train_ddpm.py" = ["E402"]  # Allow warning filter before imports (breaks import block)
 
+[tool.codespell]
+#ignore-words-list = "word1,word2,name3"
+check-filenames = true
+check-hidden = true
+skip = "./.git,./build,./.mypy_cache,./.pytest_cache,./doc/images,./Tutorial"
+
 [tool.pytest.ini_options]
 minversion = '6.0'
 addopts = '--durations 20 --junit-xml=junit-results.xml --verbose'
