@@ -844,7 +844,6 @@ class OffsetTwoAndHalfDInpaintingInferer(TwoAndHalfDInpaintingInferer):
         torch.Tensor | tuple[torch.Tensor, torch.Tensor]
             Reconstructed volume, optionally with intermediates.
         """
-
         if mask.dtype == torch.bool:
             mask = mask.int()
         else:
@@ -873,7 +872,6 @@ class AnomalyInferer(TwoAndHalfDInpaintingInferer):
         Number of timesteps to run per reconstruction.
     """
 
-
     def __call__(self, image: torch.Tensor, batch_size=1, starting_t=0,
                  num_resample_steps=10, num_resample_jumps=5, get_intermediates=False, scale_factor=None):
         """Generate anomaly maps by denoising noise-injected copies of `image`.
@@ -900,7 +898,6 @@ class AnomalyInferer(TwoAndHalfDInpaintingInferer):
         torch.Tensor | tuple[torch.Tensor, torch.Tensor]
             Denoised tensor, optionally paired with intermediate samples.
         """
-
         # unpack meta tensors (operating on torch tensors is faster)
         if isinstance(image, monai.data.meta_tensor.MetaTensor):
             image = monai.data.meta_tensor.MetaTensor.ensure_torch_and_prune_meta(image, meta=None)
