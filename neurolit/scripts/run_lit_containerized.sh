@@ -50,9 +50,21 @@ PROJ_DIR=$(realpath $SCRIPT_DIR/../..)
 
 POSITIONAL_ARGS=()
 
-VERSION="$(python3 -c 'import neurolit; print(neurolit.__version__)')"
-VERSION="${VERSION/version = /}"
-VERSION="${VERSION//\"/}"
+# Define the Docker Hub repository
+DOCKER_REPO="deepmi/lit"
+
+# Get the latest version from Docker Hub
+if [[ -z "$VERSION" ]]; then
+  # Fetch tags from Docker Hub API, sort them, and get the latest numeric one
+  if command -v curl >/dev/null 2>&1; then
+    VERSION=$(curl -s "https://hub.docker.com/v2/repositories/${DOCKER_REPO}/tags/?page_size=100" | \
+              grep -oP '"name":\s*"\K[0-9]+\.[0-9]+\.[0-9]+' | \
+              sort -V | tail -n 1)
+  fi
+  if [[ -z "$VERSION" ]]; then
+    VERSION="0.5.0"
+  fi
+fi
 
 # Initialize USE_SINGULARITY to false by default
 USE_SINGULARITY=false
@@ -140,9 +152,8 @@ fi
 # Run command based on the containerization tool
 if [ "$USE_SINGULARITY" = true ]; then
   if [ ! -f "$PROJ_DIR/containerization/deepmi_lit.simg" ]; then
-    echo "=============== Downloading Singularity image... ==============="
-    wget https://zenodo.org/records/14497226/files/deepmi_lit.simg -O $PROJ_DIR/containerization/deepmi_lit_download.simg
-    mv $PROJ_DIR/containerization/deepmi_lit_download.simg $PROJ_DIR/containerization/deepmi_lit.simg
+    echo "=============== Pulling Singularity image from Docker Hub... ==============="
+    singularity pull "$PROJ_DIR/containerization/deepmi_lit.simg" docker://${DOCKER_REPO}:${VERSION}
   fi
 
   if [ ! -f "$PROJ_DIR/containerization/deepmi_lit.simg" ]; then
@@ -155,7 +166,7 @@ if [ "$USE_SINGULARITY" = true ]; then
     -B "${MASK_IMAGE}":"${MASK_IMAGE}":ro \
     -B "${OUT_DIR}":"${OUT_DIR}" \
     $PROJ_DIR/containerization/deepmi_lit.simg \
-    /inpainting/LIT/scripts/run_lit.sh -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" "${POSITIONAL_ARGS[@]}"
+    lit-inpainting -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" "${POSITIONAL_ARGS[@]}"
 else
   docker run --gpus "device=$GPUS" -it --ipc=host \
     --ulimit memlock=-1 --ulimit stack=67108864 --rm \
@@ -163,5 +174,5 @@ else
     -v "${MASK_IMAGE}":"${MASK_IMAGE}":ro \
     -v "${OUT_DIR}":"${OUT_DIR}" \
     -u "$(id -u):$(id -g)" \
-    deepmi/lit:$VERSION -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" "${POSITIONAL_ARGS[@]}"
+    ${DOCKER_REPO}:$VERSION -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" "${POSITIONAL_ARGS[@]}"
 fi
