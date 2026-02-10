@@ -5,7 +5,7 @@ concurrency:
 on:
   pull_request:
   push:
-    branches: [dev, main]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -14,12 +14,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Python 3.10
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.10'
-          architecture: 'x64'
           cache: 'pip' # caching pip dependencies
       - name: Install dependencies
         run: |
@@ -32,4 +31,9 @@ jobs:
         with:
           check_filenames: true
           check_hidden: true
-          skip: './build,./doc/images,./Tutorial,./.git,./.mypy_cache,./.pytest_cache'
+          skip: './.git,./build,./.mypy_cache,./.pytest_cache,./doc/images,./Tutorial'
+          ignore_words_file: ./.codespellignore
+      - name: Run pydocstyle
+        run: pydocstyle .
+      - name: Run bibclean
+        run: bibclean-check doc/references.bib

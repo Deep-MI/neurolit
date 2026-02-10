@@ -5,7 +5,7 @@ concurrency:
 on:
   pull_request:
   push:
-    branches: [dev, main, stable]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -17,32 +17,28 @@ jobs:
         shell: bash
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
-          path: src
+          path: ./main
       - name: Setup Python 3.10
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.10'
-          architecture: 'x64'
           cache: 'pip' # caching pip dependencies
       - name: Install package
         run: |
           python -m pip install --progress-bar off --upgrade pip setuptools wheel
-          python -m pip install --progress-bar off src/.[doc]
+          python -m pip install --progress-bar off main/.[doc]
       - name: Build doc
-        run: PYTHONPATH=$PYTHONPATH:src TZ=UTC sphinx-build src/doc doc-build -W --keep-going
+        run: PYTHONPATH=$PYTHONPATH:main TZ=UTC sphinx-build ./main/doc ./doc-build/dev -W --keep-going
       - name: Upload documentation
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
-          name: doc
-          path: |
-            doc-build
-            !doc-build/.doctrees
+          name: doc-dev
+          path: doc-build/dev !doc-build/dev/.doctrees
 
   deploy:
-    # only on push to dev or main/stable
-    if: ${{ github.event_name == 'push' && contains(fromJSON('["dev", "main", "stable"]'), github.ref_name) }}
+    if: github.event_name == 'push'
     needs: build
     timeout-minutes: 10
     runs-on: ubuntu-latest
@@ -53,15 +49,15 @@ jobs:
         shell: bash
     steps:
       - name: Download documentation
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
-          name: doc
-          path: doc
-      - name: Deploy documentation
+          name: doc-dev
+          path: ./doc-dev
+      - name: Deploy dev documentation
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: doc
-          destination_dir: ${{ github.ref_name }}
+          publish_dir: ./doc-dev
+          destination_dir: ./dev
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
