@@ -324,7 +324,7 @@ def inpaint_volume(
     return val_image_inpainted
 
 
-def main():
+def main(argv=None):
     """Entry point for the inpainting CLI (debug mode).
 
     Parses CLI arguments, prepares models, and runs ``inpaint_volume``.
@@ -348,7 +348,7 @@ def main():
                         type=str, help='checkpoint to load for inference in sagittal plane',
                         default=None, required=False)
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
 
     # load models

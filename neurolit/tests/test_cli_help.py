@@ -14,8 +14,8 @@ def run_help_test(module_path):
 
 def test_lit_inpainting_help():
     """Test lit-inpainting (neurolit.cli) help."""
-    # Note: lit-inpainting entrypoint calls neurolit.cli:run_lit
-    # which runs the bash script. Testing the module directly:
+    # Note: lit-inpainting entrypoint calls neurolit.cli:run_lit.
+    # Testing the module directly:
     run_help_test("neurolit.cli")
 
 def test_lesion_to_segmentation_help():

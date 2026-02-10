@@ -220,7 +220,6 @@ class InpaintingInferer:
 
 
 class SliceWiseInpaintingInferer(InpaintingInferer):
-
     """Process the volume one slice batch at a time along a fixed axis.
 
     Parameters
@@ -428,7 +427,6 @@ class SliceWiseInpaintingInferer(InpaintingInferer):
         
 
 class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
-
     """Aggregate slice-wise inpainting across axial, sagittal, and coronal views.
 
     Parameters
@@ -655,7 +653,6 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
 
     def __call__(self, mask: torch.Tensor, image_masked: torch.Tensor, batch_size=1, 
                  num_resample_steps=10, num_resample_jumps=5, get_intermediates=False, scale_factor=None):
-
         """Prepare slice batches for all planes and run view-aggregated inference.
 
         Parameters
@@ -701,7 +698,6 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
 
 
 class OffsetTwoAndHalfDInpaintingInferer(TwoAndHalfDInpaintingInferer):
-
     """Two-and-a-half dimensional inferer that alternates slicing offsets.
 
     Parameters
@@ -824,7 +820,6 @@ class OffsetTwoAndHalfDInpaintingInferer(TwoAndHalfDInpaintingInferer):
 
     def __call__(self, mask: torch.Tensor, image_masked: torch.Tensor, batch_size=1, 
                  num_resample_steps=10, num_resample_jumps=5, get_intermediates=False, scale_factor=None):
-
         """Prepare slices with alternating offsets and perform view aggregation.
 
         Parameters
@@ -866,7 +861,6 @@ class OffsetTwoAndHalfDInpaintingInferer(TwoAndHalfDInpaintingInferer):
     
 
 class AnomalyInferer(TwoAndHalfDInpaintingInferer):
-
     """Detect anomalies by detecting deviations from the expected noise distribution.
 
     Parameters
@@ -1067,7 +1061,6 @@ class AnomalyInferer(TwoAndHalfDInpaintingInferer):
 
 
 class DiffusionInfererVINN(DiffusionInferer):
-
     """Sampler that extends MONAI's DiffusionInferer to support VINN conditioning.
 
     The implementation handles VINN scale factors, optional conditioning modes, and

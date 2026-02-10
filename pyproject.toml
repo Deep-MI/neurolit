@@ -114,7 +114,7 @@ where = ["."]
 exclude = ["build*", "dist*", "*.egg-info", "tests*", "doc*", "containerization*"]
 
 [tool.setuptools.package-data]
-neurolit = ["scripts/run_lit.sh", "postprocessing/*.json", "postprocessing/*.txt"]
+neurolit = ["postprocessing/*.json", "postprocessing/*.txt"]
 
 [tool.pydocstyle]
 convention = 'numpy'
