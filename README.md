@@ -9,19 +9,19 @@ This tool can inpaint lesions independent of their shape or appearance for furth
 ## Quickstart
 
 ```bash
-git clone https://github.com/Deep-MI/LIT.git && cd LIT
-./LIT/scripts/run_lit_containerized.sh --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output_directory output_directory
+git clone https://github.com/Deep-MI/neurolit.git && cd neurolit
+./neuroLIT/scripts/run_lit_containerized.sh --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output_directory output_directory
 # Add --singularity to use singularity instead of docker
 ```
 
-## How to run LIT
+## How to run neuroLIT
 
-We recommend using containerization in combination with the [LIT/scripts/run_lit_containerized.sh](LIT/scripts/run_lit_containerized.sh) wrapper script.
-This will automatically build the docker image from [dockerhub](https://hub.docker.com/r/deepmi/lit) and singularity image and run the LIT inpainting.
-We also have a pip release of LIT.
+We recommend using containerization in combination with the [neurolit/scripts/run_lit_containerized.sh](neurolit/scripts/run_lit_containerized.sh) wrapper script.
+This will automatically build the docker image from [dockerhub](https://hub.docker.com/r/deepmi/neurolit) and singularity image and run the neuroLIT inpainting.
+We also have a pip release of neuroLIT.
 
 
-### Running LIT
+### Running neuroLIT
 
 The most straight forward way of doing the inpainting is just providing 
 1. The T1w image
@@ -30,7 +30,7 @@ The most straight forward way of doing the inpainting is just providing
 4. (optional) The number times to dilate the lesion mask (default: 0)
 
 ```bash
-./LIT/scripts/run_lit_containerized.sh --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output_directory output_directory --dilate 2
+./neuroLIT/scripts/run_lit_containerized.sh --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output_directory output_directory --dilate 2
 ```
 The default is to use docker. Add the `--singularity` flag to use singularity instead. To use the containerized version of this tool either docker or singularity should be installed. To build the singularity image docker is also required, otherwise please download the prebuild image.
 
@@ -57,7 +57,7 @@ pip install neurolit
 # Download model checkpoints (recommended - download once, ~700MB)
 lit-download-models
 
-# Run LIT
+# Run neuroLIT
 lit-inpainting --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output_directory output_directory --dilate 2
 ```
 
@@ -66,9 +66,9 @@ lit-inpainting --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output
 
 ## Integration with FastSurfer
 
-LIT is being integrated into [FastSurfer](https://github.com/deep-mi/FastSurfer) for whole brain segmentation and cortical surface reconstruction of images with lesions. 
+neuroLIT is being integrated into [FastSurfer](https://github.com/deep-mi/FastSurfer) for whole brain segmentation and cortical surface reconstruction of images with lesions. 
 
-For standalone usage with FastSurfer, LIT provides post-processing scripts for integrating lesions into FastSurfer/FreeSurfer outputs. We recommend using the unified `lit-postprocessing` script which handles mapping the lesion mask to multiple segmentation files, running volume statistics (segstats), and performing surface masking.
+For standalone usage with FastSurfer, neuroLIT provides post-processing scripts for integrating lesions into FastSurfer/FreeSurfer outputs. We recommend using the unified `lit-postprocessing` script which handles mapping the lesion mask to multiple segmentation files, running volume statistics (segstats), and performing surface masking.
 
 ### Postprocessing
 
@@ -119,6 +119,6 @@ Documentation includes:
 
 ## References
 
-If you use LIT for research publications, please cite:
+If you use neuroLIT for research publications, please cite:
 
 _Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpainting Tool for Whole Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Accepted for Imaging Neuroscience._

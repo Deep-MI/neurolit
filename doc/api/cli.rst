@@ -9,7 +9,7 @@ Command-Line Interface
 Overview
 --------
 
-The CLI module provides command-line interfaces for running LIT operations.
+The CLI module provides command-line interfaces for running neuroLIT operations.
 
 Main Functions
 --------------
@@ -19,7 +19,7 @@ lit-inpainting
 
 :py:func:`neurolit.cli.run_lit`
 
-Entry point for the main ``lit-inpainting`` command. This is the primary interface for running the full LIT pipeline.
+Entry point for the main ``lit-inpainting`` command. This is the primary interface for running the full neuroLIT pipeline.
 
 **Usage:**
 

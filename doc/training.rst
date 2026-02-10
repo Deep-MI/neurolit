@@ -1,12 +1,12 @@
 Training
 ========
 
-This guide explains how to train your own LIT models on custom data.
+This guide explains how to train your own neuroLIT models on custom data.
 
 Overview
 --------
 
-LIT uses a Denoising Diffusion Probabilistic Model (DDPM) architecture with a U-Net backbone. The model is trained separately for three orthogonal views (axial, coronal, and sagittal).
+NeuroLIT uses a Denoising Diffusion Probabilistic Model (DDPM) architecture with a U-Net backbone. The model is trained separately for three orthogonal views (axial, coronal, and sagittal).
 
 Data Preparation
 ----------------
@@ -18,7 +18,7 @@ All training images must be conformed to a standard space using the provided con
 
 .. code-block:: bash
 
-   python3 LIT/data/conform.py \\
+   python3 neurolit/data/conform.py \\
        --input raw_image.nii.gz \\
        --output conformed_image.nii.gz
 
@@ -55,7 +55,7 @@ You can use the same Docker image for training. Mount your data directory and ru
        -v /path/to/training_data:/data \\
        -v /path/to/output:/output \\
        --rm deepmi/lit:latest \\
-       python3 /opt/LIT/train_ddpm.py \\
+       python3 /opt/neurolit/train_ddpm.py \\
            --data_dir /data \\
            --output_dir /output \\
            --view axial \\

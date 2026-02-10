@@ -9,7 +9,7 @@ Inference Module
 Overview
 --------
 
-The inference module exposes the inferer classes that implement LIT's diffusion-based inpainting pipeline.
+The inference module exposes the inferer classes that implement neuroLIT's diffusion-based inpainting pipeline.
 
 Key Concepts
 ------------

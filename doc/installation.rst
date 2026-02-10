@@ -1,12 +1,12 @@
 Installation
 ============
 
-LIT can be installed in multiple ways depending on your needs and environment.
+neuroLIT can be installed in multiple ways depending on your needs and environment.
 
 Using Docker/Singularity (Recommended)
 ---------------------------------------
 
-The easiest way to use LIT is through containerization, which handles all dependencies automatically.
+The easiest way to use neuroLIT is through containerization, which handles all dependencies automatically.
 
 **Prerequisites:**
 
@@ -16,9 +16,9 @@ The easiest way to use LIT is through containerization, which handles all depend
 
 .. code-block:: bash
 
-   git clone https://github.com/Deep-MI/LIT.git
-   cd LIT
-   ./LIT/scripts/run_lit_containerized.sh --input_image T1w.nii.gz \\
+   git clone https://github.com/Deep-MI/neurolit.git
+   cd neurolit
+   ./neurolit/scripts/run_lit_containerized.sh --input_image T1w.nii.gz \\
        --mask_image lesion_mask.nii.gz \\
        --output_directory output_directory
 
@@ -26,7 +26,7 @@ By default, this uses Docker. To use Singularity instead:
 
 .. code-block:: bash
 
-   ./LIT/scripts/run_lit_containerized.sh --singularity \\
+   ./neurolit/scripts/run_lit_containerized.sh --singularity \\
        --input_image T1w.nii.gz \\
        --mask_image lesion_mask.nii.gz \\
        --output_directory output_directory
@@ -34,7 +34,7 @@ By default, this uses Docker. To use Singularity instead:
 Using PyPI (Beta)
 -----------------
 
-LIT is available on PyPI.
+neuroLIT is available on PyPI.
 
 **Prerequisites:**
 
@@ -81,8 +81,8 @@ For development or if you want to modify the code:
 .. code-block:: bash
 
    # Clone the repository
-   git clone https://github.com/Deep-MI/LIT.git
-   cd LIT
+   git clone https://github.com/Deep-MI/neurolit.git
+   cd neurolit
    
    # Install the package and its dependencies in development mode
    pip install -e .
@@ -109,7 +109,7 @@ System Requirements
 Verifying Installation
 ----------------------
 
-After installation, verify that LIT is working correctly:
+After installation, verify that neuroLIT is working correctly:
 
 .. code-block:: bash
 

@@ -1,14 +1,14 @@
-.. LIT - Lesion Inpainting Tool documentation master file
+.. neuroLIT - Neuro Lesion Inpainting Tool documentation master file
 
-Welcome to LIT's Documentation!
+Welcome to neuroLIT's Documentation!
 ================================
 
-**LIT (Lesion Inpainting Tool)** is a tool for inpainting lesions in brain MRI images, independent of their shape or appearance, for further downstream analysis.
+**neuroLIT (Neuro Lesion Inpainting Tool)** is a tool for inpainting lesions in brain MRI images, independent of their shape or appearance, for further downstream analysis.
 
-LIT with FastSurfer can be run by directly running `FastSurfer <https://deep-mi.org/fastsurfer/>`_. For other tools and FreeSurfer use the LIT repository.
+neuroLIT with FastSurfer can be run by directly running `FastSurfer <https://deep-mi.org/fastsurfer/>`_. For other tools and FreeSurfer use the neuroLIT repository.
 
 .. image:: overview.png
-   :alt: LIT Overview
+   :alt: neuroLIT Overview
    :align: center
    :width: 80%
 
@@ -29,8 +29,8 @@ Using Docker/Singularity (Recommended)
 
 .. code-block:: bash
 
-   git clone https://github.com/Deep-MI/LIT.git && cd LIT
-   ./LIT/scripts/run_lit_containerized.sh --input_image T1w.nii.gz \\
+   git clone https://github.com/Deep-MI/neurolit.git && cd neurolit
+   ./neurolit/scripts/run_lit_containerized.sh --input_image T1w.nii.gz \\
        --mask_image lesion_mask.nii.gz --output_directory output_directory
 
 Using PyPI Package

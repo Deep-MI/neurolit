@@ -1,7 +1,7 @@
 Documentation Guide
 ===================
 
-This guide explains how to build and contribute to the LIT documentation.
+This guide explains how to build and contribute to the neuroLIT documentation.
 
 Building the Documentation
 --------------------------
@@ -39,7 +39,7 @@ Clean Build Files
 Writing Documentation
 ---------------------
 
-LIT uses Sphinx with reStructuredText (reST) and MyST-Parser for Markdown support.
+neuroLIT uses Sphinx with reStructuredText (reST) and MyST-Parser for Markdown support.
 
 API Documentation
 ~~~~~~~~~~~~~~~~~

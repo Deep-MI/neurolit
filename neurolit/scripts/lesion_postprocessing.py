@@ -32,7 +32,7 @@ def setup_argparse() -> argparse.ArgumentParser:
     Returns
     -------
     argparse.ArgumentParser
-        Parser configured with LIT postprocessing arguments.
+        Parser configured with neuroLIT postprocessing arguments.
     """
     parser = argparse.ArgumentParser(
         description="Process volumetric statistics with lesion mapping",
@@ -925,7 +925,7 @@ def generate_lesion_impact_summary(subjects_dir: Path, subject_id: str,
 
 
 def main():
-    """Main entry point orchestrating LIT postprocessing.
+    """Main entry point orchestrating neuroLIT postprocessing.
 
     Parses CLI arguments, validates segstats tooling, runs lesion mapping,
     executes segstats (unless skipped), and applies surface masking as required.
@@ -957,7 +957,7 @@ def main():
     else:
         fs_home = None
     
-    # Auto-detect LIT path
+    # Auto-detect neuroLIT path
     lit_path = Path(__file__).parent.parent
     
     # Validate segstats installation (unless skipping segstats)

@@ -1,7 +1,7 @@
 Contributing
 ============
 
-We welcome contributions to LIT! This guide will help you get started.
+We welcome contributions to neuroLIT! This guide will help you get started.
 
 Getting Started
 ---------------
@@ -11,8 +11,8 @@ Getting Started
 .. code-block:: bash
 
    # Fork and clone the repository
-   git clone https://github.com/YOUR_USERNAME/LIT.git
-   cd LIT
+   git clone https://github.com/YOUR_USERNAME/neurolit.git
+   cd neurolit
    
    # Create virtual environment
    python3 -m venv venv
@@ -197,5 +197,5 @@ When creating a pull request:
 Thank You!
 ----------
 
-Thank you for contributing to LIT! Every contribution, no matter how small, helps make the project better for everyone.
+Thank you for contributing to neuroLIT! Every contribution, no matter how small, helps make the project better for everyone.
 

@@ -1,7 +1,7 @@
 Citation
 ========
 
-If you use LIT in your research, please cite our paper.
+If you use neuroLIT in your research, please cite our paper.
 
 BibTeX
 ------

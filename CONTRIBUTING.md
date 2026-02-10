@@ -31,7 +31,7 @@ python3 -m pytest
 
 ### Building Documentation
 
-LIT uses Sphinx for documentation. To build the documentation locally:
+neuroLIT uses Sphinx for documentation. To build the documentation locally:
 
 ```bash
 # Install documentation dependencies
@@ -147,5 +147,5 @@ For more details, see `doc/README.md`.
 
 ## Questions or Issues?
 
-If you have questions or run into issues, please open an issue on the [GitHub repository](https://github.com/Deep-MI/LIT).
+If you have questions or run into issues, please open an issue on the [GitHub repository](https://github.com/Deep-MI/neurolit).
 

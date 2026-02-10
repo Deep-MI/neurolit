@@ -36,20 +36,21 @@ def get_version_with_hash():
         if hash_file.exists():
             hash_val = hash_file.read_text().strip()
             return f"{version}+{hash_val}"
+    # if we fail to get the hash, just return the version
     except Exception:
         pass
     return version
 
 
 def run_lit():
-    """Run the LIT CLI.
+    """Run the neuroLIT CLI.
 
     This function serves as the main entry point for the Lesion Inpainting Tool
     command-line interface. It parses command-line arguments, validates inputs,
     and initiates the inpainting process.
     """
     parser = argparse.ArgumentParser(
-        description="LIT: Lesion Inpainting Tool",
+        description="neuroLIT: Neuro Lesion Inpainting Tool",
         add_help=False
     )
     
@@ -82,7 +83,7 @@ def run_lit():
         print("Other arguments:")
         print("  --version             : Print version number and exit")
         print("")
-        print("If you use LIT for research publications, please cite:")
+        print("If you use neuroLIT for research publications, please cite:")
         print("")
         print("Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpainting Tool for Whole")
         print("  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Accepted for Imaging Neuroscience.")

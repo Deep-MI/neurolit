@@ -6,14 +6,14 @@ This guide covers the basic and advanced usage of neuroLIT.
 Basic Usage
 -----------
 
-Running LIT with Containerization
+Running neuroLIT with Containerization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The most straightforward way to run LIT is using the containerized wrapper script:
+The most straightforward way to run neuroLIT is using the containerized wrapper script:
 
 .. code-block:: bash
 
-   ./LIT/scripts/run_lit_containerized.sh \\
+   ./neurolit/scripts/run_lit_containerized.sh \\
        --input_image T1w.nii.gz \\
        --mask_image lesion_mask.nii.gz \\
        --output_directory output_directory \\
@@ -26,7 +26,7 @@ The most straightforward way to run LIT is using the containerized wrapper scrip
 * ``--output_directory``: Directory where outputs will be saved
 * ``--dilate``: Number of times to dilate the lesion mask (default: 0)
 
-Running LIT from PyPI
+Running neuroLIT from PyPI
 ~~~~~~~~~~~~~~~~~~~~~
 
 If you installed via pip:
@@ -59,7 +59,7 @@ We recommend performing mask dilation to account for potential undersegmentation
 Understanding the Outputs
 --------------------------
 
-LIT produces several output files in the ``inpainting_volumes`` subdirectory:
+neuroLIT produces several output files in the ``inpainting_volumes`` subdirectory:
 
 Output Files
 ~~~~~~~~~~~~
@@ -156,7 +156,7 @@ Command-Line Interface Reference
 lit-inpainting
 ~~~~~~~~~~~~~~
 
-Main command to run the LIT inpainting.
+Main command to run the neuroLIT inpainting.
 
 .. code-block:: text
 
@@ -223,7 +223,7 @@ Quality Control
 Postprocessing
 --------------
 
-LIT provides tools to integrate lesion masks into FastSurfer/FreeSurfer segmentation and surface outputs.
+neuroLIT provides tools to integrate lesion masks into FastSurfer/FreeSurfer segmentation and surface outputs.
 
 Unified Postprocessing Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
