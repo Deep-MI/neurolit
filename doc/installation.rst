@@ -34,11 +34,11 @@ By default, this uses Docker. To use Singularity instead:
 Using PyPI (Beta)
 -----------------
 
-LIT is available on Test PyPI as a beta release.
+LIT is available on PyPI.
 
 **Prerequisites:**
 
-* Python >= 3.8
+* Python >= 3.10
 * pip
 
 **Installation:**
@@ -46,7 +46,7 @@ LIT is available on Test PyPI as a beta release.
 .. code-block:: bash
 
    # Install the package
-   pip install -i https://test.pypi.org/simple/ neurolit
+   pip install neurolit
 
 **Download Model Checkpoints:**
 
@@ -72,7 +72,7 @@ For development or if you want to modify the code:
 
 **Prerequisites:**
 
-* Python >= 3.8
+* Python >= 3.10
 * pip and setuptools
 * Git
 
