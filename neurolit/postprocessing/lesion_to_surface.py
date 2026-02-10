@@ -299,7 +299,7 @@ def mode_filter(
     # Only after fixing the rows above, we can
     # get rid of entries that should not vote
     # since we have only rows that were non-uniform, they should not become empty
-    # rows may become unform: we still need to vote below to update this label
+    # rows may become uniform: we still need to vote below to update this label
     if novote:
         rr = np.in1d(nlabels.data, novote)
         nlabels.data[rr] = 0
@@ -391,7 +391,7 @@ def sample_nearest_nonzero(img, vox_coords, radius=3.0):
     # the nearest neighbor voxel, instead of at the float vox coordinates
 
     # create box with 2*rvox+1 side length to fully contain ball
-    # and get coordiante offsets with zero at center
+    # and get coordinate offsets with zero at center
     ri = np.floor(rvox).astype(int)
     ll = np.arange(-ri,ri+1)
     xv, yv, zv = np.meshgrid(ll, ll, ll)
@@ -482,7 +482,7 @@ def sample_img(surf, img, cortex=None, projmm=0.0, radius=None):
     # Compute LaPy TriaMesh for vertex normal computation
     T = TriaMesh(surf[0], surf[1])
     # compute sample coordinates projmm mm along the surface normal
-    # in surface RAS coordiante system:
+    # in surface RAS coordinate system:
     if not T.is_oriented():
         logger.warning("Surface is not oriented, orienting ...")
         T.orient_()
@@ -528,7 +528,7 @@ def replace_labels(img_labels, img_lut, surf_lut):
     Parameters
     ----------
     img_labels : np.ndarray(n,)
-        Array with imgage label ids.
+        Array with image label ids.
     img_lut : str
         Filename for image label look up table.
     surf_lut : str

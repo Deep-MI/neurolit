@@ -1972,7 +1972,7 @@ class DiffusionModelUNetVINN(nn.Module):
                 h, _ = self.interpol1(h, scale_factors=scale_factors, target_shape=self.internal_size)
                 down_block_res_samples.append(h)
         
-        # Additional residual conections for Controlnets
+        # Additional residual connections for Controlnets
         if down_block_additional_residuals is not None:
             new_down_block_res_samples = ()
             for down_block_res_sample, down_block_additional_residual in zip(
@@ -1987,7 +1987,7 @@ class DiffusionModelUNetVINN(nn.Module):
         # 5. mid
         h = self.middle_block(hidden_states=h, temb=emb, context=context)
 
-        # Additional residual conections for Controlnets
+        # Additional residual connections for Controlnets
         if mid_block_additional_residual is not None:
             h = h + mid_block_additional_residual
 

@@ -22,7 +22,7 @@ from pathlib import Path
 # Must be before torch/monai imports to catch the warning during import
 warnings.filterwarnings("ignore", category=FutureWarning, message=".*cuda.cudart.*")  # noqa: E402
 
-# supress warning on loading matplotlib
+# suppress warning on loading matplotlib
 import matplotlib  # noqa: E402
 import nibabel as nib  # noqa: E402
 import nibabel.processing  # noqa: E402

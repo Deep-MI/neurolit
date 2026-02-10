@@ -43,7 +43,7 @@ The outputs will be placed in the output directory in the folder inpainting_volu
 We recommend performing dilation, since undersegmentation can negatively impact the performance of the inpainting, while oversegmentation should not have significant impact.
 
 
-If the source image was isotropic, the output images should have the same resolution as the input image and the area outside of the lesion mask should be preversed, except for a robust rescaling of the intensity values.
+If the source image was isotropic, the output images should have the same resolution as the input image and the area outside of the lesion mask should be preserved, except for a robust rescaling of the intensity values.
 
 
 #### Installation from PyPI
@@ -94,7 +94,7 @@ lit-postprocessing \
 
 ## Training
 
-The training script can be found [here](neurolit/train_ddpm.py). The same docker image can be used for training, but you need to mount the training data directory using the `-v` flag. Note that training data are excpected to be conformed (with the script [conform.py](neurolit/data/conform.py)).
+The training script can be found [here](neurolit/train_ddpm.py). The same docker image can be used for training, but you need to mount the training data directory using the `-v` flag. Note that training data are expected to be conformed (with the script [conform.py](neurolit/data/conform.py)).
 
 ## Documentation
 
