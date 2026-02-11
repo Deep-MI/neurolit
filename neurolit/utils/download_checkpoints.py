@@ -1,4 +1,4 @@
-# Copyright 2024 Image Analysis Lab, German Center for Neurodegenerative Diseases (DZNE), Bonn
+# Copyright 2026 DeepMI Lab, German Center for Neurodegenerative Diseases (DZNE), Bonn
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ def download_checkpoint(
             if verbose:
                 print(f"Downloading checkpoint {checkpoint_name} from {url}")
             response = requests.get(
-                url + "/" + checkpoint_name,
+                url,
                 verify=True,
                 timeout=(5, None),  # (connect timeout: 5 sec, read timeout: None)
                 stream=True,  # Stream the download for progress tracking

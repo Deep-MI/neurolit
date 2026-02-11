@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-# Copyright 2024 Image Analysis Lab, German Center for Neurodegenerative Diseases (DZNE), Bonn
+# Copyright 2026 DeepMI Lab, German Center for Neurodegenerative Diseases (DZNE), Bonn
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ from lapy import TriaMesh
 from scipy import sparse
 from scipy.ndimage import binary_dilation
 
-from neurolit.utils.logging import get_logger
+from neurolit.utils.log import get_logger
 
 logger = get_logger(__name__)
 

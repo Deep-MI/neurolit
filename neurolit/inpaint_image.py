@@ -1,4 +1,4 @@
-# Copyright 2024 Image Analysis Lab, German Center for Neurodegenerative Diseases (DZNE), Bonn
+# Copyright 2026 DeepMI Lab, German Center for Neurodegenerative Diseases (DZNE), Bonn
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ from torch.amp import autocast  # noqa: E402  # previous: from torch.cuda.amp im
 from neurolit.data import conform  # noqa: E402
 from neurolit.inference import OffsetTwoAndHalfDInpaintingInferer  # noqa: E402
 from neurolit.networks.DiffusionUnet import DiffusionModelUNetVINN  # noqa: E402
-from neurolit.utils.logging import get_logger  # noqa: E402
+from neurolit.utils.log import get_logger  # noqa: E402
 from neurolit.utils.plotting import plot_batch, plot_inpainting  # noqa: E402
 
 logger = get_logger(__name__)

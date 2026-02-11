@@ -18,7 +18,7 @@ from typing import Any
 
 from neurolit.postprocessing.lesion_to_segmentation import main as lesion_to_segmentation_main
 from neurolit.postprocessing.lesion_to_surface import main as lesion_to_surface_main
-from neurolit.utils.logging import get_logger
+from neurolit.utils.log import get_logger
 
 logger = get_logger(__name__)
 
