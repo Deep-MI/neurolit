@@ -4,7 +4,7 @@
 
 ## Overview
 This repository contains sourcecode and documentation related to our publication [**FastSurfer-LIT: Lesion Inpainting Tool for Whole Brain MRI Segmentation With Tumors, Cavities and Abnormalities**](https://doi.org/10.1162/imag_a_00446).
-This tool can inpaint lesions independent of their shape or appearance for further downstream analysis. This allows subsequent analysis to run as if no lesion were present, enabling for example, FastSurfer's whole brain segmentation in cases with large brain tumors or surgical cavities.
+This tool can inpaint lesions independent of their shape or appearance for further downstream analysis. This allows subsequent analysis to run as if no lesion were present, enabling for example, FastSurfer's whole brain segmentation in cases with large brain tumors or surgical cavities. The extended documentation is located at [DeepMI.org/neurolit](https://Deep-MI.org/neurolit).
 
 ## Quickstart
 
@@ -64,13 +64,15 @@ lit-inpainting --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output
 **Note:** If you skip the `lit-download-models` step, models will be automatically downloaded on first use.
 
 
-## Integration with FastSurfer
+## Integration with FreeSurfer/FastSurfer
 
 neuroLIT is being integrated into [FastSurfer](https://github.com/deep-mi/FastSurfer) for whole brain segmentation and cortical surface reconstruction of images with lesions. 
 
-For standalone usage with FastSurfer, neuroLIT provides post-processing scripts for integrating lesions into FastSurfer/FreeSurfer outputs. We recommend using the unified `lit-postprocessing` script which handles mapping the lesion mask to multiple segmentation files, running volume statistics (segstats), and performing surface masking.
+For standalone usage with FreeSurfer/FastSurfer, neuroLIT provides post-processing scripts for integrating lesions into FastSurfer/FreeSurfer outputs. We recommend using the unified `lit-postprocessing` script which handles mapping the lesion mask to multiple segmentation files, running volume statistics (segstats), and performing surface masking.
 
 ### Postprocessing
+
+This script modfies FastSurfer/FreeSurfer segmentations and surface annotation files, and the corresponading statistics (.stats) files.
 
 ```bash
 # Setup paths
@@ -84,13 +86,10 @@ lit-postprocessing \
     -sd /path/to/subjects_dir
 ```
 
-**Key Features:**
-- **Validation**: Automatically checks for FastSurfer/FreeSurfer installations.
-- **Dynamic Configuration**: Uses `segstats_config.json` for volumetric stats and `surfstats_config.json` for surface stats.
-- **Support for All Outputs**: Maps lesions to all relevant `.mgz` files and runs `segstats`.
-- **Surface Stats**: Runs `mris_anatomical_stats` calls defined in `surfstats_config.json`.
-- **Surface Masking**: Automatically runs surface masking for both hemispheres.
-- **Adjacent Label Reports**: Generates adjacency reports for lesion segmentations, allowing user to asses which regions are affected/replaced by the lesion.
+**Overview:**
+- **Requirements**: Automatically checks for FastSurfer/FreeSurfer installations using `$FASTSURFER_HOME`, `$FREESURFER_HOME` and uses these tools. FreeSurfer is requires for surface postprocessing.
+- **Dynamic Configuration**: Uses `segstats_config.json` for volumetric stats and `surfstats_config.json` for surface stats. Per default all relevant FastSurfer annotation files and segmentation files are modified.`.
+- **Adjacent Label Reports**: Generates adjacency reports for lesion segmentations, allowing users to asses which regions are affected/replaced by the lesion.
 
 ## Training
 
@@ -98,18 +97,7 @@ The training script can be found [here](neurolit/train_ddpm.py). The same docker
 
 ## Documentation
 
-Comprehensive documentation is available in the `doc/` directory and will be made public at [DeepMI.org/neurolit](https://Deep-MI.org/neurolit). To build and view:
-
-```bash
-# Install documentation dependencies
-pip install -r doc/requirements.txt
-
-# Build HTML documentation
-cd doc && make html
-
-# View in browser
-firefox _build/html/index.html  # Or your preferred browser
-```
+Comprehensive documentation is available in the `doc/` directory and will be made public at [DeepMI.org/neurolit](https://Deep-MI.org/neurolit).
 
 Documentation includes:
 - Installation guides
