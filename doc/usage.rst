@@ -7,7 +7,7 @@ Basic Usage
 -----------
 
 Running neuroLIT with Containerization
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The most straightforward way to run neuroLIT is using the containerized wrapper script:
 
