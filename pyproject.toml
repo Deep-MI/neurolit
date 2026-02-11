@@ -3,28 +3,16 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "lit"
-version = "0.5.0"
+name = "neurolit"
+version = "0.6.0"
 description = "Lesion Inpainting Tool"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
 authors = [
-    {name = "Clemens Pollak, David, Kuegler, Martin Reuter, et al.", email = "clemens.pollak@dzne.de"}
+    {name = "Clemens Pollak, David Kuegler, Martin Reuter et al.", email = "clemens.pollak@dzne.de"}
 ]
 maintainers = [{name = 'FastSurfer Developers'}]
-license = {file = "LICENSE"}
-readme = "README.md"
-requires-python = ">=3.8"
-dependencies = [
-    "numpy>=1.21.0",
-    "torch>=2.0.0",
-    "nibabel>=4.0.0",
-    "monai==1.2.0",
-    "matplotlib>=3.5.0",
-    "tqdm>=4.65.0",
-    "pillow>=9.0.0",
-    "pyyaml>=6.0.0",
-    "filelock>=3.0.0",
-    "typing-extensions>=4.0.0",
-]
 keywords = [
     "brain",
     "MRI",
@@ -35,19 +23,151 @@ keywords = [
     "lesion",
     "segmentation"
 ]
-
-[tool.setuptools]
-packages = ["lit"]
-
-[tool.pytest.ini_options]
-minversion = "7.0"
-addopts = "-ra -q"
-testpaths = [
-    "tests",
+classifiers = [
+    'Operating System :: Microsoft :: Windows',
+    'Operating System :: Unix',
+    'Operating System :: MacOS',
+    'Programming Language :: Python :: 3 :: Only',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Natural Language :: English',
+    'License :: OSI Approved :: Apache Software License',
+    'Intended Audience :: Science/Research',
+]
+dependencies = [
+    "filelock>=3.0.0",
+    "matplotlib>=3.5.0",
+    "monai>=1.4.0",
+    "nibabel>=4.0.0",
+    "numpy>=1.21.0",
+    "pillow>=9.0.0",
+    "platformdirs>=3.0.0",
+    "pyyaml>=6.0.0",
+    "requests",
+    "scipy>=1.10.0",
+    "torch>=2.0.0",
+    "tqdm>=4.65.0",
+    "typing-extensions>=4.0.0",
+    "lapy>=1.5.0",
+    "pandas>=1.5.3",
+    "scikit-image>=0.19.3"
 ]
 
+[project.optional-dependencies]
+doc = [
+    'furo!=2023.8.17',
+    'matplotlib',
+    'memory-profiler',
+    'myst-parser',
+    'numpydoc',
+    'sphinx>=7.3,<8',
+    'sphinxcontrib-bibtex',
+    'sphinxcontrib-programoutput',
+    'sphinx-argparse',
+    'sphinx-copybutton',
+    'sphinx-design',
+    'sphinx-gallery',
+    'sphinx-issues',
+    'sphinx_rtd_theme',
+    'pypandoc',
+    'nbsphinx',
+    'IPython',
+    'ipykernel',
+]
+style = [
+    'codespell',
+    'pydocstyle[toml]',
+    'ruff',
+]
+test = [
+    'pytest>=8.2.2',
+]
+all = [
+    'neurolit[doc]',
+    'neurolit[style]',
+    'neurolit[test]',
+]
+full = [
+    'neurolit[all]',
+]
 
 [project.scripts]
-inpaint-image = "lit/inpaint_image.py"
+lit-inpainting = "neurolit.cli:run_lit"
+lit-download-models = "neurolit.utils.download_checkpoints:main"
+lit-postprocessing = "neurolit.scripts.lesion_postprocessing:main"
+lit-lesion-to-surface = "neurolit.postprocessing.lesion_to_surface:cli"
+lit-lesion-to-segmentation = "neurolit.postprocessing.lesion_to_segmentation:cli"
 
+[project.urls]
+homepage = "https://github.com/Deep-MI/neurolit"
+documentation = "https://github.com/Deep-MI/neurolit"
+source = "https://github.com/Deep-MI/neurolit"
+tracker = "https://github.com/Deep-MI/neurolit/issues"
 
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["build*", "dist*", "*.egg-info", "tests*", "doc*", "containerization*"]
+
+[tool.setuptools.package-data]
+neurolit = ["postprocessing/*.json", "postprocessing/*.txt"]
+
+[tool.pydocstyle]
+convention = 'numpy'
+ignore-decorators = '(copy_doc|property|.*setter|.*getter|pyqtSlot|Slot)'
+match = '^(?!setup|__init__|test_).*\.py'
+match-dir = '^neurolit.*'
+add_ignore = 'D100,D104,D107'
+
+[tool.ruff]
+line-length = 150
+#target-version = "py310"
+extend-exclude = [
+    "doc",
+    ".github",
+    "build",
+]
+
+[tool.ruff.lint]
+ignore = ["E701", "E731"]
+select = [
+    "E",   # pycodestyle
+    "F",   # Pyflakes
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "I",   # isort
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"neurolit/inpaint_image.py" = ["E402"]  # Allow warning filter before imports (breaks import block)
+"neurolit/inference.py" = ["E402"]  # Allow warning filter before imports (breaks import block)
+"neurolit/train_ddpm.py" = ["E402"]  # Allow warning filter before imports (breaks import block)
+
+[tool.codespell]
+ignore-words-list = "interm"
+check-filenames = true
+check-hidden = true
+skip = "./.git,./build,./.mypy_cache,./.pytest_cache,./doc/images,./Tutorial"
+
+[tool.pytest.ini_options]
+minversion = '6.0'
+addopts = '--durations 20 --junit-xml=junit-results.xml --verbose'
+filterwarnings = []
+
+[tool.coverage.run]
+branch = true
+cover_pylib = false
+omit = [
+    '**/__init__.py',
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    'pragma: no cover',
+    'if __name__ == .__main__.:',
+]
+precision = 2
