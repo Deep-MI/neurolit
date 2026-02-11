@@ -1,6 +1,6 @@
 # Neuro Lesion Inpainting Tool (neuroLIT) 🔥
 
-![teaser](https://github.com/Deep-MI/neurolit/blob/dev/doc/overview.png)
+![teaser](https://github.com/Deep-MI/neurolit/blob/main/doc/overview.png)
 
 ## Overview
 This repository contains sourcecode and documentation related to our publication [**FastSurfer-LIT: Lesion Inpainting Tool for Whole Brain MRI Segmentation With Tumors, Cavities and Abnormalities**](https://doi.org/10.1162/imag_a_00446).
