@@ -1,0 +1,832 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Index &mdash; neuroLIT 0.6.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8fa8b3e9"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="#" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            neuroLIT
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#using-docker-singularity-recommended">Using Docker/Singularity (Recommended)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#using-pypi-beta">Using PyPI (Beta)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#from-source">From Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#system-requirements">System Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#verifying-installation">Verifying Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#troubleshooting">Troubleshooting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#models-not-found">Models Not Found</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#cuda-gpu-issues">CUDA/GPU Issues</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#basic-usage">Basic Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usage.html#running-neurolit-with-containerization">Running neuroLIT with Containerization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usage.html#running-neurolit-from-pypi">Running neuroLIT from PyPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usage.html#mask-dilation">Mask Dilation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#understanding-the-outputs">Understanding the Outputs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usage.html#output-files">Output Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usage.html#file-structure">File Structure</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#advanced-usage">Advanced Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usage.html#direct-inpainting-python-api">Direct Inpainting (Python API)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usage.html#batch-processing">Batch Processing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#command-line-interface-reference">Command-Line Interface Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usage.html#lit-inpainting">lit-inpainting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usage.html#lit-download-models">lit-download-models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usage.html#lit-postprocessing">lit-postprocessing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#best-practices">Best Practices</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usage.html#input-data">Input Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usage.html#performance">Performance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usage.html#quality-control">Quality Control</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#postprocessing">Postprocessing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usage.html#unified-postprocessing-script">Unified Postprocessing Script</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usage.html#individual-postprocessing-tools">Individual Postprocessing Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#common-issues">Common Issues</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usage.html#poor-inpainting-quality">Poor Inpainting Quality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usage.html#mask-not-applied-correctly">Mask Not Applied Correctly</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usage.html#out-of-memory-errors">Out of Memory Errors</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="training.html">Training</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="training.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="training.html#data-preparation">Data Preparation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="training.html#conforming-images">Conforming Images</a></li>
+<li class="toctree-l3"><a class="reference internal" href="training.html#dataset-structure">Dataset Structure</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="training.html#using-docker-for-training">Using Docker for Training</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#types-of-contributions">Types of Contributions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#bug-reports">Bug Reports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#feature-requests">Feature Requests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#code-contributions">Code Contributions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#documentation">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#development-guidelines">Development Guidelines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#code-style">Code Style</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#testing">Testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#id1">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#git-workflow">Git Workflow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#branch-naming">Branch Naming</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#pull-requests">Pull Requests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#thank-you">Thank You!</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/cli.html">Command-Line Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/cli.html#neurolit.cli.get_version_with_hash"><code class="docutils literal notranslate"><span class="pre">get_version_with_hash()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/cli.html#neurolit.cli.run_lit"><code class="docutils literal notranslate"><span class="pre">run_lit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/cli.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/cli.html#main-functions">Main Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/cli.html#lit-inpainting">lit-inpainting</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/cli.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/cli.html#basic-usage">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/cli.html#programmatic-usage">Programmatic Usage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/inference.html">Inference Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/inference.html#neurolit.inference.InpaintingInferer"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.InpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.InpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.__call__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.InpaintingInferer.sample_forward_diffusion"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.sample_forward_diffusion()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.InpaintingInferer.diffusion_forward"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.diffusion_forward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.InpaintingInferer.diffusion_backward"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.diffusion_backward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slice_from_volume()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.slice_selector"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.slice_selector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__call__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.view_agg_inference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.denoise"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.denoise()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.__call__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">OffsetTwoAndHalfDInpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">OffsetTwoAndHalfDInpaintingInferer.view_agg_inference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">OffsetTwoAndHalfDInpaintingInferer.__call__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/inference.html#neurolit.inference.AnomalyInferer"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.AnomalyInferer.__call__"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer.__call__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.AnomalyInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer.view_agg_inference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.AnomalyInferer.denoise"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer.denoise()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/inference.html#neurolit.inference.DiffusionInfererVINN"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.DiffusionInfererVINN.__call__"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN.__call__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.DiffusionInfererVINN.sample"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN.sample()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.DiffusionInfererVINN.sample_backward_forward"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN.sample_backward_forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/inference.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/inference.html#key-concepts">Key Concepts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">get_slice_from_volume()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.inpaint_volume"><code class="docutils literal notranslate"><span class="pre">inpaint_volume()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#main-function">Main Function</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/inpainting.html#main">main</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/inpainting.html#basic-inpainting">Basic Inpainting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inpainting.html#custom-parameters">Custom Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inpainting.html#cpu-mode">CPU Mode</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#integration-with-other-tools">Integration with Other Tools</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/inpainting.html#preprocessing-pipeline">Preprocessing Pipeline</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inpainting.html#batch-processing">Batch Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/data.html">Data Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/data.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/data.html#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/data.html#module-neurolit.data.conform">conform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/data.html#module-neurolit.data.datasets">datasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/data.html#module-neurolit.data.transforms">transforms</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/data.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/data.html#conforming-images">Conforming Images</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/data.html#using-datasets">Using Datasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/data.html#applying-transforms">Applying Transforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/data.html#custom-transforms">Custom Transforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/data.html#batch-conforming">Batch Conforming</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/networks.html">Networks Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/networks.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/networks.html#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/networks.html#module-neurolit.networks.DiffusionUnet">DiffusionUnet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/networks.html#module-neurolit.networks.interpolation_layer">interpolation_layer</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/networks.html#architecture-details">Architecture Details</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/networks.html#diffusionunet-architecture">DiffusionUNet Architecture</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/networks.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/networks.html#using-diffusionunet">Using DiffusionUNet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/networks.html#loading-pre-trained-weights">Loading Pre-trained Weights</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/networks.html#custom-model-configuration">Custom Model Configuration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/networks.html#training-example">Training Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/networks.html#model-summary">Model Summary</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/postprocessing.html">Postprocessing Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/postprocessing.html#overview">Overview</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/postprocessing.html#command-line-usage">Command-Line Usage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/utils.html">Utils Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/utils.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/utils.html#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/utils.html#module-neurolit.utils.download_checkpoints">download_checkpoints</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/utils.html#module-neurolit.utils.plotting">plotting</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/utils.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/utils.html#downloading-models">Downloading Models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/utils.html#command-line-download">Command-Line Download</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/utils.html#getting-model-paths">Getting Model Paths</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/utils.html#plotting-results">Plotting Results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/utils.html#plotting-slices">Plotting Slices</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/utils.html#mask-overlay">Mask Overlay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/utils.html#custom-visualization">Custom Visualization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/utils.html#batch-visualization">Batch Visualization</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/modules.html#quick-reference">Quick Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/modules.html#common-functions">Common Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/modules.html#most-used-classes">Most Used Classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/modules.html#entry-points">Entry Points</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="documentation.html">Documentation Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="documentation.html#building-the-documentation">Building the Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="documentation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l3"><a class="reference internal" href="documentation.html#build-html">Build HTML</a></li>
+<li class="toctree-l3"><a class="reference internal" href="documentation.html#clean-build-files">Clean Build Files</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="documentation.html#writing-documentation">Writing Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="documentation.html#api-documentation">API Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="documentation.html#adding-new-pages">Adding New Pages</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="citation.html">Citation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="citation.html#bibtex">BibTeX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="citation.html#apa-format">APA Format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="citation.html#plain-text">Plain Text</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">neuroLIT</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Index</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+
+<h1 id="index">Index</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#_"><strong>_</strong></a>
+ | <a href="#A"><strong>A</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#L"><strong>L</strong></a>
+ | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
+ | <a href="#V"><strong>V</strong></a>
+ | <a href="#Z"><strong>Z</strong></a>
+ 
+</div>
+<h2 id="_">_</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/inference.html#neurolit.inference.AnomalyInferer.__call__">__call__() (neurolit.inference.AnomalyInferer method)</a>
+
+      <ul>
+        <li><a href="api/inference.html#neurolit.inference.DiffusionInfererVINN.__call__">(neurolit.inference.DiffusionInfererVINN method)</a>
+</li>
+        <li><a href="api/inference.html#neurolit.inference.InpaintingInferer.__call__">(neurolit.inference.InpaintingInferer method)</a>
+</li>
+        <li><a href="api/inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer.__call__">(neurolit.inference.OffsetTwoAndHalfDInpaintingInferer method)</a>
+</li>
+        <li><a href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.__call__">(neurolit.inference.SliceWiseInpaintingInferer method)</a>
+</li>
+        <li><a href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.__call__">(neurolit.inference.TwoAndHalfDInpaintingInferer method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/data.html#neurolit.data.datasets.SlicedDataset.__getitem__">__getitem__() (neurolit.data.datasets.SlicedDataset method)</a>
+</li>
+      <li><a href="api/data.html#neurolit.data.datasets.SlicedDataset.__init__">__init__() (neurolit.data.datasets.SlicedDataset method)</a>
+
+      <ul>
+        <li><a href="api/data.html#neurolit.data.transforms.ScaleAugmentation.__init__">(neurolit.data.transforms.ScaleAugmentation method)</a>
+</li>
+        <li><a href="api/data.html#neurolit.data.transforms.Subsampled.__init__">(neurolit.data.transforms.Subsampled method)</a>
+</li>
+        <li><a href="api/inference.html#neurolit.inference.InpaintingInferer.__init__">(neurolit.inference.InpaintingInferer method)</a>
+</li>
+        <li><a href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.__init__">(neurolit.inference.SliceWiseInpaintingInferer method)</a>
+</li>
+        <li><a href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.__init__">(neurolit.inference.TwoAndHalfDInpaintingInferer method)</a>
+</li>
+        <li><a href="api/networks.html#neurolit.networks.DiffusionUnet.DiffusionModelUNetVINN.__init__">(neurolit.networks.DiffusionUnet.DiffusionModelUNetVINN method)</a>
+</li>
+        <li><a href="api/networks.html#neurolit.networks.interpolation_layer.OnlyZoom3d.__init__">(neurolit.networks.interpolation_layer.OnlyZoom3d method)</a>
+</li>
+        <li><a href="api/networks.html#neurolit.networks.interpolation_layer.Zoom2d.__init__">(neurolit.networks.interpolation_layer.Zoom2d method)</a>
+</li>
+        <li><a href="api/networks.html#neurolit.networks.interpolation_layer.Zoom3d.__init__">(neurolit.networks.interpolation_layer.Zoom3d method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/networks.html#neurolit.networks.interpolation_layer.Zoom2d._crop_position">_crop_position (neurolit.networks.interpolation_layer.Zoom2d attribute)</a>
+</li>
+      <li><a href="api/networks.html#neurolit.networks.interpolation_layer.Zoom2d._interpolate">_interpolate() (neurolit.networks.interpolation_layer.Zoom2d method)</a>
+</li>
+      <li><a href="api/networks.html#neurolit.networks.interpolation_layer.Zoom2d._N">_N (neurolit.networks.interpolation_layer.Zoom2d attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/inference.html#neurolit.inference.AnomalyInferer">AnomalyInferer (class in neurolit.inference)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/data.html#neurolit.data.datasets.SlicedDataset.ax">ax (neurolit.data.datasets.SlicedDataset attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/data.html#neurolit.data.conform.check_affine_in_nifti">check_affine_in_nifti() (in module neurolit.data.conform)</a>
+</li>
+      <li><a href="api/utils.html#neurolit.utils.download_checkpoints.check_and_download_ckpts">check_and_download_ckpts() (in module neurolit.utils.download_checkpoints)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/data.html#neurolit.data.conform.conform">conform() (in module neurolit.data.conform)</a>
+</li>
+      <li><a href="api/inpainting.html#neurolit.inpaint_image.conform_nifti">conform_nifti() (in module neurolit.inpaint_image)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/data.html#neurolit.data.datasets.SlicedDataset.dataset">dataset (neurolit.data.datasets.SlicedDataset attribute)</a>
+</li>
+      <li><a href="api/inference.html#neurolit.inference.AnomalyInferer.denoise">denoise() (neurolit.inference.AnomalyInferer method)</a>
+
+      <ul>
+        <li><a href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.denoise">(neurolit.inference.TwoAndHalfDInpaintingInferer method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/inference.html#neurolit.inference.InpaintingInferer.diffusion_backward">diffusion_backward() (neurolit.inference.InpaintingInferer method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/inference.html#neurolit.inference.InpaintingInferer.diffusion_forward">diffusion_forward() (neurolit.inference.InpaintingInferer method)</a>
+</li>
+      <li><a href="api/inference.html#neurolit.inference.DiffusionInfererVINN">DiffusionInfererVINN (class in neurolit.inference)</a>
+</li>
+      <li><a href="api/networks.html#neurolit.networks.DiffusionUnet.DiffusionModelUNetVINN">DiffusionModelUNetVINN (class in neurolit.networks.DiffusionUnet)</a>
+</li>
+      <li><a href="api/inpainting.html#neurolit.inpaint_image.dilate_mask">dilate_mask() (in module neurolit.inpaint_image)</a>
+</li>
+      <li><a href="api/utils.html#neurolit.utils.download_checkpoints.download_checkpoint">download_checkpoint() (in module neurolit.utils.download_checkpoints)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/utils.html#neurolit.utils.download_checkpoints.fallback_multiple_urls">fallback_multiple_urls() (in module neurolit.utils.download_checkpoints)</a>
+</li>
+      <li><a href="api/data.html#neurolit.data.conform.find_img_size_by_fov">find_img_size_by_fov() (in module neurolit.data.conform)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/data.html#neurolit.data.conform.find_min_size">find_min_size() (in module neurolit.data.conform)</a>
+</li>
+      <li><a href="api/networks.html#neurolit.networks.DiffusionUnet.DiffusionModelUNetVINN.forward">forward() (neurolit.networks.DiffusionUnet.DiffusionModelUNetVINN method)</a>
+
+      <ul>
+        <li><a href="api/networks.html#neurolit.networks.interpolation_layer.OnlyZoom3d.forward">(neurolit.networks.interpolation_layer.OnlyZoom3d method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/data.html#neurolit.data.datasets.get_base_dataset">get_base_dataset() (in module neurolit.data.datasets)</a>
+</li>
+      <li><a href="api/data.html#neurolit.data.conform.get_conformed_vox_img_size">get_conformed_vox_img_size() (in module neurolit.data.conform)</a>
+</li>
+      <li><a href="api/data.html#neurolit.data.datasets.get_dataset">get_dataset() (in module neurolit.data.datasets)</a>
+</li>
+      <li><a href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slices">get_inference_slices() (neurolit.inference.SliceWiseInpaintingInferer method)</a>
+</li>
+      <li><a href="api/data.html#neurolit.data.datasets.SlicedDataset.get_slice_axis">get_slice_axis() (neurolit.data.datasets.SlicedDataset method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/inpainting.html#neurolit.inpaint_image.get_slice_from_volume">get_slice_from_volume() (in module neurolit.inpaint_image)</a>
+
+      <ul>
+        <li><a href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slice_from_volume">(neurolit.inference.SliceWiseInpaintingInferer method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/data.html#neurolit.data.datasets.get_test_sample">get_test_sample() (in module neurolit.data.datasets)</a>
+</li>
+      <li><a href="api/cli.html#neurolit.cli.get_version_with_hash">get_version_with_hash() (in module neurolit.cli)</a>
+</li>
+      <li><a href="api/data.html#neurolit.data.conform.getscale">getscale() (in module neurolit.data.conform)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/data.html#neurolit.data.transforms.Identityd">Identityd (class in neurolit.data.transforms)</a>
+</li>
+      <li><a href="api/inpainting.html#neurolit.inpaint_image.inpaint_volume">inpaint_volume() (in module neurolit.inpaint_image)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/inference.html#neurolit.inference.InpaintingInferer">InpaintingInferer (class in neurolit.inference)</a>
+</li>
+      <li><a href="api/data.html#neurolit.data.conform.is_conform">is_conform() (in module neurolit.data.conform)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/data.html#neurolit.data.datasets.SlicedDataset.len">len (neurolit.data.datasets.SlicedDataset attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/inpainting.html#neurolit.inpaint_image.main">main() (in module neurolit.inpaint_image)</a>
+
+      <ul>
+        <li><a href="api/utils.html#neurolit.utils.download_checkpoints.main">(in module neurolit.utils.download_checkpoints)</a>
+</li>
+      </ul></li>
+      <li><a href="api/data.html#neurolit.data.conform.map_image">map_image() (in module neurolit.data.conform)</a>
+</li>
+      <li>
+    module
+
+      <ul>
+        <li><a href="api/cli.html#module-neurolit.cli">neurolit.cli</a>
+</li>
+        <li><a href="api/data.html#module-neurolit.data">neurolit.data</a>
+</li>
+        <li><a href="api/data.html#module-neurolit.data.conform">neurolit.data.conform</a>
+</li>
+        <li><a href="api/data.html#module-neurolit.data.datasets">neurolit.data.datasets</a>
+</li>
+        <li><a href="api/data.html#module-neurolit.data.transforms">neurolit.data.transforms</a>
+</li>
+        <li><a href="api/inference.html#module-neurolit.inference">neurolit.inference</a>
+</li>
+        <li><a href="api/inpainting.html#module-neurolit.inpaint_image">neurolit.inpaint_image</a>
+</li>
+        <li><a href="api/networks.html#module-neurolit.networks">neurolit.networks</a>
+</li>
+        <li><a href="api/networks.html#module-neurolit.networks.DiffusionUnet">neurolit.networks.DiffusionUnet</a>
+</li>
+        <li><a href="api/networks.html#module-neurolit.networks.interpolation_layer">neurolit.networks.interpolation_layer</a>
+</li>
+        <li><a href="api/utils.html#module-neurolit.utils">neurolit.utils</a>
+</li>
+        <li><a href="api/utils.html#module-neurolit.utils.download_checkpoints">neurolit.utils.download_checkpoints</a>
+</li>
+        <li><a href="api/utils.html#module-neurolit.utils.plotting">neurolit.utils.plotting</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    neurolit.cli
+
+      <ul>
+        <li><a href="api/cli.html#module-neurolit.cli">module</a>
+</li>
+      </ul></li>
+      <li>
+    neurolit.data
+
+      <ul>
+        <li><a href="api/data.html#module-neurolit.data">module</a>
+</li>
+      </ul></li>
+      <li>
+    neurolit.data.conform
+
+      <ul>
+        <li><a href="api/data.html#module-neurolit.data.conform">module</a>
+</li>
+      </ul></li>
+      <li>
+    neurolit.data.datasets
+
+      <ul>
+        <li><a href="api/data.html#module-neurolit.data.datasets">module</a>
+</li>
+      </ul></li>
+      <li>
+    neurolit.data.transforms
+
+      <ul>
+        <li><a href="api/data.html#module-neurolit.data.transforms">module</a>
+</li>
+      </ul></li>
+      <li>
+    neurolit.inference
+
+      <ul>
+        <li><a href="api/inference.html#module-neurolit.inference">module</a>
+</li>
+      </ul></li>
+      <li>
+    neurolit.inpaint_image
+
+      <ul>
+        <li><a href="api/inpainting.html#module-neurolit.inpaint_image">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    neurolit.networks
+
+      <ul>
+        <li><a href="api/networks.html#module-neurolit.networks">module</a>
+</li>
+      </ul></li>
+      <li>
+    neurolit.networks.DiffusionUnet
+
+      <ul>
+        <li><a href="api/networks.html#module-neurolit.networks.DiffusionUnet">module</a>
+</li>
+      </ul></li>
+      <li>
+    neurolit.networks.interpolation_layer
+
+      <ul>
+        <li><a href="api/networks.html#module-neurolit.networks.interpolation_layer">module</a>
+</li>
+      </ul></li>
+      <li>
+    neurolit.utils
+
+      <ul>
+        <li><a href="api/utils.html#module-neurolit.utils">module</a>
+</li>
+      </ul></li>
+      <li>
+    neurolit.utils.download_checkpoints
+
+      <ul>
+        <li><a href="api/utils.html#module-neurolit.utils.download_checkpoints">module</a>
+</li>
+      </ul></li>
+      <li>
+    neurolit.utils.plotting
+
+      <ul>
+        <li><a href="api/utils.html#module-neurolit.utils.plotting">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer">OffsetTwoAndHalfDInpaintingInferer (class in neurolit.inference)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/networks.html#neurolit.networks.interpolation_layer.OnlyZoom3d">OnlyZoom3d (class in neurolit.networks.interpolation_layer)</a>
+</li>
+      <li><a href="api/data.html#neurolit.data.conform.options_parse">options_parse() (in module neurolit.data.conform)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/utils.html#neurolit.utils.plotting.plot_batch">plot_batch() (in module neurolit.utils.plotting)</a>
+</li>
+      <li><a href="api/utils.html#neurolit.utils.plotting.plot_inpainting">plot_inpainting() (in module neurolit.utils.plotting)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/utils.html#neurolit.utils.plotting.plot_learning_curve">plot_learning_curve() (in module neurolit.utils.plotting)</a>
+</li>
+      <li><a href="api/utils.html#neurolit.utils.plotting.plot_scheduler">plot_scheduler() (in module neurolit.utils.plotting)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/data.html#neurolit.data.conform.rescale">rescale() (in module neurolit.data.conform)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/cli.html#neurolit.cli.run_lit">run_lit() (in module neurolit.cli)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/inference.html#neurolit.inference.DiffusionInfererVINN.sample">sample() (neurolit.inference.DiffusionInfererVINN method)</a>
+</li>
+      <li><a href="api/inference.html#neurolit.inference.DiffusionInfererVINN.sample_backward_forward">sample_backward_forward() (neurolit.inference.DiffusionInfererVINN method)</a>
+</li>
+      <li><a href="api/inference.html#neurolit.inference.InpaintingInferer.sample_forward_diffusion">sample_forward_diffusion() (neurolit.inference.InpaintingInferer method)</a>
+</li>
+      <li><a href="api/data.html#neurolit.data.transforms.ScaleAugmentation">ScaleAugmentation (class in neurolit.data.transforms)</a>
+</li>
+      <li><a href="api/data.html#neurolit.data.conform.scalecrop">scalecrop() (in module neurolit.data.conform)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/data.html#neurolit.data.datasets.SlicedDataset.slice_per_img">slice_per_img (neurolit.data.datasets.SlicedDataset attribute)</a>
+</li>
+      <li><a href="api/data.html#neurolit.data.datasets.SlicedDataset.slice_per_img_cumsum">slice_per_img_cumsum (neurolit.data.datasets.SlicedDataset attribute)</a>
+</li>
+      <li><a href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.slice_selector">slice_selector() (neurolit.inference.SliceWiseInpaintingInferer static method)</a>
+</li>
+      <li><a href="api/data.html#neurolit.data.datasets.SlicedDataset">SlicedDataset (class in neurolit.data.datasets)</a>
+</li>
+      <li><a href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer">SliceWiseInpaintingInferer (class in neurolit.inference)</a>
+</li>
+      <li><a href="api/data.html#neurolit.data.transforms.Subsampled">Subsampled (class in neurolit.data.transforms)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/data.html#neurolit.data.datasets.SlicedDataset.thickness">thickness (neurolit.data.datasets.SlicedDataset attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/data.html#neurolit.data.datasets.SlicedDataset.transform">transform (neurolit.data.datasets.SlicedDataset attribute)</a>
+</li>
+      <li><a href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer">TwoAndHalfDInpaintingInferer (class in neurolit.inference)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/inference.html#neurolit.inference.AnomalyInferer.view_agg_inference">view_agg_inference() (neurolit.inference.AnomalyInferer method)</a>
+
+      <ul>
+        <li><a href="api/inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer.view_agg_inference">(neurolit.inference.OffsetTwoAndHalfDInpaintingInferer method)</a>
+</li>
+        <li><a href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.view_agg_inference">(neurolit.inference.TwoAndHalfDInpaintingInferer method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Z">Z</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/networks.html#neurolit.networks.interpolation_layer.Zoom2d">Zoom2d (class in neurolit.networks.interpolation_layer)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/networks.html#neurolit.networks.interpolation_layer.Zoom3d">Zoom3d (class in neurolit.networks.interpolation_layer)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Clemens Pollak, David Kuegler, Martin Reuter et al..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

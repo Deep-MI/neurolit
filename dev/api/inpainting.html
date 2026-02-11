@@ -1,0 +1,607 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inpainting Module &mdash; neuroLIT 0.6.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8fa8b3e9"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Data Module" href="data.html" />
+    <link rel="prev" title="Inference Module" href="inference.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            neuroLIT
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#using-docker-singularity-recommended">Using Docker/Singularity (Recommended)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#using-pypi-beta">Using PyPI (Beta)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#from-source">From Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#system-requirements">System Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#verifying-installation">Verifying Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#troubleshooting">Troubleshooting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#models-not-found">Models Not Found</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#cuda-gpu-issues">CUDA/GPU Issues</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../usage.html#basic-usage">Basic Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#running-neurolit-with-containerization">Running neuroLIT with Containerization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#running-neurolit-from-pypi">Running neuroLIT from PyPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#mask-dilation">Mask Dilation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../usage.html#understanding-the-outputs">Understanding the Outputs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#output-files">Output Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#file-structure">File Structure</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../usage.html#advanced-usage">Advanced Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#direct-inpainting-python-api">Direct Inpainting (Python API)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#batch-processing">Batch Processing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../usage.html#command-line-interface-reference">Command-Line Interface Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#lit-inpainting">lit-inpainting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#lit-download-models">lit-download-models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#lit-postprocessing">lit-postprocessing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../usage.html#best-practices">Best Practices</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#input-data">Input Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#performance">Performance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#quality-control">Quality Control</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../usage.html#postprocessing">Postprocessing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#unified-postprocessing-script">Unified Postprocessing Script</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#individual-postprocessing-tools">Individual Postprocessing Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../usage.html#common-issues">Common Issues</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#poor-inpainting-quality">Poor Inpainting Quality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#mask-not-applied-correctly">Mask Not Applied Correctly</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#out-of-memory-errors">Out of Memory Errors</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../training.html">Training</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../training.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../training.html#data-preparation">Data Preparation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../training.html#conforming-images">Conforming Images</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../training.html#dataset-structure">Dataset Structure</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../training.html#using-docker-for-training">Using Docker for Training</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../contributing.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contributing.html#types-of-contributions">Types of Contributions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#bug-reports">Bug Reports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#feature-requests">Feature Requests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#code-contributions">Code Contributions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#documentation">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../contributing.html#development-guidelines">Development Guidelines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#code-style">Code Style</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#testing">Testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#id1">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../contributing.html#git-workflow">Git Workflow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#branch-naming">Branch Naming</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#pull-requests">Pull Requests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../contributing.html#thank-you">Thank You!</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="cli.html">Command-Line Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cli.html#neurolit.cli.get_version_with_hash"><code class="docutils literal notranslate"><span class="pre">get_version_with_hash()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli.html#neurolit.cli.run_lit"><code class="docutils literal notranslate"><span class="pre">run_lit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli.html#main-functions">Main Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="cli.html#lit-inpainting">lit-inpainting</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="cli.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="cli.html#basic-usage">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cli.html#programmatic-usage">Programmatic Usage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="inference.html">Inference Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="inference.html#neurolit.inference.InpaintingInferer"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.InpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.InpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.__call__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.InpaintingInferer.sample_forward_diffusion"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.sample_forward_diffusion()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.InpaintingInferer.diffusion_forward"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.diffusion_forward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.InpaintingInferer.diffusion_backward"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.diffusion_backward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="inference.html#neurolit.inference.SliceWiseInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.SliceWiseInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slice_from_volume()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.SliceWiseInpaintingInferer.slice_selector"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.slice_selector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.SliceWiseInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__call__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.view_agg_inference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.denoise"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.denoise()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.__call__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">OffsetTwoAndHalfDInpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">OffsetTwoAndHalfDInpaintingInferer.view_agg_inference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">OffsetTwoAndHalfDInpaintingInferer.__call__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="inference.html#neurolit.inference.AnomalyInferer"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.AnomalyInferer.__call__"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer.__call__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.AnomalyInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer.view_agg_inference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.AnomalyInferer.denoise"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer.denoise()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="inference.html#neurolit.inference.DiffusionInfererVINN"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.DiffusionInfererVINN.__call__"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN.__call__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.DiffusionInfererVINN.sample"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN.sample()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.DiffusionInfererVINN.sample_backward_forward"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN.sample_backward_forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="inference.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inference.html#key-concepts">Key Concepts</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#neurolit.inpaint_image.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">get_slice_from_volume()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#neurolit.inpaint_image.inpaint_volume"><code class="docutils literal notranslate"><span class="pre">inpaint_volume()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#neurolit.inpaint_image.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#main-function">Main Function</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#main">main</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#basic-inpainting">Basic Inpainting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#custom-parameters">Custom Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cpu-mode">CPU Mode</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#integration-with-other-tools">Integration with Other Tools</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#preprocessing-pipeline">Preprocessing Pipeline</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#batch-processing">Batch Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data.html">Data Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data.html#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="data.html#module-neurolit.data.conform">conform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#module-neurolit.data.datasets">datasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#module-neurolit.data.transforms">transforms</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="data.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="data.html#conforming-images">Conforming Images</a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#using-datasets">Using Datasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#applying-transforms">Applying Transforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#custom-transforms">Custom Transforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#batch-conforming">Batch Conforming</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="networks.html">Networks Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="networks.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="networks.html#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="networks.html#module-neurolit.networks.DiffusionUnet">DiffusionUnet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="networks.html#module-neurolit.networks.interpolation_layer">interpolation_layer</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="networks.html#architecture-details">Architecture Details</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="networks.html#diffusionunet-architecture">DiffusionUNet Architecture</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="networks.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="networks.html#using-diffusionunet">Using DiffusionUNet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="networks.html#loading-pre-trained-weights">Loading Pre-trained Weights</a></li>
+<li class="toctree-l4"><a class="reference internal" href="networks.html#custom-model-configuration">Custom Model Configuration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="networks.html#training-example">Training Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="networks.html#model-summary">Model Summary</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="postprocessing.html">Postprocessing Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="postprocessing.html#overview">Overview</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="postprocessing.html#command-line-usage">Command-Line Usage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">Utils Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#module-neurolit.utils.download_checkpoints">download_checkpoints</a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#module-neurolit.utils.plotting">plotting</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#downloading-models">Downloading Models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#command-line-download">Command-Line Download</a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#getting-model-paths">Getting Model Paths</a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#plotting-results">Plotting Results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#plotting-slices">Plotting Slices</a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#mask-overlay">Mask Overlay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#custom-visualization">Custom Visualization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#batch-visualization">Batch Visualization</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#quick-reference">Quick Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules.html#common-functions">Common Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules.html#most-used-classes">Most Used Classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules.html#entry-points">Entry Points</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../documentation.html">Documentation Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../documentation.html#building-the-documentation">Building the Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../documentation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../documentation.html#build-html">Build HTML</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../documentation.html#clean-build-files">Clean Build Files</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../documentation.html#writing-documentation">Writing Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../documentation.html#api-documentation">API Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../documentation.html#adding-new-pages">Adding New Pages</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../citation.html">Citation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../citation.html#bibtex">BibTeX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../citation.html#apa-format">APA Format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../citation.html#plain-text">Plain Text</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">neuroLIT</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">API Reference</a></li>
+      <li class="breadcrumb-item active">Inpainting Module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/inpainting.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-neurolit.inpaint_image">
+<span id="inpainting-module"></span><h1>Inpainting Module<a class="headerlink" href="#module-neurolit.inpaint_image" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="neurolit.inpaint_image.dilate_mask">
+<span class="sig-prename descclassname"><span class="pre">neurolit.inpaint_image.</span></span><span class="sig-name descname"><span class="pre">dilate_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../_modules/neurolit/inpaint_image.html#dilate_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neurolit.inpaint_image.dilate_mask" title="Link to this definition"></a></dt>
+<dd><p>Dilate a binary mask using repeated max pooling.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mask</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><em>torch.Tensor</em></a>) – Binary mask tensor to dilate.</p></li>
+<li><p><strong>num_iterations</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of dilation steps to apply.</p></li>
+<li><p><strong>kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Size of the dilation kernel (must be odd), by default 3.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dilated mask tensor of the same shape as the input.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neurolit.inpaint_image.conform_nifti">
+<span class="sig-prename descclassname"><span class="pre">neurolit.inpaint_image.</span></span><span class="sig-name descname"><span class="pre">conform_nifti</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="(in NiBabel v5.4.0.dev1+g3b1c7b37)"><span class="pre">Nifti1Image</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="(in NiBabel v5.4.0.dev1+g3b1c7b37)"><span class="pre">Nifti1Image</span></a></span></span><a class="reference internal" href="../_modules/neurolit/inpaint_image.html#conform_nifti"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neurolit.inpaint_image.conform_nifti" title="Link to this definition"></a></dt>
+<dd><p>Conform a NIfTI image to the repository orientation/voxel standard.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>image</strong> (<em>NiftiImage</em>) – Input image that should be conformed.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Conformed image with standardized affine/voxel size.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>NiftiImage</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neurolit.inpaint_image.get_slice_from_volume">
+<span class="sig-prename descclassname"><span class="pre">neurolit.inpaint_image.</span></span><span class="sig-name descname"><span class="pre">get_slice_from_volume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_cut</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">thickness</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../_modules/neurolit/inpaint_image.html#get_slice_from_volume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neurolit.inpaint_image.get_slice_from_volume" title="Link to this definition"></a></dt>
+<dd><p>Extract a slice from a volume with a specified thickness.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>volume</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><em>torch.Tensor</em></a>) – Tensor representing the volume to slice.</p></li>
+<li><p><strong>slice_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Dimension to slice along.</p></li>
+<li><p><strong>slice_cut</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Index at the center of the slice.</p></li>
+<li><p><strong>thickness</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Total thickness of the slice (number of voxels).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Extracted slice tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neurolit.inpaint_image.inpaint_volume">
+<span class="sig-prename descclassname"><span class="pre">neurolit.inpaint_image.</span></span><span class="sig-name descname"><span class="pre">inpaint_volume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">models</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.10)"><span class="pre">Module</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_image_masked</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SAVE_VOLUMES</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SAVE_IMAGES</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'cuda'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DDIM</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_image_nib</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="(in NiBabel v5.4.0.dev1+g3b1c7b37)"><span class="pre">Nifti1Image</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="../_modules/neurolit/inpaint_image.html#inpaint_volume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neurolit.inpaint_image.inpaint_volume" title="Link to this definition"></a></dt>
+<dd><p>Inpaint a volume using the trained diffusion models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>models</strong> (<em>ModelDict</em>) – Dictionary mapping view names to model instances.</p></li>
+<li><p><strong>val_image</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><em>torch.Tensor</em></a>) – Input image tensor (B, C, H, W, D).</p></li>
+<li><p><strong>mask</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><em>torch.Tensor</em></a>) – Binary mask tensor of the same shape as <code class="docutils literal notranslate"><span class="pre">val_image</span></code>.</p></li>
+<li><p><strong>val_image_masked</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><em>torch.Tensor</em></a>) – Masked version of the input image.</p></li>
+<li><p><strong>scale_factor</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>]</em><em>, </em><em>optional</em>) – Scaling factor applied during inference, by default <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>out_dir</strong> (<em>Optional</em><em>[</em><em>PathLike</em><em>]</em><em>, </em><em>optional</em>) – Directory to save outputs, by default <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>slice_dim</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em><em>, </em><em>optional</em>) – Dimensionality slice direction for 2D models, by default <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>slice_input</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to slice the input volume, by default <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>SAVE_VOLUMES</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to persist intermediate volumes, by default <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>SAVE_IMAGES</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to persist intermediate images, by default <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Device identifier (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;cuda&quot;</span></code>), by default <code class="docutils literal notranslate"><span class="pre">&quot;cuda&quot;</span></code>.</p></li>
+<li><p><strong>DDIM</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to use DDIM sampling instead of DDPM, by default <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>val_image_nib</strong> (<em>Optional</em><em>[</em><em>NiftiImage</em><em>]</em><em>, </em><em>optional</em>) – Original NIfTI image used for metadata, by default <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Inpainted volume with the same shape as the input.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neurolit.inpaint_image.main">
+<span class="sig-prename descclassname"><span class="pre">neurolit.inpaint_image.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/neurolit/inpaint_image.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neurolit.inpaint_image.main" title="Link to this definition"></a></dt>
+<dd><p>Entry point for the inpainting CLI (debug mode).</p>
+<p>Parses CLI arguments, prepares models, and runs <code class="docutils literal notranslate"><span class="pre">inpaint_volume</span></code>.</p>
+</dd></dl>
+
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>The inpainting module provides direct access to the core inpainting functionality without the full pipeline wrapper.</p>
+</section>
+<section id="main-function">
+<h2>Main Function<a class="headerlink" href="#main-function" title="Link to this heading"></a></h2>
+<section id="main">
+<h3>main<a class="headerlink" href="#main" title="Link to this heading"></a></h3>
+<p><a class="reference internal" href="#neurolit.inpaint_image.main" title="neurolit.inpaint_image.main"><code class="xref py py-func docutils literal notranslate"><span class="pre">neurolit.inpaint_image.main()</span></code></a></p>
+<p>Core inpainting functionality.</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>-m<span class="w"> </span>neurolit.inpaint_image<span class="w"> </span>--input_image<span class="w"> </span>T1w.nii.gz<span class="w"> </span><span class="se">\\</span>
+<span class="w">              </span>--mask_image<span class="w"> </span>mask.nii.gz<span class="w"> </span><span class="se">\\</span>
+<span class="w">              </span>--out_dir<span class="w"> </span>output
+</pre></div>
+</div>
+</section>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
+<section id="basic-inpainting">
+<h3>Basic Inpainting<a class="headerlink" href="#basic-inpainting" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.inpaint_image</span><span class="w"> </span><span class="kn">import</span> <span class="n">main</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+
+<span class="n">args</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">(</span>
+    <span class="n">input_image</span><span class="o">=</span><span class="s1">&#39;T1w.nii.gz&#39;</span><span class="p">,</span>
+    <span class="n">mask_image</span><span class="o">=</span><span class="s1">&#39;lesion_mask.nii.gz&#39;</span><span class="p">,</span>
+    <span class="n">out_dir</span><span class="o">=</span><span class="s1">&#39;output&#39;</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">num_samples</span><span class="o">=</span><span class="mi">100</span>
+<span class="p">)</span>
+
+<span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="custom-parameters">
+<h3>Custom Parameters<a class="headerlink" href="#custom-parameters" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.inpaint_image</span><span class="w"> </span><span class="kn">import</span> <span class="n">main</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+
+<span class="c1"># Use custom parameters</span>
+<span class="n">args</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">(</span>
+    <span class="n">input_image</span><span class="o">=</span><span class="s1">&#39;T1w.nii.gz&#39;</span><span class="p">,</span>
+    <span class="n">mask_image</span><span class="o">=</span><span class="s1">&#39;lesion_mask.nii.gz&#39;</span><span class="p">,</span>
+    <span class="n">out_dir</span><span class="o">=</span><span class="s1">&#39;output&#39;</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>  <span class="c1"># Smaller batch size</span>
+    <span class="n">num_samples</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>  <span class="c1"># More diffusion steps</span>
+    <span class="n">model_axial</span><span class="o">=</span><span class="s1">&#39;custom_models/axial.pt&#39;</span><span class="p">,</span>
+    <span class="n">model_coronal</span><span class="o">=</span><span class="s1">&#39;custom_models/coronal.pt&#39;</span><span class="p">,</span>
+    <span class="n">model_sagittal</span><span class="o">=</span><span class="s1">&#39;custom_models/sagittal.pt&#39;</span>
+<span class="p">)</span>
+
+<span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="cpu-mode">
+<h3>CPU Mode<a class="headerlink" href="#cpu-mode" title="Link to this heading"></a></h3>
+<p>For systems without GPU:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">args</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">(</span>
+    <span class="n">input_image</span><span class="o">=</span><span class="s1">&#39;T1w.nii.gz&#39;</span><span class="p">,</span>
+    <span class="n">mask_image</span><span class="o">=</span><span class="s1">&#39;lesion_mask.nii.gz&#39;</span><span class="p">,</span>
+    <span class="n">out_dir</span><span class="o">=</span><span class="s1">&#39;output&#39;</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">,</span>  <span class="c1"># Use CPU</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>  <span class="c1"># Smaller batch for CPU</span>
+    <span class="n">num_samples</span><span class="o">=</span><span class="mi">100</span>
+<span class="p">)</span>
+
+<span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="integration-with-other-tools">
+<h2>Integration with Other Tools<a class="headerlink" href="#integration-with-other-tools" title="Link to this heading"></a></h2>
+<section id="preprocessing-pipeline">
+<h3>Preprocessing Pipeline<a class="headerlink" href="#preprocessing-pipeline" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.inpaint_image</span><span class="w"> </span><span class="kn">import</span> <span class="n">main</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.data.conform</span><span class="w"> </span><span class="kn">import</span> <span class="n">conform_image</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+
+<span class="c1"># Step 1: Conform image</span>
+<span class="n">conform_image</span><span class="p">(</span>
+    <span class="n">input_path</span><span class="o">=</span><span class="s1">&#39;raw_T1w.nii.gz&#39;</span><span class="p">,</span>
+    <span class="n">output_path</span><span class="o">=</span><span class="s1">&#39;T1w_conformed.nii.gz&#39;</span>
+<span class="p">)</span>
+
+<span class="c1"># Step 2: Inpaint</span>
+<span class="n">args</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">(</span>
+    <span class="n">input_image</span><span class="o">=</span><span class="s1">&#39;T1w_conformed.nii.gz&#39;</span><span class="p">,</span>
+    <span class="n">mask_image</span><span class="o">=</span><span class="s1">&#39;lesion_mask.nii.gz&#39;</span><span class="p">,</span>
+    <span class="n">out_dir</span><span class="o">=</span><span class="s1">&#39;output&#39;</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span>
+<span class="p">)</span>
+
+<span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="batch-processing">
+<h3>Batch Processing<a class="headerlink" href="#batch-processing" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="n">data_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+<span class="n">output_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;output&#39;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">subject_dir</span> <span class="ow">in</span> <span class="n">data_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;sub-*&#39;</span><span class="p">):</span>
+    <span class="n">subject_id</span> <span class="o">=</span> <span class="n">subject_dir</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;python3&#39;</span><span class="p">,</span> <span class="s1">&#39;-m&#39;</span><span class="p">,</span> <span class="s1">&#39;neurolit.inpaint_image&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;--input_image&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">subject_dir</span> <span class="o">/</span> <span class="s1">&#39;T1w.nii.gz&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;--mask_image&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">subject_dir</span> <span class="o">/</span> <span class="s1">&#39;lesion_mask.nii.gz&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;--out_dir&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="n">subject_id</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Completed </span><span class="si">{</span><span class="n">subject_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="inference.html" class="btn btn-neutral float-left" title="Inference Module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="data.html" class="btn btn-neutral float-right" title="Data Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Clemens Pollak, David Kuegler, Martin Reuter et al..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

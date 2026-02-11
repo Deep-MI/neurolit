@@ -1,0 +1,553 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>neurolit.utils.plotting &mdash; neuroLIT 0.6.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8fa8b3e9"></script>
+      <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            neuroLIT
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation.html#using-docker-singularity-recommended">Using Docker/Singularity (Recommended)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation.html#using-pypi-beta">Using PyPI (Beta)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation.html#from-source">From Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation.html#system-requirements">System Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation.html#verifying-installation">Verifying Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation.html#troubleshooting">Troubleshooting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../installation.html#models-not-found">Models Not Found</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../installation.html#cuda-gpu-issues">CUDA/GPU Issues</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../usage.html#basic-usage">Basic Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#running-neurolit-with-containerization">Running neuroLIT with Containerization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#running-neurolit-from-pypi">Running neuroLIT from PyPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#mask-dilation">Mask Dilation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../usage.html#understanding-the-outputs">Understanding the Outputs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#output-files">Output Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#file-structure">File Structure</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../usage.html#advanced-usage">Advanced Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#direct-inpainting-python-api">Direct Inpainting (Python API)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#batch-processing">Batch Processing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../usage.html#command-line-interface-reference">Command-Line Interface Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#lit-inpainting">lit-inpainting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#lit-download-models">lit-download-models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#lit-postprocessing">lit-postprocessing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../usage.html#best-practices">Best Practices</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#input-data">Input Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#performance">Performance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#quality-control">Quality Control</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../usage.html#postprocessing">Postprocessing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#unified-postprocessing-script">Unified Postprocessing Script</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#individual-postprocessing-tools">Individual Postprocessing Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../usage.html#common-issues">Common Issues</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#poor-inpainting-quality">Poor Inpainting Quality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#mask-not-applied-correctly">Mask Not Applied Correctly</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#out-of-memory-errors">Out of Memory Errors</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../training.html">Training</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../training.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../training.html#data-preparation">Data Preparation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../training.html#conforming-images">Conforming Images</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../training.html#dataset-structure">Dataset Structure</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../training.html#using-docker-for-training">Using Docker for Training</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributing.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributing.html#types-of-contributions">Types of Contributions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#bug-reports">Bug Reports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#feature-requests">Feature Requests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#code-contributions">Code Contributions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#documentation">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributing.html#development-guidelines">Development Guidelines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#code-style">Code Style</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#testing">Testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#id1">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributing.html#git-workflow">Git Workflow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#branch-naming">Branch Naming</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#pull-requests">Pull Requests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributing.html#thank-you">Thank You!</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/cli.html">Command-Line Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/cli.html#neurolit.cli.get_version_with_hash"><code class="docutils literal notranslate"><span class="pre">get_version_with_hash()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/cli.html#neurolit.cli.run_lit"><code class="docutils literal notranslate"><span class="pre">run_lit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/cli.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/cli.html#main-functions">Main Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/cli.html#lit-inpainting">lit-inpainting</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/cli.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/cli.html#basic-usage">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/cli.html#programmatic-usage">Programmatic Usage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/inference.html">Inference Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.InpaintingInferer"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.InpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.InpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.__call__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.InpaintingInferer.sample_forward_diffusion"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.sample_forward_diffusion()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.InpaintingInferer.diffusion_forward"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.diffusion_forward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.InpaintingInferer.diffusion_backward"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.diffusion_backward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slice_from_volume()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.slice_selector"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.slice_selector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__call__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.view_agg_inference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.denoise"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.denoise()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.__call__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">OffsetTwoAndHalfDInpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">OffsetTwoAndHalfDInpaintingInferer.view_agg_inference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">OffsetTwoAndHalfDInpaintingInferer.__call__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.AnomalyInferer"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.AnomalyInferer.__call__"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer.__call__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.AnomalyInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer.view_agg_inference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.AnomalyInferer.denoise"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer.denoise()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.DiffusionInfererVINN"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.DiffusionInfererVINN.__call__"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN.__call__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.DiffusionInfererVINN.sample"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN.sample()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.DiffusionInfererVINN.sample_backward_forward"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN.sample_backward_forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#key-concepts">Key Concepts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">get_slice_from_volume()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.inpaint_volume"><code class="docutils literal notranslate"><span class="pre">inpaint_volume()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#main-function">Main Function</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inpainting.html#main">main</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inpainting.html#basic-inpainting">Basic Inpainting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inpainting.html#custom-parameters">Custom Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inpainting.html#cpu-mode">CPU Mode</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#integration-with-other-tools">Integration with Other Tools</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inpainting.html#preprocessing-pipeline">Preprocessing Pipeline</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inpainting.html#batch-processing">Batch Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/data.html">Data Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/data.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/data.html#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#module-neurolit.data.conform">conform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#module-neurolit.data.datasets">datasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#module-neurolit.data.transforms">transforms</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/data.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#conforming-images">Conforming Images</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#using-datasets">Using Datasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#applying-transforms">Applying Transforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#custom-transforms">Custom Transforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#batch-conforming">Batch Conforming</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/networks.html">Networks Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/networks.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/networks.html#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/networks.html#module-neurolit.networks.DiffusionUnet">DiffusionUnet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/networks.html#module-neurolit.networks.interpolation_layer">interpolation_layer</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/networks.html#architecture-details">Architecture Details</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/networks.html#diffusionunet-architecture">DiffusionUNet Architecture</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/networks.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/networks.html#using-diffusionunet">Using DiffusionUNet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/networks.html#loading-pre-trained-weights">Loading Pre-trained Weights</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/networks.html#custom-model-configuration">Custom Model Configuration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/networks.html#training-example">Training Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/networks.html#model-summary">Model Summary</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/postprocessing.html">Postprocessing Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/postprocessing.html#overview">Overview</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/postprocessing.html#command-line-usage">Command-Line Usage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/utils.html">Utils Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#module-neurolit.utils.download_checkpoints">download_checkpoints</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#module-neurolit.utils.plotting">plotting</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#downloading-models">Downloading Models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#command-line-download">Command-Line Download</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#getting-model-paths">Getting Model Paths</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#plotting-results">Plotting Results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#plotting-slices">Plotting Slices</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#mask-overlay">Mask Overlay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#custom-visualization">Custom Visualization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#batch-visualization">Batch Visualization</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/modules.html#quick-reference">Quick Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/modules.html#common-functions">Common Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/modules.html#most-used-classes">Most Used Classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/modules.html#entry-points">Entry Points</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../documentation.html">Documentation Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../documentation.html#building-the-documentation">Building the Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../documentation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../documentation.html#build-html">Build HTML</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../documentation.html#clean-build-files">Clean Build Files</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../documentation.html#writing-documentation">Writing Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../documentation.html#api-documentation">API Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../documentation.html#adding-new-pages">Adding New Pages</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../citation.html">Citation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../citation.html#bibtex">BibTeX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../citation.html#apa-format">APA Format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../citation.html#plain-text">Plain Text</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">neuroLIT</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">neurolit.utils.plotting</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for neurolit.utils.plotting</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2026 DeepMI Lab, German Center for Neurodegenerative Diseases (DZNE), Bonn</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+
+<div class="viewcode-block" id="plot_batch">
+<a class="viewcode-back" href="../../../api/utils.html#neurolit.utils.plotting.plot_batch">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_batch</span><span class="p">(</span><span class="n">image_batch</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">image_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">slice_cut</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot a batch of 2D or 3D images with different slice views.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image_batch : torch.Tensor</span>
+<span class="sd">        Input batch of images to plot. Shape should be:</span>
+<span class="sd">        - For 3D: (batch_size, channels, H, W, D)</span>
+<span class="sd">        - For 2D: (batch_size, channels, H, W)</span>
+<span class="sd">    image_path : str</span>
+<span class="sd">        Path where to save the output plot</span>
+<span class="sd">    slice_cut : list of int, optional</span>
+<span class="sd">        List of indices where to cut the slices. If None, uses middle slice.</span>
+<span class="sd">        For 3D: [x, y, z] indices</span>
+<span class="sd">        For 2D: [x, y] indices</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">image_batch</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span>
+    <span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="n">image_batch</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">slice_cut</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">slice_cut</span> <span class="o">=</span> <span class="n">image_batch</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span>
+
+    <span class="k">if</span> <span class="n">dim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">slices</span> <span class="o">=</span> <span class="p">[[(</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span> <span class="n">slice_cut</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">)],</span>
+                  <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span> <span class="n">slice_cut</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">)],</span>
+                  <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">slice_cut</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">)]]</span>
+    <span class="k">elif</span> <span class="n">dim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">middle_slice</span> <span class="o">=</span> <span class="n">image_batch</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">slices</span> <span class="o">=</span> <span class="p">[[(</span><span class="n">i</span><span class="p">,</span> <span class="n">middle_slice</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">)],</span>
+                  <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span> <span class="n">slice_cut</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">)],</span>
+                  <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span> <span class="n">slice_cut</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">)]]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid dimension&quot;</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">1.5</span><span class="o">*</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">BATCH_SIZE</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">axs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">axs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">slices</span><span class="p">,</span> <span class="n">axs</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">):</span>
+            <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image_batch</span><span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+            <span class="c1">#plt.axis(&quot;off&quot;)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+            <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">image_path</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plot_learning_curve">
+<a class="viewcode-back" href="../../../api/utils.html#neurolit.utils.plotting.plot_learning_curve">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_learning_curve</span><span class="p">(</span><span class="n">n_epochs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">epoch_loss_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> 
+                       <span class="n">val_epoch_loss_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> 
+                       <span class="n">VAL_INTERVAL</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot training and validation learning curves.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_epochs : int</span>
+<span class="sd">        Total number of epochs</span>
+<span class="sd">    epoch_loss_list : list of float</span>
+<span class="sd">        List of training losses for each epoch</span>
+<span class="sd">    val_epoch_loss_list : list of float</span>
+<span class="sd">        List of validation losses (recorded every VAL_INTERVAL)</span>
+<span class="sd">    args : Any</span>
+<span class="sd">        Arguments object containing output directory information</span>
+<span class="sd">    VAL_INTERVAL : int</span>
+<span class="sd">        Interval at which validation was performed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s2">&quot;seaborn-v0_8&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Learning Curves&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_epochs</span><span class="p">,</span> <span class="n">n_epochs</span><span class="p">),</span> <span class="n">epoch_loss_list</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C0&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Train&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">VAL_INTERVAL</span><span class="p">,</span> <span class="n">n_epochs</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_epochs</span> <span class="o">/</span> <span class="n">VAL_INTERVAL</span><span class="p">)),</span>
+        <span class="n">val_epoch_loss_list</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C1&quot;</span><span class="p">,</span>
+        <span class="n">linewidth</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Validation&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Epochs&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Loss&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">14</span><span class="p">})</span>
+    <span class="c1"># log scale</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">out_dir</span><span class="p">,</span><span class="s1">&#39;images/learning_curves.png&#39;</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plot_scheduler">
+<a class="viewcode-back" href="../../../api/utils.html#neurolit.utils.plotting.plot_scheduler">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_scheduler</span><span class="p">(</span><span class="n">scheduler</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot the scheduler&#39;s alpha values over time.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    scheduler : Any</span>
+<span class="sd">        Diffusion scheduler object containing alphas_cumprod</span>
+<span class="sd">    output_file : str</span>
+<span class="sd">        Path where to save the output plot</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">scheduler</span><span class="o">.</span><span class="n">alphas_cumprod</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">163</span> <span class="o">/</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">163</span> <span class="o">/</span> <span class="mi">255</span><span class="p">),</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Timestep [t]&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;alpha cumprod&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plot_inpainting">
+<a class="viewcode-back" href="../../../api/utils.html#neurolit.utils.plotting.plot_inpainting">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_inpainting</span><span class="p">(</span><span class="n">val_image</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">val_image_masked</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> 
+                   <span class="n">val_image_inpainted</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">out_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                   <span class="n">SLICE_CUT</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">cut_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot original, masked, and inpainted images side by side.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    val_image : torch.Tensor</span>
+<span class="sd">        Original image tensor</span>
+<span class="sd">    val_image_masked : torch.Tensor</span>
+<span class="sd">        Masked version of the image</span>
+<span class="sd">    val_image_inpainted : torch.Tensor</span>
+<span class="sd">        Inpainted result</span>
+<span class="sd">    out_file : str</span>
+<span class="sd">        Path where to save the output plot</span>
+<span class="sd">    SLICE_CUT : torch.Tensor</span>
+<span class="sd">        Index where to cut the slice for visualization</span>
+<span class="sd">    cut_dim : int, optional</span>
+<span class="sd">        Dimension along which to take the slice (0=sagittal, 1=coronal, 2=axial).</span>
+<span class="sd">        Defaults to 0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">val_image</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="n">val_image</span> <span class="o">=</span> <span class="n">val_image</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+        <span class="n">val_image_masked</span> <span class="o">=</span> <span class="n">val_image_masked</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+        <span class="n">val_image_inpainted</span> <span class="o">=</span> <span class="n">val_image_inpainted</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+
+    <span class="n">slicing</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)]</span>
+    <span class="n">slicing</span><span class="p">[</span><span class="n">cut_dim</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">SLICE_CUT</span><span class="p">[</span><span class="n">cut_dim</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="n">slicing</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">slicing</span><span class="p">)</span>  <span class="c1"># Convert to tuple for PyTorch 2.9+ compatibility</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">val_image</span><span class="p">[</span><span class="n">slicing</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Original image&quot;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">val_image_masked</span><span class="p">[</span><span class="n">slicing</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Masked image&quot;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">val_image_inpainted</span><span class="p">[</span><span class="n">slicing</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Inpainted image&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">out_file</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Clemens Pollak, David Kuegler, Martin Reuter et al..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

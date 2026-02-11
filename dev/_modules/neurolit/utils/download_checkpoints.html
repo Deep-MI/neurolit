@@ -1,0 +1,588 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>neurolit.utils.download_checkpoints &mdash; neuroLIT 0.6.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8fa8b3e9"></script>
+      <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            neuroLIT
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation.html#using-docker-singularity-recommended">Using Docker/Singularity (Recommended)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation.html#using-pypi-beta">Using PyPI (Beta)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation.html#from-source">From Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation.html#system-requirements">System Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation.html#verifying-installation">Verifying Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation.html#troubleshooting">Troubleshooting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../installation.html#models-not-found">Models Not Found</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../installation.html#cuda-gpu-issues">CUDA/GPU Issues</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../usage.html#basic-usage">Basic Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#running-neurolit-with-containerization">Running neuroLIT with Containerization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#running-neurolit-from-pypi">Running neuroLIT from PyPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#mask-dilation">Mask Dilation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../usage.html#understanding-the-outputs">Understanding the Outputs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#output-files">Output Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#file-structure">File Structure</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../usage.html#advanced-usage">Advanced Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#direct-inpainting-python-api">Direct Inpainting (Python API)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#batch-processing">Batch Processing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../usage.html#command-line-interface-reference">Command-Line Interface Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#lit-inpainting">lit-inpainting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#lit-download-models">lit-download-models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#lit-postprocessing">lit-postprocessing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../usage.html#best-practices">Best Practices</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#input-data">Input Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#performance">Performance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#quality-control">Quality Control</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../usage.html#postprocessing">Postprocessing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#unified-postprocessing-script">Unified Postprocessing Script</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#individual-postprocessing-tools">Individual Postprocessing Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../usage.html#common-issues">Common Issues</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#poor-inpainting-quality">Poor Inpainting Quality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#mask-not-applied-correctly">Mask Not Applied Correctly</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../usage.html#out-of-memory-errors">Out of Memory Errors</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../training.html">Training</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../training.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../training.html#data-preparation">Data Preparation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../training.html#conforming-images">Conforming Images</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../training.html#dataset-structure">Dataset Structure</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../training.html#using-docker-for-training">Using Docker for Training</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributing.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributing.html#types-of-contributions">Types of Contributions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#bug-reports">Bug Reports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#feature-requests">Feature Requests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#code-contributions">Code Contributions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#documentation">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributing.html#development-guidelines">Development Guidelines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#code-style">Code Style</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#testing">Testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#id1">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributing.html#git-workflow">Git Workflow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#branch-naming">Branch Naming</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#pull-requests">Pull Requests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributing.html#thank-you">Thank You!</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/cli.html">Command-Line Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/cli.html#neurolit.cli.get_version_with_hash"><code class="docutils literal notranslate"><span class="pre">get_version_with_hash()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/cli.html#neurolit.cli.run_lit"><code class="docutils literal notranslate"><span class="pre">run_lit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/cli.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/cli.html#main-functions">Main Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/cli.html#lit-inpainting">lit-inpainting</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/cli.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/cli.html#basic-usage">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/cli.html#programmatic-usage">Programmatic Usage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/inference.html">Inference Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.InpaintingInferer"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.InpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.InpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.__call__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.InpaintingInferer.sample_forward_diffusion"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.sample_forward_diffusion()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.InpaintingInferer.diffusion_forward"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.diffusion_forward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.InpaintingInferer.diffusion_backward"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.diffusion_backward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slice_from_volume()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.slice_selector"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.slice_selector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__call__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.view_agg_inference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.denoise"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.denoise()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.__call__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">OffsetTwoAndHalfDInpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">OffsetTwoAndHalfDInpaintingInferer.view_agg_inference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">OffsetTwoAndHalfDInpaintingInferer.__call__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.AnomalyInferer"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.AnomalyInferer.__call__"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer.__call__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.AnomalyInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer.view_agg_inference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.AnomalyInferer.denoise"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer.denoise()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.DiffusionInfererVINN"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.DiffusionInfererVINN.__call__"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN.__call__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.DiffusionInfererVINN.sample"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN.sample()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.DiffusionInfererVINN.sample_backward_forward"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN.sample_backward_forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#key-concepts">Key Concepts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">get_slice_from_volume()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.inpaint_volume"><code class="docutils literal notranslate"><span class="pre">inpaint_volume()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#main-function">Main Function</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inpainting.html#main">main</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inpainting.html#basic-inpainting">Basic Inpainting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inpainting.html#custom-parameters">Custom Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inpainting.html#cpu-mode">CPU Mode</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#integration-with-other-tools">Integration with Other Tools</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inpainting.html#preprocessing-pipeline">Preprocessing Pipeline</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inpainting.html#batch-processing">Batch Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/data.html">Data Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/data.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/data.html#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#module-neurolit.data.conform">conform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#module-neurolit.data.datasets">datasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#module-neurolit.data.transforms">transforms</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/data.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#conforming-images">Conforming Images</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#using-datasets">Using Datasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#applying-transforms">Applying Transforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#custom-transforms">Custom Transforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#batch-conforming">Batch Conforming</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/networks.html">Networks Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/networks.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/networks.html#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/networks.html#module-neurolit.networks.DiffusionUnet">DiffusionUnet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/networks.html#module-neurolit.networks.interpolation_layer">interpolation_layer</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/networks.html#architecture-details">Architecture Details</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/networks.html#diffusionunet-architecture">DiffusionUNet Architecture</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/networks.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/networks.html#using-diffusionunet">Using DiffusionUNet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/networks.html#loading-pre-trained-weights">Loading Pre-trained Weights</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/networks.html#custom-model-configuration">Custom Model Configuration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/networks.html#training-example">Training Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/networks.html#model-summary">Model Summary</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/postprocessing.html">Postprocessing Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/postprocessing.html#overview">Overview</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/postprocessing.html#command-line-usage">Command-Line Usage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/utils.html">Utils Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#module-neurolit.utils.download_checkpoints">download_checkpoints</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#module-neurolit.utils.plotting">plotting</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#downloading-models">Downloading Models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#command-line-download">Command-Line Download</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#getting-model-paths">Getting Model Paths</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#plotting-results">Plotting Results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#plotting-slices">Plotting Slices</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#mask-overlay">Mask Overlay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#custom-visualization">Custom Visualization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#batch-visualization">Batch Visualization</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/modules.html#quick-reference">Quick Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/modules.html#common-functions">Common Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/modules.html#most-used-classes">Most Used Classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/modules.html#entry-points">Entry Points</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../documentation.html">Documentation Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../documentation.html#building-the-documentation">Building the Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../documentation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../documentation.html#build-html">Build HTML</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../documentation.html#clean-build-files">Clean Build Files</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../documentation.html#writing-documentation">Writing Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../documentation.html#api-documentation">API Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../documentation.html#adding-new-pages">Adding New Pages</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../citation.html">Citation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../citation.html#bibtex">BibTeX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../citation.html#apa-format">APA Format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../citation.html#plain-text">Plain Text</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">neuroLIT</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">neurolit.utils.download_checkpoints</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for neurolit.utils.download_checkpoints</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2026 DeepMI Lab, German Center for Neurodegenerative Diseases (DZNE), Bonn</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">platformdirs</span><span class="w"> </span><span class="kn">import</span> <span class="n">user_data_dir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+
+
+<div class="viewcode-block" id="download_checkpoint">
+<a class="viewcode-back" href="../../../api/utils.html#neurolit.utils.download_checkpoints.download_checkpoint">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">download_checkpoint</span><span class="p">(</span>
+        <span class="n">checkpoint_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">checkpoint_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+        <span class="n">urls</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Download a checkpoint file with progress bar.</span>
+
+<span class="sd">    Raises an HTTPError if the file is not found or the server is not reachable.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    checkpoint_name : str</span>
+<span class="sd">        Name of checkpoint.</span>
+<span class="sd">    checkpoint_path : Path, str</span>
+<span class="sd">        Path of the file in which the checkpoint will be saved.</span>
+<span class="sd">    urls : list[str]</span>
+<span class="sd">        List of URLs of checkpoint hosting sites.</span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        Whether to print verbose output.</span>
+<span class="sd">    show_progress : bool</span>
+<span class="sd">        Whether to show download progress bar.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading checkpoint </span><span class="si">{</span><span class="n">checkpoint_name</span><span class="si">}</span><span class="s2"> from </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="n">url</span><span class="p">,</span>
+                <span class="n">verify</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>  <span class="c1"># (connect timeout: 5 sec, read timeout: None)</span>
+                <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Stream the download for progress tracking</span>
+            <span class="p">)</span>
+            <span class="c1"># Raise error if file does not exist:</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+            <span class="k">break</span>
+
+        <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Server </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2"> not reachable (</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Response code: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">response</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">links</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s1">&#39;https://&#39;</span><span class="p">)[:</span><span class="mi">22</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;...&quot;</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Failed downloading the checkpoint </span><span class="si">{</span><span class="n">checkpoint_name</span><span class="si">}</span><span class="s2"> from </span><span class="si">{</span><span class="n">links</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>  <span class="c1"># Raise error if no server is reachable</span>
+
+    <span class="c1"># Get total file size from headers</span>
+    <span class="n">total_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;content-length&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">block_size</span> <span class="o">=</span> <span class="mi">8192</span>  <span class="c1"># 8 KB chunks</span>
+    
+    <span class="c1"># Write file with progress bar</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">show_progress</span> <span class="ow">and</span> <span class="n">total_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">tqdm</span><span class="p">(</span>
+                <span class="n">total</span><span class="o">=</span><span class="n">total_size</span><span class="p">,</span>
+                <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">,</span>
+                <span class="n">unit_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">unit_divisor</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+                <span class="n">desc</span><span class="o">=</span><span class="n">checkpoint_name</span><span class="p">,</span>
+                <span class="n">ncols</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span>
+            <span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="n">block_size</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">chunk</span><span class="p">:</span>  <span class="c1"># filter out keep-alive chunks</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+                        <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chunk</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Fallback without progress bar</span>
+            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="n">block_size</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">chunk</span><span class="p">:</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="check_and_download_ckpts">
+<a class="viewcode-back" href="../../../api/utils.html#neurolit.utils.download_checkpoints.check_and_download_ckpts">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_and_download_ckpts</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">urls</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check and download a checkpoint file, if it does not exist.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    checkpoint_path : Path, str</span>
+<span class="sd">        Path of the file in which the checkpoint will be saved.</span>
+<span class="sd">    urls : list[str]</span>
+<span class="sd">        URLs of checkpoint hosting site.</span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        Whether to print verbose output.</span>
+<span class="sd">    show_progress : bool</span>
+<span class="sd">        Whether to show download progress bar.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
+        <span class="n">checkpoint_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">)</span>
+    <span class="c1"># Download checkpoint file from url if it does not exist</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">checkpoint_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">show_progress</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading checkpoint </span><span class="si">{</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2"> from </span><span class="si">{</span><span class="n">urls</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># create dir if it does not exist</span>
+        <span class="n">checkpoint_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">download_checkpoint</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">checkpoint_path</span><span class="p">,</span> <span class="n">urls</span><span class="p">,</span> <span class="n">verbose</span><span class="p">,</span> <span class="n">show_progress</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="fallback_multiple_urls">
+<a class="viewcode-back" href="../../../api/utils.html#neurolit.utils.download_checkpoints.fallback_multiple_urls">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">fallback_multiple_urls</span><span class="p">(</span><span class="n">checkpoint_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">urls</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">check_and_download_ckpts</span><span class="p">(</span><span class="n">checkpoint_name</span><span class="p">,</span> <span class="p">[</span><span class="n">url</span><span class="p">],</span> <span class="n">verbose</span><span class="p">,</span> <span class="n">show_progress</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tried downloading </span><span class="si">{</span><span class="n">checkpoint_name</span><span class="si">}</span><span class="s2"> from </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2"> but failed&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../../../api/utils.html#neurolit.utils.download_checkpoints.main">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+    
+    <span class="c1"># Use platformdirs for consistent cross-platform data directory</span>
+    <span class="c1"># This works for both pip and git installations</span>
+    <span class="n">weights_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">user_data_dir</span><span class="p">(</span><span class="s2">&quot;LIT&quot;</span><span class="p">,</span> <span class="s2">&quot;Deep-MI&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;weights&quot;</span>
+    
+    <span class="c1"># Ensure weights directory exists</span>
+    <span class="n">weights_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Download location: </span><span class="si">{</span><span class="n">weights_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    
+    <span class="c1"># Model URLs</span>
+    <span class="n">models</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;model_coronal.pt&quot;</span><span class="p">:</span> <span class="s2">&quot;https://zenodo.org/records/14510136/files/model_coronal.pt?download=1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;model_axial.pt&quot;</span><span class="p">:</span> <span class="s2">&quot;https://zenodo.org/records/14510136/files/model_axial.pt?download=1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;model_sagittal.pt&quot;</span><span class="p">:</span> <span class="s2">&quot;https://zenodo.org/records/14510136/files/model_sagittal.pt?download=1&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+    
+    <span class="c1"># Check which models already exist</span>
+    <span class="n">existing_models</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">missing_models</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">model_name</span> <span class="ow">in</span> <span class="n">models</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">model_path</span> <span class="o">=</span> <span class="n">weights_dir</span> <span class="o">/</span> <span class="n">model_name</span>
+        <span class="k">if</span> <span class="n">model_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">existing_models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">missing_models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+    
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">missing_models</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">All models are already downloaded!&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Models to download (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">missing_models</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)</span><span class="si">}</span><span class="s2">):&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">missing_models</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Downloading models (this may take several minutes)...&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>  <span class="c1"># Empty line before progress bars</span>
+    
+    <span class="c1"># Download missing checkpoints</span>
+    <span class="n">success</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">for</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">model_path</span> <span class="o">=</span> <span class="n">weights_dir</span> <span class="o">/</span> <span class="n">model_name</span>
+        <span class="k">if</span> <span class="n">model_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">continue</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">fallback_multiple_urls</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">model_path</span><span class="p">),</span> <span class="n">urls</span><span class="o">=</span><span class="p">[</span><span class="n">url</span><span class="p">],</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Download failed for </span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">success</span> <span class="o">=</span> <span class="kc">False</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">30</span> <span class="o">+</span> <span class="s2">&quot; exiting with errors&quot;</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">30</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;All models downloaded successfully!&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Models location: </span><span class="si">{</span><span class="n">weights_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">60</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Clemens Pollak, David Kuegler, Martin Reuter et al..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

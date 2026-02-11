@@ -1,0 +1,666 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Utils Module &mdash; neuroLIT 0.6.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8fa8b3e9"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Documentation Guide" href="../documentation.html" />
+    <link rel="prev" title="Postprocessing Module" href="postprocessing.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            neuroLIT
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#using-docker-singularity-recommended">Using Docker/Singularity (Recommended)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#using-pypi-beta">Using PyPI (Beta)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#from-source">From Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#system-requirements">System Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#verifying-installation">Verifying Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#troubleshooting">Troubleshooting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#models-not-found">Models Not Found</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#cuda-gpu-issues">CUDA/GPU Issues</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../usage.html#basic-usage">Basic Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#running-neurolit-with-containerization">Running neuroLIT with Containerization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#running-neurolit-from-pypi">Running neuroLIT from PyPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#mask-dilation">Mask Dilation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../usage.html#understanding-the-outputs">Understanding the Outputs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#output-files">Output Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#file-structure">File Structure</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../usage.html#advanced-usage">Advanced Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#direct-inpainting-python-api">Direct Inpainting (Python API)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#batch-processing">Batch Processing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../usage.html#command-line-interface-reference">Command-Line Interface Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#lit-inpainting">lit-inpainting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#lit-download-models">lit-download-models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#lit-postprocessing">lit-postprocessing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../usage.html#best-practices">Best Practices</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#input-data">Input Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#performance">Performance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#quality-control">Quality Control</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../usage.html#postprocessing">Postprocessing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#unified-postprocessing-script">Unified Postprocessing Script</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#individual-postprocessing-tools">Individual Postprocessing Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../usage.html#common-issues">Common Issues</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#poor-inpainting-quality">Poor Inpainting Quality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#mask-not-applied-correctly">Mask Not Applied Correctly</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usage.html#out-of-memory-errors">Out of Memory Errors</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../training.html">Training</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../training.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../training.html#data-preparation">Data Preparation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../training.html#conforming-images">Conforming Images</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../training.html#dataset-structure">Dataset Structure</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../training.html#using-docker-for-training">Using Docker for Training</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../contributing.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contributing.html#types-of-contributions">Types of Contributions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#bug-reports">Bug Reports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#feature-requests">Feature Requests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#code-contributions">Code Contributions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#documentation">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../contributing.html#development-guidelines">Development Guidelines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#code-style">Code Style</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#testing">Testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#id1">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../contributing.html#git-workflow">Git Workflow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#branch-naming">Branch Naming</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#pull-requests">Pull Requests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../contributing.html#thank-you">Thank You!</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="cli.html">Command-Line Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cli.html#neurolit.cli.get_version_with_hash"><code class="docutils literal notranslate"><span class="pre">get_version_with_hash()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli.html#neurolit.cli.run_lit"><code class="docutils literal notranslate"><span class="pre">run_lit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli.html#main-functions">Main Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="cli.html#lit-inpainting">lit-inpainting</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="cli.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="cli.html#basic-usage">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cli.html#programmatic-usage">Programmatic Usage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="inference.html">Inference Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="inference.html#neurolit.inference.InpaintingInferer"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.InpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.InpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.__call__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.InpaintingInferer.sample_forward_diffusion"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.sample_forward_diffusion()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.InpaintingInferer.diffusion_forward"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.diffusion_forward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.InpaintingInferer.diffusion_backward"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.diffusion_backward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="inference.html#neurolit.inference.SliceWiseInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.SliceWiseInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slice_from_volume()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.SliceWiseInpaintingInferer.slice_selector"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.slice_selector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.SliceWiseInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__call__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.view_agg_inference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.denoise"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.denoise()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.__call__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">OffsetTwoAndHalfDInpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">OffsetTwoAndHalfDInpaintingInferer.view_agg_inference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">OffsetTwoAndHalfDInpaintingInferer.__call__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="inference.html#neurolit.inference.AnomalyInferer"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.AnomalyInferer.__call__"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer.__call__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.AnomalyInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer.view_agg_inference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.AnomalyInferer.denoise"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer.denoise()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="inference.html#neurolit.inference.DiffusionInfererVINN"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.DiffusionInfererVINN.__call__"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN.__call__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.DiffusionInfererVINN.sample"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN.sample()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.DiffusionInfererVINN.sample_backward_forward"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN.sample_backward_forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="inference.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inference.html#key-concepts">Key Concepts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="inpainting.html#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="inpainting.html#neurolit.inpaint_image.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">get_slice_from_volume()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="inpainting.html#neurolit.inpaint_image.inpaint_volume"><code class="docutils literal notranslate"><span class="pre">inpaint_volume()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="inpainting.html#neurolit.inpaint_image.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="inpainting.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inpainting.html#main-function">Main Function</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="inpainting.html#main">main</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="inpainting.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="inpainting.html#basic-inpainting">Basic Inpainting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="inpainting.html#custom-parameters">Custom Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="inpainting.html#cpu-mode">CPU Mode</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="inpainting.html#integration-with-other-tools">Integration with Other Tools</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="inpainting.html#preprocessing-pipeline">Preprocessing Pipeline</a></li>
+<li class="toctree-l4"><a class="reference internal" href="inpainting.html#batch-processing">Batch Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data.html">Data Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data.html#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="data.html#module-neurolit.data.conform">conform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#module-neurolit.data.datasets">datasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#module-neurolit.data.transforms">transforms</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="data.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="data.html#conforming-images">Conforming Images</a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#using-datasets">Using Datasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#applying-transforms">Applying Transforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#custom-transforms">Custom Transforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#batch-conforming">Batch Conforming</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="networks.html">Networks Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="networks.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="networks.html#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="networks.html#module-neurolit.networks.DiffusionUnet">DiffusionUnet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="networks.html#module-neurolit.networks.interpolation_layer">interpolation_layer</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="networks.html#architecture-details">Architecture Details</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="networks.html#diffusionunet-architecture">DiffusionUNet Architecture</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="networks.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="networks.html#using-diffusionunet">Using DiffusionUNet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="networks.html#loading-pre-trained-weights">Loading Pre-trained Weights</a></li>
+<li class="toctree-l4"><a class="reference internal" href="networks.html#custom-model-configuration">Custom Model Configuration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="networks.html#training-example">Training Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="networks.html#model-summary">Model Summary</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="postprocessing.html">Postprocessing Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="postprocessing.html#overview">Overview</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="postprocessing.html#command-line-usage">Command-Line Usage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Utils Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#module-neurolit.utils.download_checkpoints">download_checkpoints</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-neurolit.utils.plotting">plotting</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#downloading-models">Downloading Models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#command-line-download">Command-Line Download</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#getting-model-paths">Getting Model Paths</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#plotting-results">Plotting Results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#plotting-slices">Plotting Slices</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#mask-overlay">Mask Overlay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#custom-visualization">Custom Visualization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#batch-visualization">Batch Visualization</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#quick-reference">Quick Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules.html#common-functions">Common Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules.html#most-used-classes">Most Used Classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules.html#entry-points">Entry Points</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../documentation.html">Documentation Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../documentation.html#building-the-documentation">Building the Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../documentation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../documentation.html#build-html">Build HTML</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../documentation.html#clean-build-files">Clean Build Files</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../documentation.html#writing-documentation">Writing Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../documentation.html#api-documentation">API Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../documentation.html#adding-new-pages">Adding New Pages</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../citation.html">Citation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../citation.html#bibtex">BibTeX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../citation.html#apa-format">APA Format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../citation.html#plain-text">Plain Text</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">neuroLIT</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">API Reference</a></li>
+      <li class="breadcrumb-item active">Utils Module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/utils.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-neurolit.utils">
+<span id="utils-module"></span><h1>Utils Module<a class="headerlink" href="#module-neurolit.utils" title="Link to this heading"></a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>The utils module provides utility functions for various tasks including model downloading, plotting, and general helpers.</p>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+<section id="module-neurolit.utils.download_checkpoints">
+<span id="download-checkpoints"></span><h3>download_checkpoints<a class="headerlink" href="#module-neurolit.utils.download_checkpoints" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="neurolit.utils.download_checkpoints.download_checkpoint">
+<span class="sig-prename descclassname"><span class="pre">neurolit.utils.download_checkpoints.</span></span><span class="sig-name descname"><span class="pre">download_checkpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">urls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/neurolit/utils/download_checkpoints.html#download_checkpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neurolit.utils.download_checkpoints.download_checkpoint" title="Link to this definition"></a></dt>
+<dd><p>Download a checkpoint file with progress bar.</p>
+<p>Raises an HTTPError if the file is not found or the server is not reachable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>checkpoint_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Name of checkpoint.</p></li>
+<li><p><strong>checkpoint_path</strong> (<em>Path</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path of the file in which the checkpoint will be saved.</p></li>
+<li><p><strong>urls</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – List of URLs of checkpoint hosting sites.</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to print verbose output.</p></li>
+<li><p><strong>show_progress</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to show download progress bar.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neurolit.utils.download_checkpoints.check_and_download_ckpts">
+<span class="sig-prename descclassname"><span class="pre">neurolit.utils.download_checkpoints.</span></span><span class="sig-name descname"><span class="pre">check_and_download_ckpts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">urls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/neurolit/utils/download_checkpoints.html#check_and_download_ckpts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neurolit.utils.download_checkpoints.check_and_download_ckpts" title="Link to this definition"></a></dt>
+<dd><p>Check and download a checkpoint file, if it does not exist.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>checkpoint_path</strong> (<em>Path</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path of the file in which the checkpoint will be saved.</p></li>
+<li><p><strong>urls</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – URLs of checkpoint hosting site.</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to print verbose output.</p></li>
+<li><p><strong>show_progress</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to show download progress bar.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neurolit.utils.download_checkpoints.fallback_multiple_urls">
+<span class="sig-prename descclassname"><span class="pre">neurolit.utils.download_checkpoints.</span></span><span class="sig-name descname"><span class="pre">fallback_multiple_urls</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">urls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/neurolit/utils/download_checkpoints.html#fallback_multiple_urls"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neurolit.utils.download_checkpoints.fallback_multiple_urls" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neurolit.utils.download_checkpoints.main">
+<span class="sig-prename descclassname"><span class="pre">neurolit.utils.download_checkpoints.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/neurolit/utils/download_checkpoints.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neurolit.utils.download_checkpoints.main" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<p>Download and manage model checkpoints.</p>
+<p><strong>Key Functions:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">download_models()</span></code>: Download all model checkpoints</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_model_path()</span></code>: Get path to specific model</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verify_checksum()</span></code>: Verify model integrity</p></li>
+</ul>
+</section>
+<section id="module-neurolit.utils.plotting">
+<span id="plotting"></span><h3>plotting<a class="headerlink" href="#module-neurolit.utils.plotting" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="neurolit.utils.plotting.plot_batch">
+<span class="sig-prename descclassname"><span class="pre">neurolit.utils.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_cut</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/neurolit/utils/plotting.html#plot_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neurolit.utils.plotting.plot_batch" title="Link to this definition"></a></dt>
+<dd><p>Plot a batch of 2D or 3D images with different slice views.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image_batch</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><em>torch.Tensor</em></a>) – Input batch of images to plot. Shape should be:
+- For 3D: (batch_size, channels, H, W, D)
+- For 2D: (batch_size, channels, H, W)</p></li>
+<li><p><strong>image_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path where to save the output plot</p></li>
+<li><p><strong>slice_cut</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – List of indices where to cut the slices. If None, uses middle slice.
+For 3D: [x, y, z] indices
+For 2D: [x, y] indices</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neurolit.utils.plotting.plot_learning_curve">
+<span class="sig-prename descclassname"><span class="pre">neurolit.utils.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_learning_curve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_epochs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_loss_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_epoch_loss_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">VAL_INTERVAL</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/neurolit/utils/plotting.html#plot_learning_curve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neurolit.utils.plotting.plot_learning_curve" title="Link to this definition"></a></dt>
+<dd><p>Plot training and validation learning curves.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_epochs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Total number of epochs</p></li>
+<li><p><strong>epoch_loss_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – List of training losses for each epoch</p></li>
+<li><p><strong>val_epoch_loss_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – List of validation losses (recorded every VAL_INTERVAL)</p></li>
+<li><p><strong>args</strong> (<em>Any</em>) – Arguments object containing output directory information</p></li>
+<li><p><strong>VAL_INTERVAL</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Interval at which validation was performed</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neurolit.utils.plotting.plot_scheduler">
+<span class="sig-prename descclassname"><span class="pre">neurolit.utils.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_scheduler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/neurolit/utils/plotting.html#plot_scheduler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neurolit.utils.plotting.plot_scheduler" title="Link to this definition"></a></dt>
+<dd><p>Plot the scheduler’s alpha values over time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scheduler</strong> (<em>Any</em>) – Diffusion scheduler object containing alphas_cumprod</p></li>
+<li><p><strong>output_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path where to save the output plot</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neurolit.utils.plotting.plot_inpainting">
+<span class="sig-prename descclassname"><span class="pre">neurolit.utils.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_inpainting</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_image_masked</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_image_inpainted</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">SLICE_CUT</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/neurolit/utils/plotting.html#plot_inpainting"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neurolit.utils.plotting.plot_inpainting" title="Link to this definition"></a></dt>
+<dd><p>Plot original, masked, and inpainted images side by side.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>val_image</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><em>torch.Tensor</em></a>) – Original image tensor</p></li>
+<li><p><strong>val_image_masked</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><em>torch.Tensor</em></a>) – Masked version of the image</p></li>
+<li><p><strong>val_image_inpainted</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><em>torch.Tensor</em></a>) – Inpainted result</p></li>
+<li><p><strong>out_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path where to save the output plot</p></li>
+<li><p><strong>SLICE_CUT</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><em>torch.Tensor</em></a>) – Index where to cut the slice for visualization</p></li>
+<li><p><strong>cut_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Dimension along which to take the slice (0=sagittal, 1=coronal, 2=axial).
+Defaults to 0.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Visualization utilities for brain MRI and results.</p>
+<p><strong>Key Functions:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">plot_slices()</span></code>: Plot 2D slices</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plot_comparison()</span></code>: Compare before/after inpainting</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plot_mask_overlay()</span></code>: Overlay mask on image</p></li>
+</ul>
+</section>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
+<section id="downloading-models">
+<h3>Downloading Models<a class="headerlink" href="#downloading-models" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.utils.download_checkpoints</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_models</span>
+
+<span class="c1"># Download all models</span>
+<span class="n">download_models</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Skip if already downloaded</span>
+</pre></div>
+</div>
+</section>
+<section id="command-line-download">
+<h3>Command-Line Download<a class="headerlink" href="#command-line-download" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download models</span>
+lit-download-models
+
+<span class="c1"># Force re-download</span>
+lit-download-models<span class="w"> </span>--force
+</pre></div>
+</div>
+</section>
+<section id="getting-model-paths">
+<h3>Getting Model Paths<a class="headerlink" href="#getting-model-paths" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.utils.download_checkpoints</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_model_path</span>
+
+<span class="c1"># Get path to specific model</span>
+<span class="n">axial_path</span> <span class="o">=</span> <span class="n">get_model_path</span><span class="p">(</span><span class="s1">&#39;axial&#39;</span><span class="p">)</span>
+<span class="n">coronal_path</span> <span class="o">=</span> <span class="n">get_model_path</span><span class="p">(</span><span class="s1">&#39;coronal&#39;</span><span class="p">)</span>
+<span class="n">sagittal_path</span> <span class="o">=</span> <span class="n">get_model_path</span><span class="p">(</span><span class="s1">&#39;sagittal&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Axial model: </span><span class="si">{</span><span class="n">axial_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="plotting-results">
+<h3>Plotting Results<a class="headerlink" href="#plotting-results" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.utils.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_comparison</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">nibabel</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nib</span>
+
+<span class="c1"># Load images</span>
+<span class="n">original</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;T1w.nii.gz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">()</span>
+<span class="n">inpainted</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;T1w_inpainted.nii.gz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">()</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;lesion_mask.nii.gz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">()</span>
+
+<span class="c1"># Plot comparison</span>
+<span class="n">plot_comparison</span><span class="p">(</span>
+    <span class="n">original</span><span class="o">=</span><span class="n">original</span><span class="p">,</span>
+    <span class="n">inpainted</span><span class="o">=</span><span class="n">inpainted</span><span class="p">,</span>
+    <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+    <span class="n">slice_idx</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+    <span class="n">save_path</span><span class="o">=</span><span class="s1">&#39;comparison.png&#39;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="plotting-slices">
+<h3>Plotting Slices<a class="headerlink" href="#plotting-slices" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.utils.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_slices</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">nibabel</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nib</span>
+
+<span class="c1"># Load image</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;T1w.nii.gz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">()</span>
+
+<span class="c1"># Plot axial, coronal, and sagittal slices</span>
+<span class="n">plot_slices</span><span class="p">(</span>
+    <span class="n">image</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">&#39;T1-weighted MRI&#39;</span><span class="p">,</span>
+    <span class="n">save_path</span><span class="o">=</span><span class="s1">&#39;slices.png&#39;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="mask-overlay">
+<h3>Mask Overlay<a class="headerlink" href="#mask-overlay" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.utils.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_mask_overlay</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">nibabel</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nib</span>
+
+<span class="c1"># Load data</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;T1w.nii.gz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">()</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;lesion_mask.nii.gz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">()</span>
+
+<span class="c1"># Plot with overlay</span>
+<span class="n">plot_mask_overlay</span><span class="p">(</span>
+    <span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span>
+    <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+    <span class="n">slice_idx</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>  <span class="c1"># Overlay transparency</span>
+    <span class="n">save_path</span><span class="o">=</span><span class="s1">&#39;overlay.png&#39;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="custom-visualization">
+<h3>Custom Visualization<a class="headerlink" href="#custom-visualization" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.utils.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_slices</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">nibabel</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nib</span>
+
+<span class="c1"># Load multiple images</span>
+<span class="n">original</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;T1w.nii.gz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">()</span>
+<span class="n">inpainted</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;T1w_inpainted.nii.gz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">()</span>
+
+<span class="c1"># Create custom figure</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+<span class="n">slice_idx</span> <span class="o">=</span> <span class="mi">128</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">original</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">slice_idx</span><span class="p">],</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Original&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">inpainted</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">slice_idx</span><span class="p">],</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Inpainted&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;custom_comparison.png&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="batch-visualization">
+<h3>Batch Visualization<a class="headerlink" href="#batch-visualization" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.utils.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_comparison</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">nibabel</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nib</span>
+
+<span class="n">subjects</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sub-01&#39;</span><span class="p">,</span> <span class="s1">&#39;sub-02&#39;</span><span class="p">,</span> <span class="s1">&#39;sub-03&#39;</span><span class="p">]</span>
+
+<span class="k">for</span> <span class="n">subject</span> <span class="ow">in</span> <span class="n">subjects</span><span class="p">:</span>
+    <span class="n">original</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;data/</span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s1">/T1w.nii.gz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">()</span>
+    <span class="n">inpainted</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;output/</span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s1">/T1w_inpainted.nii.gz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">()</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;data/</span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s1">/lesion_mask.nii.gz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">()</span>
+
+    <span class="n">plot_comparison</span><span class="p">(</span>
+        <span class="n">original</span><span class="o">=</span><span class="n">original</span><span class="p">,</span>
+        <span class="n">inpainted</span><span class="o">=</span><span class="n">inpainted</span><span class="p">,</span>
+        <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+        <span class="n">slice_idx</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+        <span class="n">save_path</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;visualizations/</span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s1">_comparison.png&#39;</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="postprocessing.html" class="btn btn-neutral float-left" title="Postprocessing Module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../documentation.html" class="btn btn-neutral float-right" title="Documentation Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Clemens Pollak, David Kuegler, Martin Reuter et al..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

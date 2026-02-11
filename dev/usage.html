@@ -1,0 +1,687 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Usage Guide &mdash; neuroLIT 0.6.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8fa8b3e9"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Training" href="training.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            neuroLIT
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#using-docker-singularity-recommended">Using Docker/Singularity (Recommended)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#using-pypi-beta">Using PyPI (Beta)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#from-source">From Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#system-requirements">System Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#verifying-installation">Verifying Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#troubleshooting">Troubleshooting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#models-not-found">Models Not Found</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#cuda-gpu-issues">CUDA/GPU Issues</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#basic-usage">Basic Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#running-neurolit-with-containerization">Running neuroLIT with Containerization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#running-neurolit-from-pypi">Running neuroLIT from PyPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mask-dilation">Mask Dilation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#understanding-the-outputs">Understanding the Outputs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#output-files">Output Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file-structure">File Structure</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-usage">Advanced Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#direct-inpainting-python-api">Direct Inpainting (Python API)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#batch-processing">Batch Processing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#command-line-interface-reference">Command-Line Interface Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#lit-inpainting">lit-inpainting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lit-download-models">lit-download-models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lit-postprocessing">lit-postprocessing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#best-practices">Best Practices</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#input-data">Input Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#performance">Performance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quality-control">Quality Control</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#postprocessing">Postprocessing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#unified-postprocessing-script">Unified Postprocessing Script</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#individual-postprocessing-tools">Individual Postprocessing Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#common-issues">Common Issues</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#poor-inpainting-quality">Poor Inpainting Quality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mask-not-applied-correctly">Mask Not Applied Correctly</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#out-of-memory-errors">Out of Memory Errors</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="training.html">Training</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="training.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="training.html#data-preparation">Data Preparation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="training.html#conforming-images">Conforming Images</a></li>
+<li class="toctree-l3"><a class="reference internal" href="training.html#dataset-structure">Dataset Structure</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="training.html#using-docker-for-training">Using Docker for Training</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#types-of-contributions">Types of Contributions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#bug-reports">Bug Reports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#feature-requests">Feature Requests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#code-contributions">Code Contributions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#documentation">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#development-guidelines">Development Guidelines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#code-style">Code Style</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#testing">Testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#id1">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#git-workflow">Git Workflow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#branch-naming">Branch Naming</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#pull-requests">Pull Requests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#thank-you">Thank You!</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/cli.html">Command-Line Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/cli.html#neurolit.cli.get_version_with_hash"><code class="docutils literal notranslate"><span class="pre">get_version_with_hash()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/cli.html#neurolit.cli.run_lit"><code class="docutils literal notranslate"><span class="pre">run_lit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/cli.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/cli.html#main-functions">Main Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/cli.html#lit-inpainting">lit-inpainting</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/cli.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/cli.html#basic-usage">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/cli.html#programmatic-usage">Programmatic Usage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/inference.html">Inference Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/inference.html#neurolit.inference.InpaintingInferer"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.InpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.InpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.__call__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.InpaintingInferer.sample_forward_diffusion"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.sample_forward_diffusion()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.InpaintingInferer.diffusion_forward"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.diffusion_forward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.InpaintingInferer.diffusion_backward"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.diffusion_backward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slice_from_volume()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.slice_selector"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.slice_selector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__call__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.view_agg_inference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.denoise"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.denoise()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.__call__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">OffsetTwoAndHalfDInpaintingInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">OffsetTwoAndHalfDInpaintingInferer.view_agg_inference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.OffsetTwoAndHalfDInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">OffsetTwoAndHalfDInpaintingInferer.__call__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/inference.html#neurolit.inference.AnomalyInferer"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.AnomalyInferer.__call__"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer.__call__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.AnomalyInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer.view_agg_inference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.AnomalyInferer.denoise"><code class="docutils literal notranslate"><span class="pre">AnomalyInferer.denoise()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/inference.html#neurolit.inference.DiffusionInfererVINN"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.DiffusionInfererVINN.__call__"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN.__call__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.DiffusionInfererVINN.sample"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN.sample()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.DiffusionInfererVINN.sample_backward_forward"><code class="docutils literal notranslate"><span class="pre">DiffusionInfererVINN.sample_backward_forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/inference.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/inference.html#key-concepts">Key Concepts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">get_slice_from_volume()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.inpaint_volume"><code class="docutils literal notranslate"><span class="pre">inpaint_volume()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#main-function">Main Function</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/inpainting.html#main">main</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/inpainting.html#basic-inpainting">Basic Inpainting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inpainting.html#custom-parameters">Custom Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inpainting.html#cpu-mode">CPU Mode</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#integration-with-other-tools">Integration with Other Tools</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/inpainting.html#preprocessing-pipeline">Preprocessing Pipeline</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inpainting.html#batch-processing">Batch Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/data.html">Data Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/data.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/data.html#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/data.html#module-neurolit.data.conform">conform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/data.html#module-neurolit.data.datasets">datasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/data.html#module-neurolit.data.transforms">transforms</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/data.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/data.html#conforming-images">Conforming Images</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/data.html#using-datasets">Using Datasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/data.html#applying-transforms">Applying Transforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/data.html#custom-transforms">Custom Transforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/data.html#batch-conforming">Batch Conforming</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/networks.html">Networks Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/networks.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/networks.html#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/networks.html#module-neurolit.networks.DiffusionUnet">DiffusionUnet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/networks.html#module-neurolit.networks.interpolation_layer">interpolation_layer</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/networks.html#architecture-details">Architecture Details</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/networks.html#diffusionunet-architecture">DiffusionUNet Architecture</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/networks.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/networks.html#using-diffusionunet">Using DiffusionUNet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/networks.html#loading-pre-trained-weights">Loading Pre-trained Weights</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/networks.html#custom-model-configuration">Custom Model Configuration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/networks.html#training-example">Training Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/networks.html#model-summary">Model Summary</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/postprocessing.html">Postprocessing Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/postprocessing.html#overview">Overview</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/postprocessing.html#command-line-usage">Command-Line Usage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/utils.html">Utils Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/utils.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/utils.html#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/utils.html#module-neurolit.utils.download_checkpoints">download_checkpoints</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/utils.html#module-neurolit.utils.plotting">plotting</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/utils.html#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/utils.html#downloading-models">Downloading Models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/utils.html#command-line-download">Command-Line Download</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/utils.html#getting-model-paths">Getting Model Paths</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/utils.html#plotting-results">Plotting Results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/utils.html#plotting-slices">Plotting Slices</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/utils.html#mask-overlay">Mask Overlay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/utils.html#custom-visualization">Custom Visualization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/utils.html#batch-visualization">Batch Visualization</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/modules.html#quick-reference">Quick Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/modules.html#common-functions">Common Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/modules.html#most-used-classes">Most Used Classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/modules.html#entry-points">Entry Points</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="documentation.html">Documentation Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="documentation.html#building-the-documentation">Building the Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="documentation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l3"><a class="reference internal" href="documentation.html#build-html">Build HTML</a></li>
+<li class="toctree-l3"><a class="reference internal" href="documentation.html#clean-build-files">Clean Build Files</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="documentation.html#writing-documentation">Writing Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="documentation.html#api-documentation">API Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="documentation.html#adding-new-pages">Adding New Pages</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="citation.html">Citation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="citation.html#bibtex">BibTeX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="citation.html#apa-format">APA Format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="citation.html#plain-text">Plain Text</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">neuroLIT</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Usage Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/usage.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="usage-guide">
+<h1>Usage Guide<a class="headerlink" href="#usage-guide" title="Link to this heading"></a></h1>
+<p>This guide covers the basic and advanced usage of neuroLIT.</p>
+<section id="basic-usage">
+<h2>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading"></a></h2>
+<section id="running-neurolit-with-containerization">
+<h3>Running neuroLIT with Containerization<a class="headerlink" href="#running-neurolit-with-containerization" title="Link to this heading"></a></h3>
+<p>The most straightforward way to run neuroLIT is using the containerized wrapper script:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./neurolit/scripts/run_lit_containerized.sh<span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--input_image<span class="w"> </span>T1w.nii.gz<span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--mask_image<span class="w"> </span>lesion_mask.nii.gz<span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--output_directory<span class="w"> </span>output_directory<span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--dilate<span class="w"> </span><span class="m">2</span>
+</pre></div>
+</div>
+<p><strong>Key Parameters:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--input_image</span></code>: Path to the T1-weighted MRI image</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--mask_image</span></code>: Path to the lesion mask (binary or multi-class)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--output_directory</span></code>: Directory where outputs will be saved</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--dilate</span></code>: Number of times to dilate the lesion mask (default: 0)</p></li>
+</ul>
+</section>
+<section id="running-neurolit-from-pypi">
+<h3>Running neuroLIT from PyPI<a class="headerlink" href="#running-neurolit-from-pypi" title="Link to this heading"></a></h3>
+<p>If you installed via pip:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>lit-inpainting<span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--input_image<span class="w"> </span>T1w.nii.gz<span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--mask_image<span class="w"> </span>lesion_mask.nii.gz<span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--output_directory<span class="w"> </span>output_directory<span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--dilate<span class="w"> </span><span class="m">2</span>
+</pre></div>
+</div>
+</section>
+<section id="mask-dilation">
+<h3>Mask Dilation<a class="headerlink" href="#mask-dilation" title="Link to this heading"></a></h3>
+<p>We recommend performing mask dilation to account for potential undersegmentation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>lit-inpainting<span class="w"> </span>--input_image<span class="w"> </span>T1w.nii.gz<span class="w"> </span><span class="se">\\</span>
+<span class="w">       </span>--mask_image<span class="w"> </span>lesion_mask.nii.gz<span class="w"> </span><span class="se">\\</span>
+<span class="w">       </span>--output_directory<span class="w"> </span>output<span class="w"> </span><span class="se">\\</span>
+<span class="w">       </span>--dilate<span class="w"> </span><span class="m">2</span><span class="w">  </span><span class="c1"># Dilate mask by 2 voxels</span>
+</pre></div>
+</div>
+<p><strong>When to use dilation:</strong></p>
+<ul class="simple">
+<li><p><strong>Undersegmentation:</strong> Increase dilation</p></li>
+<li><p><strong>Uncertain boundaries:</strong> Use moderate dilation</p></li>
+</ul>
+</section>
+</section>
+<section id="understanding-the-outputs">
+<h2>Understanding the Outputs<a class="headerlink" href="#understanding-the-outputs" title="Link to this heading"></a></h2>
+<p>neuroLIT produces several output files in the <code class="docutils literal notranslate"><span class="pre">inpainting_volumes</span></code> subdirectory:</p>
+<section id="output-files">
+<h3>Output Files<a class="headerlink" href="#output-files" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>inpainting_result.nii.gz</strong>: The main output with lesions inpainted.</p></li>
+<li><p><strong>inpainting_mask.nii.gz</strong>: The (dilated) mask used for inpainting in the same space as the input.</p></li>
+<li><p><strong>inpainting_original_image.nii.gz</strong>: The conformed original input image.</p></li>
+</ul>
+</section>
+<section id="file-structure">
+<h3>File Structure<a class="headerlink" href="#file-structure" title="Link to this heading"></a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>output_directory/
+└── inpainting_volumes/
+    ├── inpainting_result.nii.gz
+    ├── inpainting_mask.nii.gz
+    └── inpainting_original_image.nii.gz
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the source image was isotropic, the output images will have the same resolution as the input image. The area outside of the lesion mask is preserved, except for robust rescaling of intensity values.</p>
+</div>
+</section>
+</section>
+<section id="advanced-usage">
+<h2>Advanced Usage<a class="headerlink" href="#advanced-usage" title="Link to this heading"></a></h2>
+<section id="direct-inpainting-python-api">
+<h3>Direct Inpainting (Python API)<a class="headerlink" href="#direct-inpainting-python-api" title="Link to this heading"></a></h3>
+<p>For programmatic access, use the direct inpainting function:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.inpaint_image</span><span class="w"> </span><span class="kn">import</span> <span class="n">main</span> <span class="k">as</span> <span class="n">inpaint</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+
+<span class="c1"># Prepare arguments</span>
+<span class="n">args</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">(</span>
+    <span class="n">input_image</span><span class="o">=</span><span class="s1">&#39;T1w.nii.gz&#39;</span><span class="p">,</span>
+    <span class="n">mask_image</span><span class="o">=</span><span class="s1">&#39;lesion_mask.nii.gz&#39;</span><span class="p">,</span>
+    <span class="n">out_dir</span><span class="o">=</span><span class="s1">&#39;output&#39;</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">,</span>  <span class="c1"># or &#39;cpu&#39;</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">num_samples</span><span class="o">=</span><span class="mi">100</span>
+<span class="p">)</span>
+
+<span class="c1"># Run inpainting</span>
+<span class="n">inpaint</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="batch-processing">
+<h3>Batch Processing<a class="headerlink" href="#batch-processing" title="Link to this heading"></a></h3>
+<p>For processing multiple subjects, create a simple loop:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+
+<span class="c1"># List of subjects</span>
+<span class="nv">subjects</span><span class="o">=(</span><span class="s2">&quot;sub-01&quot;</span><span class="w"> </span><span class="s2">&quot;sub-02&quot;</span><span class="w"> </span><span class="s2">&quot;sub-03&quot;</span><span class="o">)</span>
+
+<span class="k">for</span><span class="w"> </span>sub<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">subjects</span><span class="p">[@]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Processing </span><span class="nv">$sub</span><span class="s2">...&quot;</span>
+<span class="w">    </span>lit-inpainting<span class="w"> </span><span class="se">\\</span>
+<span class="w">        </span>--input_image<span class="w"> </span>data/<span class="si">${</span><span class="nv">sub</span><span class="si">}</span>/T1w.nii.gz<span class="w"> </span><span class="se">\\</span>
+<span class="w">        </span>--mask_image<span class="w"> </span>data/<span class="si">${</span><span class="nv">sub</span><span class="si">}</span>/lesion_mask.nii.gz<span class="w"> </span><span class="se">\\</span>
+<span class="w">        </span>--output_directory<span class="w"> </span>output/<span class="si">${</span><span class="nv">sub</span><span class="si">}</span><span class="w"> </span><span class="se">\\</span>
+<span class="w">        </span>--dilate<span class="w"> </span><span class="m">2</span>
+<span class="k">done</span>
+</pre></div>
+</div>
+<p>Or using Python:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="n">data_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
+<span class="n">subjects</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;sub-01&quot;</span><span class="p">,</span> <span class="s2">&quot;sub-02&quot;</span><span class="p">,</span> <span class="s2">&quot;sub-03&quot;</span><span class="p">]</span>
+
+<span class="k">for</span> <span class="n">subject</span> <span class="ow">in</span> <span class="n">subjects</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;lit-inpainting&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--input_image&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">data_dir</span> <span class="o">/</span> <span class="n">subject</span> <span class="o">/</span> <span class="s2">&quot;T1w.nii.gz&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;--mask_image&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">data_dir</span> <span class="o">/</span> <span class="n">subject</span> <span class="o">/</span> <span class="s2">&quot;lesion_mask.nii.gz&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;--output_directory&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;output/</span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--dilate&quot;</span><span class="p">,</span> <span class="s2">&quot;2&quot;</span>
+    <span class="p">]</span>
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="command-line-interface-reference">
+<h2>Command-Line Interface Reference<a class="headerlink" href="#command-line-interface-reference" title="Link to this heading"></a></h2>
+<section id="lit-inpainting">
+<h3>lit-inpainting<a class="headerlink" href="#lit-inpainting" title="Link to this heading"></a></h3>
+<p>Main command to run the neuroLIT inpainting.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>lit-inpainting [OPTIONS]
+</pre></div>
+</div>
+<dl>
+<dt>Options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">--input_image <var>PATH</var></span></kbd></dt>
+<dd><p>Path to input T1w image [required]</p>
+</dd>
+<dt><kbd><span class="option">--mask_image <var>PATH</var></span></kbd></dt>
+<dd><p>Path to lesion mask [required]</p>
+</dd>
+<dt><kbd><span class="option">--output_directory <var>PATH</var></span></kbd></dt>
+<dd><p>Output directory [required]</p>
+</dd>
+<dt><kbd><span class="option">--dilate <var>INTEGER</var></span></kbd></dt>
+<dd><p>Number of dilation iterations [default: 0]</p>
+</dd>
+<dt><kbd><span class="option">--help</span></kbd></dt>
+<dd><p>Show this message and exit</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+<section id="lit-download-models">
+<h3>lit-download-models<a class="headerlink" href="#lit-download-models" title="Link to this heading"></a></h3>
+<p>Download required model checkpoints.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>lit-download-models [OPTIONS]
+</pre></div>
+</div>
+<dl>
+<dt>Options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">--force</span></kbd></dt>
+<dd><p>Force re-download even if models exist</p>
+</dd>
+<dt><kbd><span class="option">--help</span></kbd></dt>
+<dd><p>Show this message and exit</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+<section id="lit-postprocessing">
+<h3>lit-postprocessing<a class="headerlink" href="#lit-postprocessing" title="Link to this heading"></a></h3>
+<p>Integrate lesion masks into FastSurfer/FreeSurfer outputs.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>lit-postprocessing [OPTIONS]
+</pre></div>
+</div>
+<dl>
+<dt>Options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">--subject-id <var>TEXT</var></span></kbd></dt>
+<dd><p>Subject ID [required]</p>
+</dd>
+<dt><kbd><span class="option">--subjects-dir <var>PATH</var></span></kbd></dt>
+<dd><p>Subjects directory [required]</p>
+</dd>
+<dt><kbd><span class="option">--skip-segstats</span></kbd></dt>
+<dd><p>Skip volumetric statistics</p>
+</dd>
+<dt><kbd><span class="option">--skip-surface-masking</span></kbd></dt>
+<dd><p>Skip surface masking</p>
+</dd>
+<dt><kbd><span class="option">--help</span></kbd></dt>
+<dd><p>Show this message and exit</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<section id="input-data">
+<h3>Input Data<a class="headerlink" href="#input-data" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p><strong>Image Quality:</strong> Use high-quality T1-weighted images (0.8-1 mm isotropic preferred)</p></li>
+<li><p><strong>Mask Quality:</strong> Ensure lesion masks are accurate; oversegmentation is better than undersegmentation.</p></li>
+</ol>
+</section>
+<section id="performance">
+<h3>Performance<a class="headerlink" href="#performance" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p><strong>GPU Usage:</strong> Use GPU when available for significant speedup, processing with CPU is not recommended.</p></li>
+<li><p><strong>Batch Size:</strong> Increase batch size on high-memory GPUs (default: 16)</p></li>
+<li><p><strong>Mask Size:</strong> Larger lesion masks require longer inference.</p></li>
+</ol>
+</section>
+<section id="quality-control">
+<h3>Quality Control<a class="headerlink" href="#quality-control" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p><strong>Visual Inspection:</strong> It is recommended to visually inspect inpainting results.</p></li>
+<li><p><strong>Boundary Check:</strong> Errors can happen especially at the lesion boundaries if the lesion is undersegmented, increasing dilation can help.</p></li>
+</ol>
+</section>
+</section>
+<section id="postprocessing">
+<h2>Postprocessing<a class="headerlink" href="#postprocessing" title="Link to this heading"></a></h2>
+<p>neuroLIT provides tools to integrate lesion masks into FastSurfer/FreeSurfer segmentation and surface outputs.</p>
+<section id="unified-postprocessing-script">
+<h3>Unified Postprocessing Script<a class="headerlink" href="#unified-postprocessing-script" title="Link to this heading"></a></h3>
+<p>The recommended way to run postprocessing is using the unified <code class="docutils literal notranslate"><span class="pre">lit-postprocessing</span></code> command. This script handles mapping the lesion mask to multiple segmentation files, running volume statistics (segstats), and performing surface masking.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Setup environment</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">FASTSURFER_HOME</span><span class="o">=</span>/path/to/FastSurfer
+<span class="nb">export</span><span class="w"> </span><span class="nv">FREESURFER_HOME</span><span class="o">=</span>/path/to/freesurfer
+<span class="nb">source</span><span class="w"> </span><span class="nv">$FREESURFER_HOME</span>/SetUpFreeSurfer.sh
+
+<span class="c1"># Run unified postprocessing</span>
+lit-postprocessing<span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--subject-id<span class="w"> </span>SUBJECT_ID<span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--subjects-dir<span class="w"> </span>/path/to/subjects_dir
+</pre></div>
+</div>
+<p><strong>Features:</strong></p>
+<ul class="simple">
+<li><p><strong>Installation Validation:</strong> Automatically checks for FastSurfer or FreeSurfer.</p></li>
+<li><p><strong>Dynamic Configuration:</strong> Uses <code class="docutils literal notranslate"><span class="pre">segstats_config.json</span></code> for volumetric stats and <code class="docutils literal notranslate"><span class="pre">surfstats_config.json</span></code> for surface stats.</p></li>
+<li><p><strong>Surface Stats:</strong> Runs <code class="docutils literal notranslate"><span class="pre">mris_anatomical_stats</span></code> calls defined in <code class="docutils literal notranslate"><span class="pre">surfstats_config.json</span></code>.</p></li>
+<li><p><strong>Surface Masking:</strong> Automatically processes both hemispheres.</p></li>
+<li><p><strong>Anatomy Reports:</strong> Automatically generates reports (Replaced, Reduced, and Adjacent labels) for mappings defined in <code class="docutils literal notranslate"><span class="pre">segstats_config.json</span></code>.</p></li>
+<li><p><strong>Fine-grained Control:</strong> Flags like <code class="docutils literal notranslate"><span class="pre">--skip-segstats</span></code> or <code class="docutils literal notranslate"><span class="pre">--skip-surface-masking</span></code> are available.</p></li>
+</ul>
+</section>
+<section id="individual-postprocessing-tools">
+<h3>Individual Postprocessing Tools<a class="headerlink" href="#individual-postprocessing-tools" title="Link to this heading"></a></h3>
+<p>For granular control, you can run individual scripts:</p>
+<ol class="arabic simple">
+<li><p><strong>lesion_to_segmentation.py</strong>: Inserts lesion labels into volumetric segmentation and generates anatomy reports.</p></li>
+<li><p><strong>lesion_to_surface.py</strong>: Projects lesion masks onto cortical surfaces.</p></li>
+</ol>
+</section>
+</section>
+<section id="common-issues">
+<h2>Common Issues<a class="headerlink" href="#common-issues" title="Link to this heading"></a></h2>
+<section id="poor-inpainting-quality">
+<h3>Poor Inpainting Quality<a class="headerlink" href="#poor-inpainting-quality" title="Link to this heading"></a></h3>
+<p><strong>Problem:</strong> Inpainted regions don’t look realistic</p>
+<p><strong>Solutions:</strong></p>
+<ul class="simple">
+<li><p>Increase mask dilation (try 3-5 voxels)</p></li>
+<li><p>Check input image quality</p></li>
+<li><p>Ensure mask accurately covers the entire lesion</p></li>
+<li><p>Verify that the input is a T1-weighted image</p></li>
+</ul>
+</section>
+<section id="mask-not-applied-correctly">
+<h3>Mask Not Applied Correctly<a class="headerlink" href="#mask-not-applied-correctly" title="Link to this heading"></a></h3>
+<p><strong>Problem:</strong> Output doesn’t show inpainting in expected regions</p>
+<p><strong>Solutions:</strong></p>
+<ul class="simple">
+<li><p>Verify mask and image are in the same space</p></li>
+<li><p>Check mask file is binary or has correct labels</p></li>
+<li><p>Ensure mask and image have compatible dimensions</p></li>
+</ul>
+</section>
+<section id="out-of-memory-errors">
+<h3>Out of Memory Errors<a class="headerlink" href="#out-of-memory-errors" title="Link to this heading"></a></h3>
+<p><strong>Problem:</strong> CUDA out of memory error</p>
+<p><strong>Solutions:</strong></p>
+<ul class="simple">
+<li><p>Reduce batch size: <code class="docutils literal notranslate"><span class="pre">--batch_size</span> <span class="pre">8</span></code> or <code class="docutils literal notranslate"><span class="pre">--batch_size</span> <span class="pre">4</span></code></p></li>
+<li><p>Use CPU mode (slower): <code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span></code></p></li>
+<li><p>Process on a machine with more GPU memory</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="training.html" class="btn btn-neutral float-right" title="Training" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Clemens Pollak, David Kuegler, Martin Reuter et al..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
