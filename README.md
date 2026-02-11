@@ -72,7 +72,7 @@ For standalone usage with FreeSurfer/FastSurfer, neuroLIT provides post-processi
 
 ### Postprocessing
 
-This script modfies FastSurfer/FreeSurfer segmentations and surface annotation files, and the corresponading statistics (.stats) files.
+This script modifies FastSurfer/FreeSurfer segmentations and surface annotation files, and the corresponading statistics (.stats) files.
 
 ```bash
 # Setup paths
