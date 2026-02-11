@@ -1,7 +1,7 @@
 .. neuroLIT - Neuro Lesion Inpainting Tool documentation master file
 
-Welcome to neuroLIT's Documentation!
-================================
+Welcome to the neuroLIT Documentation!
+======================================
 
 **neuroLIT (Neuro Lesion Inpainting Tool)** is a tool for inpainting lesions in brain MRI images, independent of their shape or appearance, for further downstream analysis.
 

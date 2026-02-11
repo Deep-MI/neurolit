@@ -89,6 +89,7 @@ For development or if you want to modify the code:
    
    # Download model checkpoints
    lit-download-models
+
 System Requirements
 -------------------
 

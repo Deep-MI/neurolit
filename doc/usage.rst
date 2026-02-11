@@ -27,7 +27,7 @@ The most straightforward way to run neuroLIT is using the containerized wrapper 
 * ``--dilate``: Number of times to dilate the lesion mask (default: 0)
 
 Running neuroLIT from PyPI
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you installed via pip:
 
