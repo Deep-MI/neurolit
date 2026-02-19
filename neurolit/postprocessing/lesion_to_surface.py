@@ -28,6 +28,7 @@ from lapy import TriaMesh
 from scipy import sparse
 from scipy.ndimage import binary_dilation
 
+from neurolit._version import get_version_with_hash
 from neurolit.utils.log import get_logger
 
 logger = get_logger(__name__)
@@ -45,6 +46,11 @@ lesion_to_surface --inseg <segimg> --insurf <surf> --incort <cortex.label>
 Author: Clemens Pollak
 Date: October 29, 2025
 Based on FastSurfer's sample_parc.py and smooth_aparc.py by Martin Reuter (Dec-18-2023)
+
+If you use neuroLIT for research publications, please cite:
+
+Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpainting Tool for Whole
+  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Accepted for Imaging Neuroscience.
 
 """
 
@@ -83,6 +89,7 @@ def options_parse():
     parser.add_option("--out_ctab", dest="out_ctab", help="path to output color table (ctab) file")
     parser.add_option("--dilation", dest="dilation", help=h_dilation, default=3, type="int")
     parser.add_option("--report", dest="report", help=h_report)
+    parser.add_option("-v", "--version", dest="version", action="store_true", help="Print version number and exit")
     (options, args) = parser.parse_args()
     return options
 
@@ -812,6 +819,12 @@ def main(insurf: str, inseg: str, incort: str, surflut: str, seglut: str,
 def cli():
     # Command Line options are error checking done here
     options = options_parse()
+
+    if options.version:
+        import sys
+        print(get_version_with_hash())
+        sys.exit(0)
+
     main(
         insurf=options.insurf,
         inseg=options.inseg,

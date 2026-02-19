@@ -9,8 +9,8 @@ neuroLIT with FastSurfer can be run by directly running `FastSurfer <https://dee
 
 .. image:: overview.png
    :alt: neuroLIT Overview
-   :align: center
-   :width: 80%
+   :align: left
+   :width: 100%
 
 🔥 **Key Features**
 -------------------
@@ -39,7 +39,7 @@ Using PyPI Package
 .. code-block:: bash
 
    # Install the package
-   pip install -i https://test.pypi.org/simple/ neurolit
+   pip install neurolit
    
    # Download model checkpoints
    lit-download-models

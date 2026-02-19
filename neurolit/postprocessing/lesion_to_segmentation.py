@@ -23,6 +23,7 @@ import nibabel.processing
 import numpy as np
 from scipy import ndimage
 
+from neurolit._version import get_version_with_hash
 from neurolit.utils.log import get_logger
 
 logger = get_logger(__name__)
@@ -272,12 +273,22 @@ def main(image: str, mask: str, output: str, report: str = None, lut: str = None
 
 
 def cli():
-    parser = argparse.ArgumentParser(description='Mask tumor from a volume and optionally generate anatomy report')
+    parser = argparse.ArgumentParser(
+        description='Mask tumor from a volume and optionally generate anatomy report',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+If you use neuroLIT for research publications, please cite:
+
+Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpainting Tool for Whole
+  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Accepted for Imaging Neuroscience.
+"""
+    )
     parser.add_argument('-i','--image', help='Path to volume to mask', type=str, required=True)
     parser.add_argument('-m','--mask', help='Path to tumor mask', type=str, required=True)
     parser.add_argument('-o','--output', help='Path to output masked volume', type=str, required=True)
     parser.add_argument('-r','--report', help='Path to output anatomy report (optional)', type=str)
     parser.add_argument('-l','--lut', help='Path to FreeSurfer lookup table (optional, for report)', type=str)
+    parser.add_argument('-v', '--version', action='version', version=get_version_with_hash(), help='Print version number and exit')
     args = parser.parse_args()
     
     main(args.image, args.mask, args.output, args.report, args.lut)

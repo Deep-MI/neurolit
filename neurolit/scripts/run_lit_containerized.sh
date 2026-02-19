@@ -26,9 +26,12 @@ FLAGS:
       Path to the output directory
   --singularity
       Use singularity instead of docker
+  --tag <tag>
+      Docker tag to use (e.g., 'latest' or '0.6dev'). If a full image name is 
+      provided (containing '/' or ':'), it overrides the default repository.
 
 Examples:
-  ./run_lit_containerized.sh -i t1w.nii.gz -m lesion.nii.gz -o ./output
+  ./run_lit_containerized.sh -i t1w.nii.gz -m lesion.nii.gz -o ./output 
 
 REFERENCES:
 
@@ -53,21 +56,9 @@ POSITIONAL_ARGS=()
 # Define the Docker Hub repository
 DOCKER_REPO="deepmi/lit"
 
-# Get the latest version from Docker Hub
-if [[ -z "$VERSION" ]]; then
-  # Fetch tags from Docker Hub API, sort them, and get the latest numeric one
-  if command -v curl >/dev/null 2>&1; then
-    VERSION=$(curl -s "https://hub.docker.com/v2/repositories/${DOCKER_REPO}/tags/?page_size=100" | \
-              grep -oP '"name":\s*"\K[0-9]+\.[0-9]+\.[0-9]+' | \
-              sort -V | tail -n 1)
-  fi
-  if [[ -z "$VERSION" ]]; then
-    VERSION="0.5.0"
-  fi
-fi
-
-# Initialize USE_SINGULARITY to false by default
+# Initialize variables
 USE_SINGULARITY=false
+VERSION=""
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -96,6 +87,14 @@ while [[ $# -gt 0 ]]; do
       exit
       ;;
     --version)
+      # If version is not set yet, we might need a default for this flag
+      if [[ -z "$VERSION" ]]; then
+        # Quick fetch for version if --version is called early
+        VERSION=$(curl -s "https://hub.docker.com/v2/repositories/${DOCKER_REPO}/tags/?page_size=100" | \
+                  grep -oP '"name":\s*"\K[0-9]+\.[0-9]+\.[0-9]+' | \
+                  sort -V | tail -n 1)
+        [[ -z "$VERSION" ]] && VERSION="0.5.0"
+      fi
       hash_file="$PROJ_DIR/git.hash"
       if [[ -n "$(which git)" ]] && (git -C "$PROJ_DIR" rev-parse 2>/dev/null ) ; then
         HASH="+$(git -C "$PROJ_DIR" rev-parse --short HEAD)"
@@ -111,12 +110,37 @@ while [[ $# -gt 0 ]]; do
       USE_SINGULARITY=true
       shift # past value
       ;;
+    --tag)
+      VERSION="$2"
+      shift # past argument
+      shift # past value
+      ;;
     *)
       POSITIONAL_ARGS+=("$1") # save positional arg
       shift # past argument
       ;;
   esac
 done
+
+# Get the latest version from Docker Hub if not specified
+if [[ -z "$VERSION" ]]; then
+  # Fetch tags from Docker Hub API, sort them, and get the latest numeric one
+  if command -v curl >/dev/null 2>&1; then
+    VERSION=$(curl -s "https://hub.docker.com/v2/repositories/${DOCKER_REPO}/tags/?page_size=100" | \
+              grep -oP '"name":\s*"\K[0-9]+\.[0-9]+\.[0-9]+' | \
+              sort -V | tail -n 1)
+  fi
+  if [[ -z "$VERSION" ]]; then
+    VERSION="0.5.0"
+  fi
+fi
+
+# Determine full image name
+if [[ "$VERSION" == *"/"* ]] || [[ "$VERSION" == *":"* ]]; then
+  IMAGE="$VERSION"
+else
+  IMAGE="${DOCKER_REPO}:${VERSION}"
+fi
 
 set -- "${POSITIONAL_ARGS[@]}"
 
@@ -153,7 +177,7 @@ fi
 if [ "$USE_SINGULARITY" = true ]; then
   if [ ! -f "$PROJ_DIR/containerization/deepmi_lit.simg" ]; then
     echo "=============== Pulling Singularity image from Docker Hub... ==============="
-    singularity pull "$PROJ_DIR/containerization/deepmi_lit.simg" docker://${DOCKER_REPO}:${VERSION}
+    singularity pull "$PROJ_DIR/containerization/deepmi_lit.simg" docker://${IMAGE}
   fi
 
   if [ ! -f "$PROJ_DIR/containerization/deepmi_lit.simg" ]; then
@@ -168,11 +192,11 @@ if [ "$USE_SINGULARITY" = true ]; then
     $PROJ_DIR/containerization/deepmi_lit.simg \
     lit-inpainting -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" "${POSITIONAL_ARGS[@]}"
 else
-  docker run --gpus "device=$GPUS" -it --ipc=host \
+  docker run --gpus "device=$GPUS" --ipc=host \
     --ulimit memlock=-1 --ulimit stack=67108864 --rm \
     -v "${INPUT_IMAGE}":"${INPUT_IMAGE}":ro \
     -v "${MASK_IMAGE}":"${MASK_IMAGE}":ro \
     -v "${OUT_DIR}":"${OUT_DIR}" \
     -u "$(id -u):$(id -g)" \
-    ${DOCKER_REPO}:$VERSION -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" "${POSITIONAL_ARGS[@]}"
+    ${IMAGE} -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" "${POSITIONAL_ARGS[@]}"
 fi

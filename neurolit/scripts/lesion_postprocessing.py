@@ -16,6 +16,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from neurolit._version import get_version_with_hash
 from neurolit.postprocessing.lesion_to_segmentation import main as lesion_to_segmentation_main
 from neurolit.postprocessing.lesion_to_surface import main as lesion_to_surface_main
 from neurolit.utils.log import get_logger
@@ -44,6 +45,11 @@ Environment variables:
 
 Note: Either FastSurfer or FreeSurfer is required unless --skip-segstats is used.
       FastSurfer is preferred as it supports all features including the 'measures' subcommand.
+
+If you use neuroLIT for research publications, please cite:
+
+Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpainting Tool for Whole
+  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Accepted for Imaging Neuroscience.
         """
     )
     parser.add_argument('-sid', '--subject-id', required=True,
@@ -64,6 +70,9 @@ Note: Either FastSurfer or FreeSurfer is required unless --skip-segstats is used
                         help='Enable debug logging (shows captured command output)')
     parser.add_argument('--python-cmd', type=str, default='python3',
                         help='Python command to use for running scripts (default: python3)')
+    parser.add_argument('-v', '--version', action='version',
+                        version=get_version_with_hash(),
+                        help='Print version number and exit')
     
     return parser
 

@@ -31,15 +31,10 @@ By default, this uses Docker. To use Singularity instead:
        --mask_image lesion_mask.nii.gz \\
        --output_directory output_directory
 
-Using PyPI (Beta)
+Using PyPI
 -----------------
 
 neuroLIT is available on PyPI.
-
-**Prerequisites:**
-
-* Python >= 3.10
-* pip
 
 **Installation:**
 
@@ -65,16 +60,10 @@ This will download models to a platform-specific location:
 .. note::
    If you skip the ``lit-download-models`` step, models will be automatically downloaded on first use.
 
-From Source
------------
+From Source (Development Version)
+---------------------------------
 
 For development or if you want to modify the code:
-
-**Prerequisites:**
-
-* Python >= 3.10
-* pip and setuptools
-* Git
 
 **Installation Steps:**
 

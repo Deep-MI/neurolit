@@ -12,11 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 from pathlib import Path
 
 import requests
 from platformdirs import user_data_dir
 from tqdm import tqdm
+
+from neurolit._version import get_version_with_hash
 
 
 def download_checkpoint(
@@ -135,13 +138,31 @@ def fallback_multiple_urls(checkpoint_name: str, urls: list[str], verbose: bool 
             print(e)
 
 
-def main():
+def main(argv=None):
     import sys
     
     # Use platformdirs for consistent cross-platform data directory
     # This works for both pip and git installations
     weights_dir = Path(user_data_dir("LIT", "Deep-MI")) / "weights"
-    
+
+    parser = argparse.ArgumentParser(
+        description="Download neuroLIT checkpoints (T1w lesion inpainting models)",
+        add_help=False,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=f"""
+Default download location:
+  {weights_dir}
+
+If you use neuroLIT for research publications, please cite:
+
+Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpainting Tool for Whole
+  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Accepted for Imaging Neuroscience.
+"""
+    )
+    parser.add_argument("-h", "--help", action="help", help="Show this help message and exit")
+    parser.add_argument("-v", "--version", action="version", version=get_version_with_hash(), help="Print version number and exit")
+    parser.parse_args(argv)
+
     # Ensure weights directory exists
     weights_dir.mkdir(parents=True, exist_ok=True)
     

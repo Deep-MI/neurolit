@@ -8,6 +8,8 @@ Getting Started
 
 **Setup:**
 
+Note that we use uv for python environment and package management, but you can use other tools (e.g. standard pip or conda) if you prefer.
+
 .. code-block:: bash
 
    # Fork and clone the repository
@@ -15,12 +17,12 @@ Getting Started
    cd neurolit
    
    # Create virtual environment
-   python3 -m venv venv
-   source venv/bin/activate
+   uv venv
+   source .venv/bin/activate
    
    # Install dependencies
-   pip install -r pyproject.toml
-   pip install -e .
+   uv pip install -r pyproject.toml
+   uv pip install -e .
    
    # Download models
    lit-download-models

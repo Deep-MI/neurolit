@@ -2,11 +2,26 @@
 
 git rev-parse --short HEAD > ./git.hash
 
-if [ "$1" = "--experimental" ]; then
-    docker build . -t "deepmi/lit:dev" -f ./containerization/Dockerfile_experimental
-    exit 0
-fi
+TAG="deepmi/lit:dev"
+DOCKERFILE="./containerization/Dockerfile"
 
-docker build . -t "deepmi/lit:dev" -f ./containerization/Dockerfile
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --experimental)
+      DOCKERFILE="./containerization/Dockerfile_experimental"
+      shift
+      ;;
+    -t|--tag)
+      TAG="$2"
+      shift
+      shift
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
+docker build . -t "$TAG" -f "$DOCKERFILE"
 
 rm ./git.hash

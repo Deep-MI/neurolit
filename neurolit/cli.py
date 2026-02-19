@@ -5,41 +5,9 @@ from pathlib import Path
 
 from platformdirs import user_data_dir
 
-import neurolit
+from neurolit._version import get_version_with_hash
 from neurolit.inpaint_image import main as inpaint_main
 from neurolit.utils.download_checkpoints import main as download_main
-
-
-def get_version_with_hash():
-    """Get the version of the package including git hash if available.
-
-    Returns
-    -------
-    str
-        Version string.
-    """
-    version = neurolit.__version__
-    # Try to get git hash
-    try:
-        proj_dir = Path(__file__).resolve().parent.parent
-        # If .git exists, use git command
-        if (proj_dir / ".git").exists():
-            hash_val = subprocess.check_output(
-                ["git", "-C", str(proj_dir), "rev-parse", "--short", "HEAD"],
-                stderr=subprocess.DEVNULL,
-                text=True
-            ).strip()
-            return f"{version}+{hash_val}"
-        
-        # Fallback to git.hash file if it exists
-        hash_file = proj_dir / "git.hash"
-        if hash_file.exists():
-            hash_val = hash_file.read_text().strip()
-            return f"{version}+{hash_val}"
-    # if we fail to get the hash, just return the version
-    except Exception:
-        pass
-    return version
 
 
 def run_lit():
@@ -64,13 +32,9 @@ def run_lit():
     
     # Other arguments
     parser.add_argument("-h", "--help", action="store_true", help="Show help message and exit")
-    parser.add_argument("--version", action="store_true", help="Print version number and exit")
+    parser.add_argument("-v", "--version", action="version", version=get_version_with_hash(), help="Print version number and exit")
 
     args, unknown = parser.parse_known_args()
-
-    if args.version:
-        print(get_version_with_hash())
-        sys.exit(0)
 
     if args.help or (not args.input_image and not args.lesion_mask and not args.sd):
         print("Usage: lit-inpainting -i <input_t1w> -m <lesion_mask> -o <output_dir>")
@@ -81,7 +45,8 @@ def run_lit():
         print("Optional arguments:")
         print("  --dilate              : Number of times to dilate the lesion mask (default: 0)")
         print("Other arguments:")
-        print("  --version             : Print version number and exit")
+        print("  -v, --version         : Print version number and exit")
+        print("  -h, --help            : Show help message and exit")
         print("")
         print("If you use neuroLIT for research publications, please cite:")
         print("")
@@ -111,7 +76,7 @@ def run_lit():
 
     # Download checkpoints
     print("Checking/Downloading checkpoints...")
-    download_main()
+    download_main(argv=[])
 
     # Get checkpoint paths
     weights_dir = Path(user_data_dir("LIT", "Deep-MI")) / "weights"

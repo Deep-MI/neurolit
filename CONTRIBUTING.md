@@ -35,7 +35,9 @@ neuroLIT uses Sphinx for documentation. To build the documentation locally:
 
 ```bash
 # Install documentation dependencies
-pip install -r doc/requirements.txt
+uv pip install -r doc/requirements.txt
+uv pip install -r pyproject.toml
+
 
 # Build HTML documentation
 sphinx-build doc doc-build
