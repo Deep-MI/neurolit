@@ -265,7 +265,7 @@ Poor Inpainting Quality
 
 * Ensure mask accurately covers the entire lesion. Increase mask dilation (try 3-5 voxels)
 * Verify that the input is a T1-weighted image
-* Check input image quality. The module is excpeted to work with 0.7-1.0 mm isotropic MRI resolutions (not resampled). Other resolutions may work, but are not tested.
+* Check input image quality. The module is expected to work with 0.7-1.0 mm isotropic MRI resolutions (not resampled). Other resolutions may work, but are not tested.
 
 
 Mask Not Applied Correctly
