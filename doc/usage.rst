@@ -43,7 +43,7 @@ Mask Dilation
 ~~~~~~~~~~~~~
 
 We recommend performing mask dilation by default to account for potential undersegmentation e.g. `--dilate 2`
-This will increase the size of the lesion mask, pontentially removing more regions from the analysis.
+This will increase the size of the lesion mask, potentially removing more regions from the analysis.
 
 **When to use dilation:**
 
