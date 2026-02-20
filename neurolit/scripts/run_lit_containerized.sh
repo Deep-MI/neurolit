@@ -89,10 +89,13 @@ while [[ $# -gt 0 ]]; do
     --version)
       # If version is not set yet, we might need a default for this flag
       if [[ -z "$VERSION" ]]; then
-        # Quick fetch for version if --version is called early
-        VERSION=$(curl -s "https://hub.docker.com/v2/repositories/${DOCKER_REPO}/tags/?page_size=100" | \
-                  grep -oP '"name":\s*"\K[0-9]+\.[0-9]+\.[0-9]+' | \
-                  sort -V | tail -n 1)
+        # Quick fetch for version if --version is called early.
+        # Guard curl to avoid exiting under 'set -e' if curl is unavailable or the request fails.
+        if command -v curl >/dev/null 2>&1; then
+          VERSION=$((curl -s "https://hub.docker.com/v2/repositories/${DOCKER_REPO}/tags/?page_size=100" || true) | \
+                    grep -oP '"name":\s*"\K[0-9]+\.[0-9]+\.[0-9]+' | \
+                    sort -V | tail -n 1)
+        fi
         [[ -z "$VERSION" ]] && VERSION="0.5.0"
       fi
       hash_file="$PROJ_DIR/git.hash"
