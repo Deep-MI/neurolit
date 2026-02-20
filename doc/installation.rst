@@ -74,6 +74,10 @@ For development or if you want to modify the code:
    cd neurolit
    
    # Install the package and its dependencies in development mode
+   # Using uv:
+   uv sync
+
+   # Using pip:
    pip install -e .
    
    # Download model checkpoints

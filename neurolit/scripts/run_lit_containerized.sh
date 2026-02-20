@@ -63,24 +63,40 @@ VERSION=""
 while [[ $# -gt 0 ]]; do
   case $1 in
     --gpus)
-        GPUS="$2"
-        shift # past argument
-        shift # past value
-        ;;
+      if [[ -z "$2" || "$2" == -* ]]; then
+        echo "Error: --gpus requires a value"
+        usage
+        exit 1
+      fi
+      GPUS="$2"
+      shift 2
+      ;;
     -i|--input_image)
+      if [[ -z "$2" || "$2" == -* ]]; then
+        echo "Error: --input_image requires a value"
+        usage
+        exit 1
+      fi
       INPUT_IMAGE="$2"
-      shift # past argument
-      shift # past value
+      shift 2
       ;;
     -m|--mask_image)
+      if [[ -z "$2" || "$2" == -* ]]; then
+        echo "Error: --mask_image requires a value"
+        usage
+        exit 1
+      fi
       MASK_IMAGE="$2"
-      shift # past argument
-      shift # past value
+      shift 2
       ;;
     -o|--output_directory)
+      if [[ -z "$2" || "$2" == -* ]]; then
+        echo "Error: --output_directory requires a value"
+        usage
+        exit 1
+      fi
       OUT_DIR="$2"
-      shift # past argument
-      shift # past value
+      shift 2
       ;;
     -h|--help)
       usage
@@ -111,12 +127,16 @@ while [[ $# -gt 0 ]]; do
       ;;
     --singularity)
       USE_SINGULARITY=true
-      shift # past value
+      shift # past argument
       ;;
     --tag)
+      if [[ -z "$2" || "$2" == -* ]]; then
+        echo "Error: --tag requires a value"
+        usage
+        exit 1
+      fi
       VERSION="$2"
-      shift # past argument
-      shift # past value
+      shift 2
       ;;
     *)
       POSITIONAL_ARGS+=("$1") # save positional arg

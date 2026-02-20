@@ -123,9 +123,12 @@ def ensure_backup(file_path: Path) -> Path | None:
             target_path = Path(target)
             
             # Ensure the target file itself is backed up
-            # Resolve relative target relative to file_path's parent
-            abs_target_path = (file_path.parent / target_path).resolve()
-            ensure_backup(abs_target_path)
+            try:
+                abs_target_path = (file_path.parent / target_path).resolve()
+            except (OSError, RuntimeError) as e:
+                logger.debug(f"Could not resolve symlink target {target_path} for {file_path}: {e}")
+            else:
+                ensure_backup(abs_target_path)
 
             # Re-check existence as recursive call might have created us
             if not backup_path.exists():
