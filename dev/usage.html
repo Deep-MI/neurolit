@@ -46,8 +46,8 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#using-docker-singularity-recommended">Using Docker/Singularity (Recommended)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#using-pypi-beta">Using PyPI (Beta)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#from-source">From Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#using-pypi">Using PyPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#from-source-development-version">From Source (Development Version)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#system-requirements">System Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#verifying-installation">Verifying Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#troubleshooting">Troubleshooting</a><ul>
@@ -113,31 +113,36 @@
 <p class="caption" role="heading"><span class="caption-text">Development</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#getting-started">Getting Started</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#types-of-contributions">Types of Contributions</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="contributing.html#bug-reports">Bug Reports</a></li>
-<li class="toctree-l3"><a class="reference internal" href="contributing.html#feature-requests">Feature Requests</a></li>
-<li class="toctree-l3"><a class="reference internal" href="contributing.html#code-contributions">Code Contributions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="contributing.html#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#contributing-to-neurolit">Contributing to neuroLIT</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#getting-started">Getting Started</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="contributing.html#setup">Setup</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#development-guidelines">Development Guidelines</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="contributing.html#code-style">Code Style</a></li>
-<li class="toctree-l3"><a class="reference internal" href="contributing.html#testing">Testing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="contributing.html#id1">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#types-of-contributions">Types of Contributions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="contributing.html#bug-reports">Bug Reports</a></li>
+<li class="toctree-l4"><a class="reference internal" href="contributing.html#feature-requests">Feature Requests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="contributing.html#code-contributions">Code Contributions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="contributing.html#documentation">Documentation</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#git-workflow">Git Workflow</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="contributing.html#branch-naming">Branch Naming</a></li>
-<li class="toctree-l3"><a class="reference internal" href="contributing.html#pull-requests">Pull Requests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#development-guidelines">Development Guidelines</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="contributing.html#code-style">Code Style</a></li>
+<li class="toctree-l4"><a class="reference internal" href="contributing.html#testing">Testing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="contributing.html#building-documentation">Building Documentation</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#thank-you">Thank You!</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#git-workflow">Git Workflow</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="contributing.html#branch-naming">Branch Naming</a></li>
+<li class="toctree-l4"><a class="reference internal" href="contributing.html#pull-requests">Pull Requests</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#thank-you">Thank You!</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api/modules.html">API Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/cli.html">Command-Line Interface</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/cli.html#neurolit.cli.get_version_with_hash"><code class="docutils literal notranslate"><span class="pre">get_version_with_hash()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/cli.html#neurolit.cli.run_lit"><code class="docutils literal notranslate"><span class="pre">run_lit()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/cli.html#overview">Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/cli.html#main-functions">Main Functions</a><ul>
@@ -379,13 +384,8 @@
 </section>
 <section id="mask-dilation">
 <h3>Mask Dilation<a class="headerlink" href="#mask-dilation" title="Link to this heading"></a></h3>
-<p>We recommend performing mask dilation to account for potential undersegmentation:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>lit-inpainting<span class="w"> </span>--input_image<span class="w"> </span>T1w.nii.gz<span class="w"> </span><span class="se">\\</span>
-<span class="w">       </span>--mask_image<span class="w"> </span>lesion_mask.nii.gz<span class="w"> </span><span class="se">\\</span>
-<span class="w">       </span>--output_directory<span class="w"> </span>output<span class="w"> </span><span class="se">\\</span>
-<span class="w">       </span>--dilate<span class="w"> </span><span class="m">2</span><span class="w">  </span><span class="c1"># Dilate mask by 2 voxels</span>
-</pre></div>
-</div>
+<p>We recommend performing mask dilation by default to account for potential undersegmentation e.g. <code class="docutils literal notranslate"><span class="pre">--dilate</span> <span class="pre">2</span></code>
+This will increase the size of the lesion mask, potentially removing more regions from the analysis.</p>
 <p><strong>When to use dilation:</strong></p>
 <ul class="simple">
 <li><p><strong>Undersegmentation:</strong> Increase dilation</p></li>
@@ -624,10 +624,9 @@ lit-postprocessing<span class="w"> </span><span class="se">\\</span>
 <p><strong>Problem:</strong> Inpainted regions don’t look realistic</p>
 <p><strong>Solutions:</strong></p>
 <ul class="simple">
-<li><p>Increase mask dilation (try 3-5 voxels)</p></li>
-<li><p>Check input image quality</p></li>
-<li><p>Ensure mask accurately covers the entire lesion</p></li>
+<li><p>Ensure mask accurately covers the entire lesion. Increase mask dilation (try 3-5 voxels)</p></li>
 <li><p>Verify that the input is a T1-weighted image</p></li>
+<li><p>Check input image quality. The module is expected to work with 0.7-1.0 mm isotropic MRI resolutions (not resampled). Other resolutions may work, but are not tested.</p></li>
 </ul>
 </section>
 <section id="mask-not-applied-correctly">
@@ -635,9 +634,9 @@ lit-postprocessing<span class="w"> </span><span class="se">\\</span>
 <p><strong>Problem:</strong> Output doesn’t show inpainting in expected regions</p>
 <p><strong>Solutions:</strong></p>
 <ul class="simple">
-<li><p>Verify mask and image are in the same space</p></li>
-<li><p>Check mask file is binary or has correct labels</p></li>
-<li><p>Ensure mask and image have compatible dimensions</p></li>
+<li><p>Verify mask and image are in the same space (open both in same viewer to check).</p></li>
+<li><p>Check mask file is binary and has correct labels</p></li>
+<li><p>Ensure mask and image have compatible dimensions (same number of voxels in each dimension).</p></li>
 </ul>
 </section>
 <section id="out-of-memory-errors">
@@ -646,7 +645,7 @@ lit-postprocessing<span class="w"> </span><span class="se">\\</span>
 <p><strong>Solutions:</strong></p>
 <ul class="simple">
 <li><p>Reduce batch size: <code class="docutils literal notranslate"><span class="pre">--batch_size</span> <span class="pre">8</span></code> or <code class="docutils literal notranslate"><span class="pre">--batch_size</span> <span class="pre">4</span></code></p></li>
-<li><p>Use CPU mode (slower): <code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span></code></p></li>
+<li><p>Use CPU mode (very slow): <code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span></code></p></li>
 <li><p>Process on a machine with more GPU memory</p></li>
 </ul>
 </section>

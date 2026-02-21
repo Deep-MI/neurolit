@@ -43,8 +43,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../installation.html#using-docker-singularity-recommended">Using Docker/Singularity (Recommended)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../installation.html#using-pypi-beta">Using PyPI (Beta)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../installation.html#from-source">From Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation.html#using-pypi">Using PyPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation.html#from-source-development-version">From Source (Development Version)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../installation.html#system-requirements">System Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../installation.html#verifying-installation">Verifying Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../installation.html#troubleshooting">Troubleshooting</a><ul>
@@ -110,31 +110,36 @@
 <p class="caption" role="heading"><span class="caption-text">Development</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../contributing.html#getting-started">Getting Started</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../contributing.html#types-of-contributions">Types of Contributions</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#bug-reports">Bug Reports</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#feature-requests">Feature Requests</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#code-contributions">Code Contributions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributing.html#contributing-to-neurolit">Contributing to neuroLIT</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#getting-started">Getting Started</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../contributing.html#setup">Setup</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../contributing.html#development-guidelines">Development Guidelines</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#code-style">Code Style</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#testing">Testing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#id1">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#types-of-contributions">Types of Contributions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../contributing.html#bug-reports">Bug Reports</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../contributing.html#feature-requests">Feature Requests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../contributing.html#code-contributions">Code Contributions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../contributing.html#documentation">Documentation</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../contributing.html#git-workflow">Git Workflow</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#branch-naming">Branch Naming</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#pull-requests">Pull Requests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#development-guidelines">Development Guidelines</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../contributing.html#code-style">Code Style</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../contributing.html#testing">Testing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../contributing.html#building-documentation">Building Documentation</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../contributing.html#thank-you">Thank You!</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#git-workflow">Git Workflow</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../contributing.html#branch-naming">Branch Naming</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../contributing.html#pull-requests">Pull Requests</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../contributing.html#thank-you">Thank You!</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">API Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/cli.html">Command-Line Interface</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../api/cli.html#neurolit.cli.get_version_with_hash"><code class="docutils literal notranslate"><span class="pre">get_version_with_hash()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/cli.html#neurolit.cli.run_lit"><code class="docutils literal notranslate"><span class="pre">run_lit()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/cli.html#overview">Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/cli.html#main-functions">Main Functions</a><ul>
@@ -355,11 +360,14 @@
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">platformdirs</span><span class="w"> </span><span class="kn">import</span> <span class="n">user_data_dir</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">neurolit._version</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_version_with_hash</span>
 
 
 <div class="viewcode-block" id="download_checkpoint">
@@ -489,13 +497,31 @@
 
 <div class="viewcode-block" id="main">
 <a class="viewcode-back" href="../../../api/utils.html#neurolit.utils.download_checkpoints.main">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
     
     <span class="c1"># Use platformdirs for consistent cross-platform data directory</span>
     <span class="c1"># This works for both pip and git installations</span>
     <span class="n">weights_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">user_data_dir</span><span class="p">(</span><span class="s2">&quot;LIT&quot;</span><span class="p">,</span> <span class="s2">&quot;Deep-MI&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;weights&quot;</span>
-    
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Download neuroLIT checkpoints (T1w lesion inpainting models)&quot;</span><span class="p">,</span>
+        <span class="n">add_help</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">RawDescriptionHelpFormatter</span><span class="p">,</span>
+        <span class="n">epilog</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Default download location:</span>
+<span class="s2">  </span><span class="si">{</span><span class="n">weights_dir</span><span class="si">}</span>
+
+<span class="s2">If you use neuroLIT for research publications, please cite:</span>
+
+<span class="s2">Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpainting Tool for Whole</span>
+<span class="s2">  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Accepted for Imaging Neuroscience.</span>
+<span class="s2">&quot;&quot;&quot;</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-h&quot;</span><span class="p">,</span> <span class="s2">&quot;--help&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;help&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Show this help message and exit&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-v&quot;</span><span class="p">,</span> <span class="s2">&quot;--version&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">get_version_with_hash</span><span class="p">(),</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Print version number and exit&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+
     <span class="c1"># Ensure weights directory exists</span>
     <span class="n">weights_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     

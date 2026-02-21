@@ -14,7 +14,7 @@ Install the documentation dependencies from the package:
 .. code-block:: bash
 
    # Using uv (recommended)
-   uv pip install -e ".[doc]"
+   uv sync --extra doc
 
    # Or using pip
    pip install -e ".[doc]"

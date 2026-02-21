@@ -46,8 +46,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#using-docker-singularity-recommended">Using Docker/Singularity (Recommended)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../installation.html#using-pypi-beta">Using PyPI (Beta)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../installation.html#from-source">From Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#using-pypi">Using PyPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#from-source-development-version">From Source (Development Version)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#system-requirements">System Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#verifying-installation">Verifying Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#troubleshooting">Troubleshooting</a><ul>
@@ -113,31 +113,36 @@
 <p class="caption" role="heading"><span class="caption-text">Development</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../contributing.html#getting-started">Getting Started</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../contributing.html#types-of-contributions">Types of Contributions</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../contributing.html#bug-reports">Bug Reports</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../contributing.html#feature-requests">Feature Requests</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../contributing.html#code-contributions">Code Contributions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../contributing.html#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contributing.html#contributing-to-neurolit">Contributing to neuroLIT</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#getting-started">Getting Started</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../contributing.html#setup">Setup</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../contributing.html#development-guidelines">Development Guidelines</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../contributing.html#code-style">Code Style</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../contributing.html#testing">Testing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../contributing.html#id1">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#types-of-contributions">Types of Contributions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../contributing.html#bug-reports">Bug Reports</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../contributing.html#feature-requests">Feature Requests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../contributing.html#code-contributions">Code Contributions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../contributing.html#documentation">Documentation</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../contributing.html#git-workflow">Git Workflow</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../contributing.html#branch-naming">Branch Naming</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../contributing.html#pull-requests">Pull Requests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#development-guidelines">Development Guidelines</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../contributing.html#code-style">Code Style</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../contributing.html#testing">Testing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../contributing.html#building-documentation">Building Documentation</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../contributing.html#thank-you">Thank You!</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#git-workflow">Git Workflow</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../contributing.html#branch-naming">Branch Naming</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../contributing.html#pull-requests">Pull Requests</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../contributing.html#thank-you">Thank You!</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">API Reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Command-Line Interface</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#neurolit.cli.get_version_with_hash"><code class="docutils literal notranslate"><span class="pre">get_version_with_hash()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#neurolit.cli.run_lit"><code class="docutils literal notranslate"><span class="pre">run_lit()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#main-functions">Main Functions</a><ul>
@@ -346,20 +351,6 @@
              
   <section id="module-neurolit.cli">
 <span id="command-line-interface"></span><h1>Command-Line Interface<a class="headerlink" href="#module-neurolit.cli" title="Link to this heading"></a></h1>
-<dl class="py function">
-<dt class="sig sig-object py" id="neurolit.cli.get_version_with_hash">
-<span class="sig-prename descclassname"><span class="pre">neurolit.cli.</span></span><span class="sig-name descname"><span class="pre">get_version_with_hash</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/neurolit/cli.html#get_version_with_hash"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neurolit.cli.get_version_with_hash" title="Link to this definition"></a></dt>
-<dd><p>Get the version of the package including git hash if available.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Version string.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py function">
 <dt class="sig sig-object py" id="neurolit.cli.run_lit">
 <span class="sig-prename descclassname"><span class="pre">neurolit.cli.</span></span><span class="sig-name descname"><span class="pre">run_lit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/neurolit/cli.html#run_lit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neurolit.cli.run_lit" title="Link to this definition"></a></dt>
