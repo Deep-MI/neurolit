@@ -42,14 +42,8 @@ If you installed via pip:
 Mask Dilation
 ~~~~~~~~~~~~~
 
-We recommend performing mask dilation to account for potential undersegmentation:
-
-.. code-block:: bash
-
-   lit-inpainting --input_image T1w.nii.gz \\
-          --mask_image lesion_mask.nii.gz \\
-          --output_directory output \\
-          --dilate 2  # Dilate mask by 2 voxels
+We recommend performing mask dilation by default to account for potential undersegmentation e.g. ``--dilate 2``
+This will increase the size of the lesion mask, potentially removing more regions from the analysis.
 
 **When to use dilation:**
 
@@ -269,10 +263,10 @@ Poor Inpainting Quality
 
 **Solutions:**
 
-* Increase mask dilation (try 3-5 voxels)
-* Check input image quality
-* Ensure mask accurately covers the entire lesion
+* Ensure mask accurately covers the entire lesion. Increase mask dilation (try 3-5 voxels)
 * Verify that the input is a T1-weighted image
+* Check input image quality. The module is expected to work with 0.7-1.0 mm isotropic MRI resolutions (not resampled). Other resolutions may work, but are not tested.
+
 
 Mask Not Applied Correctly
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -281,9 +275,9 @@ Mask Not Applied Correctly
 
 **Solutions:**
 
-* Verify mask and image are in the same space
-* Check mask file is binary or has correct labels
-* Ensure mask and image have compatible dimensions
+* Verify mask and image are in the same space (open both in same viewer to check).
+* Check mask file is binary and has correct labels
+* Ensure mask and image have compatible dimensions (same number of voxels in each dimension).
 
 Out of Memory Errors
 ~~~~~~~~~~~~~~~~~~~~
@@ -293,6 +287,6 @@ Out of Memory Errors
 **Solutions:**
 
 * Reduce batch size: ``--batch_size 8`` or ``--batch_size 4``
-* Use CPU mode (slower): ``--device cpu``
+* Use CPU mode (very slow): ``--device cpu``
 * Process on a machine with more GPU memory
 

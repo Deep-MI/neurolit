@@ -1,33 +1,134 @@
 # Contributing to neuroLIT
 
+We welcome contributions to neuroLIT! This guide will help you get started.
 
-## Code Style and Standards
+## Getting Started
 
-### Python Code
+### Setup
 
-- Follow PEP 8 style guidelines
-- Use meaningful variable and function names
-- Add docstrings to all public functions and classes
-- Keep functions focused and modular
+Note that we use [uv](https://docs.astral.sh/uv/) for python environment and package management, but you can use other tools (e.g. standard `pip` or `conda`) if you prefer.
+
+```bash
+# Fork and clone the repository
+git clone https://github.com/YOUR_USERNAME/neurolit.git
+cd neurolit
+
+# Create and activate virtual environment
+# Using uv:
+uv venv
+source .venv/bin/activate
+# Using venv:
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies in editable mode
+# Using uv:
+uv sync
+# Using pip:
+pip install -e .
+
+# Download models
+lit-download-models
+```
+
+## Types of Contributions
+
+### Bug Reports
+
+If you find a bug, please open an issue with:
+* Clear description of the problem
+* Steps to reproduce
+* Expected vs actual behavior
+* Environment details (OS, Python version, GPU)
+* Error messages and logs
+
+### Feature Requests
+
+We're open to new features! Please open an issue describing:
+* The feature and its use case
+* How it would work
+* Why it would be valuable
+
+### Code Contributions
+
+1. **Fork the repository**
+2. **Create a feature branch:** `git checkout -b feature/my-feature`
+3. **Make your changes**
+4. **Test thoroughly**
+5. **Commit with clear messages**
+6. **Push and create a pull request**
+
+### Documentation
+
+Documentation improvements are always welcome! This includes:
+* Fixing typos or unclear sections
+* Adding examples
+* Improving API documentation
+* Translating documentation
+
+## Development Guidelines
+
+### Code Style
+
+* **Follow PEP 8** style guidelines
+* **Use meaningful names** for variables and functions
+* **Add docstrings** to all public functions and classes
+* **Keep functions focused** and modular
+* **Type hints** are encouraged
+
+**Example:**
+
+```python
+def process_image(
+    image_path: str,
+    output_dir: str,
+    device: str = 'cuda'
+) -> dict:
+    """Process a brain MRI image.
+
+    Parameters
+    ----------
+    image_path : str
+        Path to input image
+    output_dir : str
+        Directory for outputs
+    device : str, optional
+        Device to use ('cuda' or 'cpu'), by default 'cuda'
+
+    Returns
+    -------
+    dict
+        Dictionary containing results
+
+    Raises
+    ------
+    ValueError
+        If image_path doesn't exist
+
+    Examples
+    --------
+    >>> results = process_image(
+    ...     image_path='brain.nii.gz',
+    ...     output_dir='./outputs',
+    ...     device='cuda'
+    ... )
+    >>> print(results.keys())
+    """
+    # Implementation...
+    return results
+```
 
 ### Testing
 
 Before submitting changes, ensure all tests pass:
 
 ```bash
+# Check code style
+ruff check .
+
+# Run tests
 python3 -m pytest
 ```
-
-## Making Changes
-
-1. Create a fork for your feature or bugfix
-2. Make your changes
-3. Test your changes thoroughly
-4. Update documentation (README.md, etc.) as needed
-5. Commit with clear, descriptive messages
-6. Create a pull request to the dev branch
-
-## Documentation
 
 ### Building Documentation
 
@@ -35,117 +136,63 @@ neuroLIT uses Sphinx for documentation. To build the documentation locally:
 
 ```bash
 # Install documentation dependencies
-pip install -r doc/requirements.txt
+# Using uv:
+uv sync --extra doc
+# Using pip:
+pip install -e .[doc]
 
 # Build HTML documentation
-sphinx-build doc doc-build
+cd doc
+make html
 
 # View in browser
-firefox doc-build/index.html  # Or your preferred browser
+# (e.g. on macOS)
+open _build/html/index.html
 ```
 
-### Documentation Guidelines
+## Git Workflow
 
-When contributing to documentation:
+### Branch Naming
 
-1. **Use reStructuredText (.rst) format** for documentation files
-2. **Include code examples** where helpful
-3. **Add docstrings** to all public functions and classes (NumpyStyle)
-4. **Update API docs** when changing function signatures
-5. **Build and preview** before submitting
+* `feature/description` - New features
+* `bugfix/description` - Bug fixes
+* `doc/description` - Documentation changes
+* `refactor/description` - Code refactoring
 
-**Docstring Format:**
+### Pull Requests
 
-Use NumPy-style docstrings (example from: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_numpy.html):
+When creating a pull request:
 
-```python
-def module_level_function(param1, param2=None, *args, **kwargs):
-    """This is an example of a module level function.
+1. **Clear title** describing the change
+2. **Description** explaining what and why
+3. **Reference issues** if applicable (Fixes #123)
+4. **Screenshots** for UI changes
+5. **Test results** if relevant
 
-    Function parameters should be documented in the ``Parameters`` section.
-    The name of each parameter is required. The type and description of each
-    parameter is optional, but should be included if not obvious.
+**Pull Request Template:**
 
-    If \*args or \*\*kwargs are accepted,
-    they should be listed as ``*args`` and ``**kwargs``.
+```markdown
+## Description
+Brief description of changes
 
-    The format for a parameter is::
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Documentation update
+- [ ] Refactoring
 
-        name : type
-            description
+## Testing
+- [ ] Tests pass locally
+- [ ] Added new tests for new features
+- [ ] Tested on real data
 
-            The description may span multiple lines. Following lines
-            should be indented to match the first line of the description.
-            The ": type" is optional.
-
-            Multiple paragraphs are supported in parameter
-            descriptions.
-
-    Parameters
-    ----------
-    param1 : int
-        The first parameter.
-    param2 : :obj:`str`, optional
-        The second parameter.
-    *args
-        Variable length argument list.
-    **kwargs
-        Arbitrary keyword arguments.
-
-    Returns
-    -------
-    bool
-        True if successful, False otherwise.
-
-    The return type is not optional. The ``Returns`` section may span
-    multiple lines and paragraphs. Following lines should be indented to
-    match the first line of the description.
-
-    The ``Returns`` section supports any reStructuredText formatting,
-    including literal blocks::
-
-        {
-            'param1': param1,
-            'param2': param2
-        }
-
-    Raises
-    ------
-    AttributeError
-        The ``Raises`` section is a list of all exceptions
-        that are relevant to the interface.
-    ValueError
-        If `param2` is equal to `param1`.
-
-    """
-    pass
+## Checklist
+- [ ] Code follows style guidelines
+- [ ] Documentation updated
+- [ ] No new warnings
+- [ ] Commit messages are clear
 ```
 
-**Adding New Documentation Pages:**
+## Thank You!
 
-1. Create a new `.rst` file in the `doc/` directory
-2. Add content using reStructuredText syntax
-3. Add the page to a `toctree` directive in `index.rst` or parent page
-4. Build and preview the documentation
-
-**Documentation Structure:**
-
-```
-doc/
-├── index.rst            # Main page
-├── installation.rst     # Installation guide
-├── usage.rst           # Usage guide
-├── integration.rst     # FastSurfer integration
-├── training.rst        # Training guide
-├── contributing.rst    # Contributing guide
-├── api/                # API reference
-│   └── ...
-└── ...
-```
-
-For more details, see `doc/README.md`.
-
-## Questions or Issues?
-
-If you have questions or run into issues, please open an issue on the [GitHub repository](https://github.com/Deep-MI/neurolit).
-
+Thank you for contributing to neuroLIT! Every contribution, no matter how small, helps make the project better for everyone.

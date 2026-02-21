@@ -16,6 +16,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from neurolit._version import get_version_with_hash
 from neurolit.postprocessing.lesion_to_segmentation import main as lesion_to_segmentation_main
 from neurolit.postprocessing.lesion_to_surface import main as lesion_to_surface_main
 from neurolit.utils.log import get_logger
@@ -44,6 +45,11 @@ Environment variables:
 
 Note: Either FastSurfer or FreeSurfer is required unless --skip-segstats is used.
       FastSurfer is preferred as it supports all features including the 'measures' subcommand.
+
+If you use neuroLIT for research publications, please cite:
+
+Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpainting Tool for Whole
+  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Accepted for Imaging Neuroscience.
         """
     )
     parser.add_argument('-sid', '--subject-id', required=True,
@@ -64,6 +70,9 @@ Note: Either FastSurfer or FreeSurfer is required unless --skip-segstats is used
                         help='Enable debug logging (shows captured command output)')
     parser.add_argument('--python-cmd', type=str, default='python3',
                         help='Python command to use for running scripts (default: python3)')
+    parser.add_argument('-v', '--version', action='version',
+                        version=get_version_with_hash(),
+                        help='Print version number and exit')
     
     return parser
 
@@ -109,22 +118,34 @@ def ensure_backup(file_path: Path) -> Path | None:
     backup_path = file_path.with_name(backup_name)
 
     if not backup_path.exists():
-        logger.info(f"  Creating backup: {file_path.name} -> {backup_name}")
         if file_path.is_symlink():
             target = os.readlink(file_path)
             target_path = Path(target)
-            # If target is relative and in the same directory, lit-ify it
-            if not target_path.is_absolute():
-                if target_path.name.endswith(".nii.gz"):
-                    t_ext = ".nii.gz"
-                else:
-                    t_ext = target_path.suffix
-                t_stem = target_path.name[:-len(t_ext)] if t_ext else target_path.name
-                t_backup_name = f"{t_stem}.lit{t_ext}"
-                os.symlink(t_backup_name, backup_path)
+            
+            # Ensure the target file itself is backed up
+            try:
+                abs_target_path = (file_path.parent / target_path).resolve()
+            except (OSError, RuntimeError) as e:
+                logger.debug(f"Could not resolve symlink target {target_path} for {file_path}: {e}")
             else:
-                os.symlink(target, backup_path)
+                ensure_backup(abs_target_path)
+
+            # Re-check existence as recursive call might have created us
+            if not backup_path.exists():
+                logger.info(f"  Creating backup: {file_path.name} -> {backup_name}")
+                # If target is relative and in the same directory, lit-ify it
+                if not target_path.is_absolute():
+                    if target_path.name.endswith(".nii.gz"):
+                        t_ext = ".nii.gz"
+                    else:
+                        t_ext = target_path.suffix
+                    t_stem = target_path.name[:-len(t_ext)] if t_ext else target_path.name
+                    t_backup_name = f"{t_stem}.lit{t_ext}"
+                    os.symlink(t_backup_name, backup_path)
+                else:
+                    os.symlink(target, backup_path)
         else:
+            logger.info(f"  Creating backup: {file_path.name} -> {backup_name}")
             shutil.copy2(file_path, backup_path)
 
     # Also look for other symlinks in the same directory that point to this file
@@ -134,15 +155,17 @@ def ensure_backup(file_path: Path) -> Path | None:
         for item in file_path.parent.iterdir():
             if not item.is_symlink():
                 continue
-            if item.name == backup_name or item.name.endswith(".lit" + ext):
+            
+            # Re-read suffix/extension for item
+            i_ext = ".nii.gz" if item.name.endswith(".nii.gz") else item.suffix
+            if item.name == backup_name or item.name.endswith(".lit" + i_ext):
                 continue
 
             try:
                 if item.resolve() == abs_file_path:
                     # This symlink points to our file! Create a .lit version of it.
-                    s_ext = ".nii.gz" if item.name.endswith(".nii.gz") else item.suffix
-                    s_stem = item.name[:-len(s_ext)] if s_ext else item.name
-                    s_backup_name = f"{s_stem}.lit{s_ext}"
+                    s_stem = item.name[:-len(i_ext)] if i_ext else item.name
+                    s_backup_name = f"{s_stem}.lit{i_ext}"
                     s_backup_path = item.with_name(s_backup_name)
                     if not s_backup_path.exists():
                         logger.info(f"  Creating backup symlink: {item.name} -> {s_backup_name}")
