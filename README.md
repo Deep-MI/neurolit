@@ -9,8 +9,9 @@ This tool can inpaint lesions independent of their shape or appearance for furth
 ## Quickstart
 
 ```bash
-git clone https://github.com/Deep-MI/neurolit.git && cd neurolit
-./neuroLIT/scripts/run_lit_containerized.sh --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output_directory output_directory
+git clone --filter=blob:none --no-checkout https://github.com/Deep-MI/neurolit.git && \
+(cd neurolit && git checkout fda601568d86fce0d07b593215ffd07b45c6b96d) # checkout 0.5.0 release
+./neurolit/run_lit_containerized.sh --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output_directory output_directory
 # Add --singularity to use singularity instead of docker
 ```
 
@@ -46,7 +47,7 @@ We recommend performing dilation, since undersegmentation can negatively impact 
 If the source image was isotropic, the output images should have the same resolution as the input image and the area outside of the lesion mask should be preserved, except for a robust rescaling of the intensity values.
 
 
-#### Installation from PyPI
+#### Installation from PyPI (in-preparation)
 
 The same interface as above can be accessed from pypi:
 
@@ -70,7 +71,7 @@ neuroLIT is being integrated into [FastSurfer](https://github.com/deep-mi/FastSu
 
 For standalone usage with FreeSurfer/FastSurfer, neuroLIT provides post-processing scripts for integrating lesions into FastSurfer/FreeSurfer outputs. We recommend using the unified `lit-postprocessing` script which handles mapping the lesion mask to multiple segmentation files, running volume statistics (segstats), and performing surface masking.
 
-### Postprocessing
+### Postprocessing (available in developement version)
 
 This script modifies FastSurfer/FreeSurfer segmentations and surface annotation files, and the corresponading statistics (.stats) files.
 
