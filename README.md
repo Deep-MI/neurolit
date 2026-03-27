@@ -65,13 +65,24 @@ lit-inpainting --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output
 **Note:** If you skip the `lit-download-models` step, models will be automatically downloaded on first use.
 
 
+## Expected Runtimes
+
+Runtimes below are for a typical whole-brain T1w volume (1 mm isotropic), measured with neuroLIT v0.6.0:
+
+| Hardware | Runtime |
+|---|---|
+| NVIDIA GeForce RTX 5070 Ti (16 GB) | ~17 minutes |
+| Intel Xeon w5-2465X (CPU only) | ~5.5 hours |
+
+GPU is strongly recommended for interactive use. CPU is feasible for batch/overnight processing.
+
 ## Integration with FreeSurfer/FastSurfer
 
 neuroLIT is being integrated into [FastSurfer](https://github.com/deep-mi/FastSurfer) for whole brain segmentation and cortical surface reconstruction of images with lesions. 
 
 For standalone usage with FreeSurfer/FastSurfer, neuroLIT provides post-processing scripts for integrating lesions into FastSurfer/FreeSurfer outputs. We recommend using the unified `lit-postprocessing` script which handles mapping the lesion mask to multiple segmentation files, running volume statistics (segstats), and performing surface masking.
 
-### Postprocessing (available in developement version)
+### Postprocessing (available in development version)
 
 This script modifies FastSurfer/FreeSurfer segmentations and surface annotation files, and the corresponading statistics (.stats) files.
 

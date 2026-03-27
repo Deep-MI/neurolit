@@ -18,6 +18,10 @@ FLAGS:
       Print the version number and exit
   --gpus <gpus>
       GPUs to use. Default: all
+  --device <auto|cpu|cuda>
+      Inference device inside the container. Default: auto
+  --cpu
+      Shorthand for --device cpu
   -i, --input_image <input_image>
       Path to the input T1w volume
   -m, --mask_image <mask_image>
@@ -59,6 +63,7 @@ DOCKER_REPO="deepmi/lit"
 # Initialize variables
 USE_SINGULARITY=false
 VERSION=""
+DEVICE="auto"
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -70,6 +75,24 @@ while [[ $# -gt 0 ]]; do
       fi
       GPUS="$2"
       shift 2
+      ;;
+    --device)
+      if [[ -z "$2" || "$2" == -* ]]; then
+        echo "Error: --device requires a value"
+        usage
+        exit 1
+      fi
+      if [[ "$2" != "auto" && "$2" != "cpu" && "$2" != "cuda" ]]; then
+        echo "Error: --device must be one of: auto, cpu, cuda"
+        usage
+        exit 1
+      fi
+      DEVICE="$2"
+      shift 2
+      ;;
+    --cpu)
+      DEVICE="cpu"
+      shift
       ;;
     -i|--input_image)
       if [[ -z "$2" || "$2" == -* ]]; then
@@ -196,6 +219,16 @@ if [ -z "$GPUS" ]; then
   GPUS="all"
 fi
 
+if [[ "$DEVICE" == "auto" ]]; then
+  if command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi >/dev/null 2>&1; then
+    RESOLVED_DEVICE="cuda"
+  else
+    RESOLVED_DEVICE="cpu"
+  fi
+else
+  RESOLVED_DEVICE="$DEVICE"
+fi
+
 # Run command based on the containerization tool
 if [ "$USE_SINGULARITY" = true ]; then
   if [ ! -f "$PROJ_DIR/containerization/deepmi_lit.simg" ]; then
@@ -208,18 +241,29 @@ if [ "$USE_SINGULARITY" = true ]; then
     exit 1
   fi
 
-  singularity exec --nv \
+  SINGULARITY_ARGS=()
+  if [[ "$RESOLVED_DEVICE" == "cuda" ]]; then
+    SINGULARITY_ARGS+=(--nv)
+  fi
+
+  singularity exec "${SINGULARITY_ARGS[@]}" \
     -B "${INPUT_IMAGE}":"${INPUT_IMAGE}":ro \
     -B "${MASK_IMAGE}":"${MASK_IMAGE}":ro \
     -B "${OUT_DIR}":"${OUT_DIR}" \
     $PROJ_DIR/containerization/deepmi_lit.simg \
-    lit-inpainting -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" "${POSITIONAL_ARGS[@]}"
+    lit-inpainting -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" --device "${RESOLVED_DEVICE}" "${POSITIONAL_ARGS[@]}"
 else
-  docker run --gpus "device=$GPUS" --ipc=host \
-    --ulimit memlock=-1 --ulimit stack=67108864 --rm \
-    -v "${INPUT_IMAGE}":"${INPUT_IMAGE}":ro \
-    -v "${MASK_IMAGE}":"${MASK_IMAGE}":ro \
-    -v "${OUT_DIR}":"${OUT_DIR}" \
-    -u "$(id -u):$(id -g)" \
-    ${IMAGE} -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" "${POSITIONAL_ARGS[@]}"
+  DOCKER_ARGS=(run --ipc=host
+    --ulimit memlock=-1 --ulimit stack=67108864 --rm
+    -v "${INPUT_IMAGE}":"${INPUT_IMAGE}":ro
+    -v "${MASK_IMAGE}":"${MASK_IMAGE}":ro
+    -v "${OUT_DIR}":"${OUT_DIR}"
+    -u "$(id -u):$(id -g)")
+
+  if [[ "$RESOLVED_DEVICE" == "cuda" ]]; then
+    DOCKER_ARGS+=(--gpus "device=$GPUS")
+  fi
+
+  docker "${DOCKER_ARGS[@]}" \
+    ${IMAGE} -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" --device "${RESOLVED_DEVICE}" "${POSITIONAL_ARGS[@]}"
 fi

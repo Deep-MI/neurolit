@@ -28,6 +28,12 @@ def run_lit():
     
     # Optional arguments
     parser.add_argument("--dilate", type=int, default=0, help="Number of times to dilate the lesion mask (default: 0)")
+    parser.add_argument(
+        "--device",
+        choices=["auto", "cpu", "cuda"],
+        default="auto",
+        help="Inference device to use (default: auto)",
+    )
     
     # Other arguments
     parser.add_argument("-h", "--help", action="store_true", help="Show help message and exit")
@@ -43,6 +49,7 @@ def run_lit():
         print("  -o, --sd, --out_dir, --output_directory : Output directory")
         print("Optional arguments:")
         print("  --dilate              : Number of times to dilate the lesion mask (default: 0)")
+        print("  --device              : Inference device: auto, cpu, or cuda (default: auto)")
         print("Other arguments:")
         print("  -v, --version         : Print version number and exit")
         print("  -h, --help            : Show help message and exit")
@@ -102,7 +109,8 @@ def run_lit():
                 "--checkpoint_axial", str(ckpt_axial),
                 "--checkpoint_sagittal", str(ckpt_sagittal),
                 "--checkpoint_coronal", str(ckpt_coronal),
-                "--dilate", str(args.dilate)
+                "--dilate", str(args.dilate),
+                "--device", args.device,
             ]
             
             # Forward any unknown arguments
