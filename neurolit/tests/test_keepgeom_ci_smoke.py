@@ -56,7 +56,16 @@ def test_keepgeom_anisotropic_smoke_30_steps_ci(tmp_path, monkeypatch):
             tracker["steps"] = int(inference_steps)
             self._models = diffusion_model_dict
 
-        def __call__(self, mask, image_masked, num_resample_steps=10, num_resample_jumps=15, batch_size=8, get_intermediates=False, scale_factor=None):
+        def __call__(
+            self,
+            mask,
+            image_masked,
+            num_resample_steps=10,
+            num_resample_jumps=15,
+            batch_size=8,
+            get_intermediates=False,
+            scale_factor=None,
+        ):
             # Keep the tensor shape unchanged and return a deterministic result.
             return image_masked.clone()
 

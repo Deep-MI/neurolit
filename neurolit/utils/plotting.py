@@ -40,7 +40,14 @@ def plot_batch(image_batch: torch.Tensor, image_path: str, slice_cut: None | lis
     BATCH_SIZE = image_batch.shape[0]
 
     if slice_cut is None:
-        slice_cut = [image_batch.shape[2] // 2, image_batch.shape[3] // 2, image_batch.shape[4] // 2] if dim == 3 else [image_batch.shape[2] // 2, image_batch.shape[3] // 2]
+        if dim == 3:
+            slice_cut = [
+                image_batch.shape[2] // 2,
+                image_batch.shape[3] // 2,
+                image_batch.shape[4] // 2,
+            ]
+        else:
+            slice_cut = [image_batch.shape[2] // 2, image_batch.shape[3] // 2]
     else:
         if torch.is_tensor(slice_cut):
             slice_cut = slice_cut.detach().cpu().tolist()
