@@ -55,8 +55,8 @@ def run_lit():
         print("  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Accepted for Imaging Neuroscience.")
         sys.exit(0)
 
-    if not args.input_image or not args.sd:
-        print("Error: Input image and output directory are required")
+    if not args.input_image or not args.sd or not args.lesion_mask:
+        print("Error: Input image, lesion mask, and output directory are required")
         sys.exit(1)
 
     # Validate input files
@@ -92,30 +92,29 @@ def run_lit():
             sys.exit(1)
 
     # Run inpainting
-    if mask_image:
-        inpainted_img = out_dir / "inpainting_volumes" / "inpainting_result.nii.gz"
-        if not inpainted_img.exists():
-            print("Running inpainting...")
-            
-            inpaint_argv = [
-                "--input_image", str(input_image),
-                "--mask_image", str(mask_image),
-                "--out_dir", str(out_dir),
-                "--checkpoint_axial", str(ckpt_axial),
-                "--checkpoint_sagittal", str(ckpt_sagittal),
-                "--checkpoint_coronal", str(ckpt_coronal),
-                "--dilate", str(args.dilate)
-            ]
+    inpainted_img = out_dir / "inpainting_volumes" / "inpainting_result.nii.gz"
+    if not inpainted_img.exists():
+        print("Running inpainting...")
 
-            if args.keepgeom:
-                inpaint_argv.append("--keepgeom")
-            
-            # Forward any unknown arguments
-            inpaint_argv.extend(unknown)
-            
-            inpaint_main(inpaint_argv)
-        else:
-            print(f"Inpainted image already exists: {inpainted_img}")
+        inpaint_argv = [
+            "--input_image", str(input_image),
+            "--mask_image", str(mask_image),
+            "--out_dir", str(out_dir),
+            "--checkpoint_axial", str(ckpt_axial),
+            "--checkpoint_sagittal", str(ckpt_sagittal),
+            "--checkpoint_coronal", str(ckpt_coronal),
+            "--dilate", str(args.dilate)
+        ]
+
+        if args.keepgeom:
+            inpaint_argv.append("--keepgeom")
+
+        # Forward any unknown arguments
+        inpaint_argv.extend(unknown)
+
+        inpaint_main(inpaint_argv)
+    else:
+        print(f"Inpainted image already exists: {inpainted_img}")
 
     print("Finished inpainting")
 

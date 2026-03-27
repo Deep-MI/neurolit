@@ -622,7 +622,7 @@ def conform(
                 if isinstance(k, np.dtype)
             )
             logger.warning(
-                f'The data type "{options.dtype}" is not recognized for MGH images, switching '
+                f'The data type "{target_dtype}" is not recognized for MGH images, switching '
                 f'to "{new_img.get_data_dtype()}" (supported: {tuple(codes)}).'
             )
 

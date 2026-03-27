@@ -107,7 +107,7 @@ def dilate_mask(mask: torch.Tensor, num_iterations: int, kernel_size: int = 3) -
 
 
 
-def conform_nifti(image: NiftiImage, keepgeom: bool = False) -> NiftiImage:
+def conform_nifti(image: NiftiImage) -> NiftiImage:
     """Conform a NIfTI image to the repository orientation/voxel standard.
 
     Parameters
@@ -123,8 +123,6 @@ def conform_nifti(image: NiftiImage, keepgeom: bool = False) -> NiftiImage:
     if len(image.shape) > 3 and image.shape[3] != 1:
         raise ValueError(f"Multiple input frames ({image.shape[3]}) not supported!")
 
-    # keepgeom preserves output geometry at save time, but inference still runs
-    # in a model-safe conformed space.
     _vox_size: str | None = "min"
     _img_size: int | str | None = "auto"
     _orientation: str | None = "lia"
@@ -469,7 +467,7 @@ def main(argv=None):
     assert(list(model_dict.values())[0].is_vinn)
 
     val_image_native_nib = nib.load(args.input_image)
-    val_image_nib = conform_nifti(val_image_native_nib, keepgeom=args.keepgeom)
+    val_image_nib = conform_nifti(val_image_native_nib)
 
     val_image = torch.from_numpy(val_image_nib.get_fdata()).float()
 
