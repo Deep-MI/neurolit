@@ -456,14 +456,15 @@ def main(argv=None):
     # setup parameters (i.e. whether to use view aggregation, 2d or 3d model)
     model_to_dim = {'coronal': 2, 'axial': 1, 'sagittal': 0}
     if len(model_dict) == 0:    
-        sys.exit("ERROR: At least one checkpoint must be specified", file=sys.stderr)
+        print("ERROR: At least one checkpoint must be specified", file=sys.stderr)
+        sys.exit(1)
     elif len(model_dict) == 1:
         DIM = model_to_dim[list(model_dict.keys())[0]]
     elif len(model_dict) == 3:
         DIM = 0
     else:
-        sys.exit(f"ERROR: One or three checkpoints must be specified, but got {len(model_dict)}"
-                 , file=sys.stderr)
+        print(f"ERROR: One or three checkpoints must be specified, but got {len(model_dict)}", file=sys.stderr)
+        sys.exit(1)
 
     assert(list(model_dict.values())[0].is_vinn)
 
