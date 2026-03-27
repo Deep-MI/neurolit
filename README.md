@@ -11,7 +11,7 @@ This tool can inpaint lesions independent of their shape or appearance for furth
 ```bash
 git clone --filter=blob:none --no-checkout https://github.com/Deep-MI/neurolit.git && \
 (cd neurolit && git checkout fda601568d86fce0d07b593215ffd07b45c6b96d) # checkout 0.5.0 release
-./neurolit/run_lit_containerized.sh --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output_directory output_directory
+./neurolit/scripts/run_lit_containerized.sh --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output_directory output_directory
 # Add --singularity to use singularity instead of docker
 ```
 
@@ -31,7 +31,7 @@ The most straight forward way of doing the inpainting is just providing
 4. (optional) The number times to dilate the lesion mask (default: 0)
 
 ```bash
-./neuroLIT/scripts/run_lit_containerized.sh --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output_directory output_directory --dilate 2
+./neurolit/scripts/run_lit_containerized.sh --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output_directory output_directory --dilate 2
 ```
 The default is to use docker. Add the `--singularity` flag to use singularity instead. To use the containerized version of this tool either docker or singularity should be installed. To build the singularity image docker is also required, otherwise please download the prebuild image.
 
@@ -47,7 +47,7 @@ We recommend performing dilation, since undersegmentation can negatively impact 
 If the source image was isotropic, the output images should have the same resolution as the input image and the area outside of the lesion mask should be preserved, except for a robust rescaling of the intensity values.
 
 
-#### Installation from PyPI (in-preparation)
+#### Installation from PyPI
 
 The same interface as above can be accessed from pypi:
 

@@ -82,25 +82,18 @@ Advanced Usage
 Direct Inpainting (Python API)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For programmatic access, use the direct inpainting function:
+For programmatic access, call the inpainting entry point directly with an argument list:
 
 .. code-block:: python
 
-   from neurolit.inpaint_image import main as inpaint
-   import argparse
-   
-   # Prepare arguments
-   args = argparse.Namespace(
-       input_image='T1w.nii.gz',
-       mask_image='lesion_mask.nii.gz',
-       out_dir='output',
-       device='cuda',  # or 'cpu'
-       batch_size=16,
-       num_samples=100
-   )
-   
-   # Run inpainting
-   inpaint(args)
+   from neurolit.inpaint_image import main as inpaint_main
+
+   inpaint_main([
+       "--input_image", "T1w.nii.gz",
+       "--mask_image", "lesion_mask.nii.gz",
+       "--out_dir", "output",
+       "--device", "cuda",  # or 'cpu'
+   ])
 
 Batch Processing
 ~~~~~~~~~~~~~~~~
@@ -156,12 +149,14 @@ Main command to run the neuroLIT inpainting.
 
    lit-inpainting [OPTIONS]
 
-Options:
-   --input_image PATH        Path to input T1w image [required]
-   --mask_image PATH         Path to lesion mask [required]
-   --output_directory PATH   Output directory [required]
-   --dilate INTEGER          Number of dilation iterations [default: 0]
-   --help                   Show this message and exit
+   Options:
+     -i, --input_image PATH                          Path to input T1w image [required]
+     -m, --lesion_mask PATH                          Path to lesion mask [required]
+     -o, --sd / --out_dir / --output_directory PATH  Output directory [required]
+     --dilate INTEGER                                Number of dilation iterations [default: 0]
+     --device [auto|cpu|cuda]                        Inference device [default: auto]
+     --batch_size INTEGER                            Slices per GPU batch [default: 8]; reduce to lower GPU memory usage
+     -h, --help                                      Show this message and exit
 
 lit-download-models
 ~~~~~~~~~~~~~~~~~~~
@@ -172,9 +167,9 @@ Download required model checkpoints.
 
    lit-download-models [OPTIONS]
 
-Options:
-   --force                  Force re-download even if models exist
-   --help                   Show this message and exit
+   Options:
+     --force                  Force re-download even if models exist
+     --help                   Show this message and exit
 
 lit-postprocessing
 ~~~~~~~~~~~~~~~~~~~~~
@@ -185,12 +180,12 @@ Integrate lesion masks into FastSurfer/FreeSurfer outputs.
 
    lit-postprocessing [OPTIONS]
 
-Options:
-   --subject-id TEXT        Subject ID [required]
-   --subjects-dir PATH      Subjects directory [required]
-   --skip-segstats          Skip volumetric statistics
-   --skip-surface-masking   Skip surface masking
-   --help                   Show this message and exit
+   Options:
+     --subject-id TEXT        Subject ID [required]
+     --subjects-dir PATH      Subjects directory [required]
+     --skip-segstats          Skip volumetric statistics
+     --skip-surface-masking   Skip surface masking
+     --help                   Show this message and exit
 
 Best Practices
 --------------
@@ -204,9 +199,8 @@ Input Data
 Performance
 ~~~~~~~~~~~
 
-1. **GPU Usage:** Use GPU when available for significant speedup, processing with CPU is not recommended.
-2. **Batch Size:** Increase batch size on high-memory GPUs (default: 16)
-3. **Mask Size:** Larger lesion masks require longer inference.
+1. **GPU Usage:** Use GPU when available for significant speedup. CPU is feasible for batch or overnight processing; see Expected Runtimes in the README.
+2. **Mask Size:** Larger lesion masks require longer inference.
 
 Quality Control
 ~~~~~~~~~~~~~~~
@@ -286,7 +280,7 @@ Out of Memory Errors
 
 **Solutions:**
 
-* Reduce batch size: ``--batch_size 8`` or ``--batch_size 4``
-* Use CPU mode (very slow): ``--device cpu``
+* Reduce batch size: ``--batch_size 4`` or ``--batch_size 2``
+* Switch to CPU mode: ``--device cpu`` (slower but avoids GPU memory limits)
 * Process on a machine with more GPU memory
 

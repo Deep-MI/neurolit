@@ -54,6 +54,7 @@ Using PyPI Package
 
    installation
    usage
+   downstream_analysis
    training
 
 .. toctree::
