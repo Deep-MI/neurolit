@@ -28,6 +28,7 @@ def run_lit():
     
     # Optional arguments
     parser.add_argument("--dilate", type=int, default=0, help="Number of times to dilate the lesion mask (default: 0)")
+    parser.add_argument("--keepgeom", action="store_true", help="Preserve native output geometry")
     
     # Other arguments
     parser.add_argument("-h", "--help", action="store_true", help="Show help message and exit")
@@ -43,6 +44,7 @@ def run_lit():
         print("  -o, --sd, --out_dir, --output_directory : Output directory")
         print("Optional arguments:")
         print("  --dilate              : Number of times to dilate the lesion mask (default: 0)")
+        print("  --keepgeom            : Preserve native output geometry")
         print("Other arguments:")
         print("  -v, --version         : Print version number and exit")
         print("  -h, --help            : Show help message and exit")
@@ -104,6 +106,9 @@ def run_lit():
                 "--checkpoint_coronal", str(ckpt_coronal),
                 "--dilate", str(args.dilate)
             ]
+
+            if args.keepgeom:
+                inpaint_argv.append("--keepgeom")
             
             # Forward any unknown arguments
             inpaint_argv.extend(unknown)

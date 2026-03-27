@@ -428,12 +428,84 @@ def find_img_size_by_fov(
     return max(min_dim, conform_dim)
 
 
+def is_orientation(
+        affine: np.ndarray,
+        target_orientation: str = "lia",
+        eps: float = 1e-6
+) -> bool:
+    """Check whether affine follows a target orientation code."""
+    if target_orientation is None:
+        return True
+    if target_orientation.lower() == "native":
+        return True
+    axcodes = "".join(nib.orientations.aff2axcodes(affine, tol=eps)).lower()
+    return axcodes == target_orientation.lower()[-3:]
+
+
+def conformed_vox_img_size(
+        img: nib.analyze.SpatialImage,
+        vox_size,
+        img_size,
+        threshold_1mm: float | None = None,
+        vox_eps: float = 1e-4,
+        **kwargs,
+) -> tuple[np.ndarray | None, np.ndarray | None]:
+    """Extract target voxel size and image size with FastSurfer-compatible semantics."""
+    if "conform_to_1mm_threshold" in kwargs:
+        threshold_1mm = kwargs["conform_to_1mm_threshold"]
+    if "conform_vox_size" in kwargs:
+        vox_size = kwargs["conform_vox_size"]
+
+    max_vox_size = 1.0
+    max_dimension = 256
+
+    if isinstance(vox_size, str) and vox_size.lower() in ["min", "auto"]:
+        decimals = int(np.ceil(-np.log10(vox_eps)))
+        min_vox = np.round(np.min(img.header.get_zooms()[:3]), decimals=decimals)
+        conformed = min(min_vox, max_vox_size)
+        if threshold_1mm and conformed > threshold_1mm:
+            conformed = max_vox_size
+        target_vox_size = np.full((3,), conformed)
+    elif isinstance(vox_size, (float, int)) and 0.0 < float(vox_size) <= max_vox_size:
+        target_vox_size = np.full((3,), float(vox_size))
+    elif vox_size is None:
+        target_vox_size = None
+    else:
+        raise ValueError("Invalid value for vox_size passed.")
+
+    if img_size is None and target_vox_size is not None:
+        img_size = "fov"
+
+    if img_size is None:
+        target_img_size = None
+    elif isinstance(img_size, int) and img_size > 0:
+        target_img_size = np.full((3,), img_size)
+    elif isinstance(img_size, str) and img_size.lower() in ["fov", "auto"]:
+        mode = img_size.lower()
+        target_img_size = np.array(img.shape[:3], dtype=int)
+        if target_vox_size is not None:
+            fov = np.array(img.header.get_zooms()[:3]) * target_img_size
+            target_img_size = np.ceil((fov / target_vox_size * 10000).astype(int).astype(float) / 10000).astype(int)
+        if mode == "auto":
+            max_dim = int(np.amax(np.maximum(max_dimension, target_img_size)))
+            target_img_size = np.full((3,), max_dim)
+    else:
+        raise ValueError("Invalid value for img_size passed.")
+
+    return target_vox_size, target_img_size
+
+
 def conform(
         img: nib.analyze.SpatialImage,
         order: int = 1,
-        conform_vox_size = 1.0,
+    vox_size = 1.0,
+    img_size = 256,
         dtype: type | None = None,
-        conform_to_1mm_threshold: float | None = None
+    orientation: str | None = "lia",
+    threshold_1mm: float | None = None,
+    rescale: int | float | None = 255,
+    conform_vox_size = None,
+    conform_to_1mm_threshold: float | None = None,
 ) -> nib.MGHImage:
     """Python version of mri_convert -c.
 
@@ -472,27 +544,47 @@ def conform(
     """
     from nibabel.freesurfer.mghformat import MGHHeader
 
-    conformed_vox_size, conformed_img_size = get_conformed_vox_img_size(
-        img, conform_vox_size, conform_to_1mm_threshold=conform_to_1mm_threshold
+    if conform_vox_size is not None:
+        vox_size = conform_vox_size
+    if conform_to_1mm_threshold is not None:
+        threshold_1mm = conform_to_1mm_threshold
+
+    target_vox_size, target_img_size = conformed_vox_img_size(
+        img,
+        vox_size,
+        img_size,
+        threshold_1mm=threshold_1mm,
     )
 
     h1 = MGHHeader.from_header(
         img.header
     )  # may copy some parameters if input was MGH format
 
-    h1.set_data_shape([conformed_img_size, conformed_img_size, conformed_img_size, 1])
-    h1.set_zooms(
-        [conformed_vox_size, conformed_vox_size, conformed_vox_size]
-    )  # --> h1['delta']
-    h1["Mdc"] = [[-1, 0, 0], [0, 0, -1], [0, 1, 0]]
-    h1["fov"] = conformed_img_size * conformed_vox_size
+    in_zooms = np.asarray(img.header.get_zooms()[:3], dtype=float)
+    in_shape = np.asarray(img.shape[:3], dtype=int)
+    out_zooms = in_zooms if target_vox_size is None else np.asarray(target_vox_size, dtype=float)
+    out_shape = in_shape if target_img_size is None else np.asarray(target_img_size, dtype=int)
+
+    h1.set_data_shape([int(out_shape[0]), int(out_shape[1]), int(out_shape[2]), 1])
+    h1.set_zooms([float(out_zooms[0]), float(out_zooms[1]), float(out_zooms[2])])
+
+    if orientation is None or orientation.lower() == "native":
+        source_mdc = img.affine[:3, :3] / np.linalg.norm(img.affine[:3, :3], axis=0, keepdims=True)
+        h1["Mdc"] = np.linalg.inv(source_mdc)
+    else:
+        target_orientation = orientation.lower().replace("soft-", "")[-3:]
+        if target_orientation != "lia":
+            raise ValueError("Only orientation='lia' and orientation='native' are currently supported.")
+        h1["Mdc"] = [[-1, 0, 0], [0, 0, -1], [0, 1, 0]]
+
+    if np.allclose(out_shape * out_zooms, np.full((3,), (out_shape * out_zooms)[0])):
+        h1["fov"] = float((out_shape * out_zooms)[0])
     h1["Pxyz_c"] = img.affine.dot(np.hstack((np.array(img.shape[:3]) / 2.0, [1])))[:3]
 
-    # Here, we are explicitly using MGHHeader.get_affine() to construct the affine as
-    # MdcD = np.asarray(h1['Mdc']).T * h1['delta']
-    # vol_center = MdcD.dot(hdr['dims'][:3]) / 2
-    # affine = from_matvec(MdcD, h1['Pxyz_c'] - vol_center)
-    affine = h1.get_affine()
+    if orientation is None or orientation.lower() == "native":
+        affine = nib.affines.rescale_affine(img.affine, img.shape[:3], out_zooms, out_shape)
+    else:
+        affine = h1.get_affine()
 
     # from_header does not compute Pxyz_c (and probably others) when importing from nii
     # Pxyz is the center of the image in world coords
@@ -502,27 +594,21 @@ def conform(
     target_dtype = np.dtype(sctype)
 
     src_min, scale = 0, 1.0
-    # get scale for conversion on original input before mapping to be more similar to mri_convert
-    if (
-        img.get_data_dtype() != np.dtype(np.uint8)
-        or img.get_data_dtype() != target_dtype
-    ):
-        src_min, scale = getscale(np.asanyarray(img.dataobj), 0, 255)
+    if rescale is not None:
+        src_min, scale = getscale(np.asanyarray(img.dataobj), 0, float(rescale))
 
     kwargs = {"dtype": "float"} if sctype != np.uint else {}
     mapped_data = map_image(img, affine, h1.get_data_shape(), order=order, **kwargs)
 
-    if img.get_data_dtype() != np.dtype(np.uint8) or (
-        img.get_data_dtype() != target_dtype and scale != 1.0
-    ):
-        scaled_data = scalecrop(mapped_data, 0, 255, src_min, scale)
-        # map zero in input to zero in output (usually background)
+    if rescale is not None:
+        scaled_data = scalecrop(mapped_data, 0, float(rescale), src_min, scale)
         scaled_data[mapped_data == 0] = 0
         mapped_data = scaled_data
 
-    mapped_data = sctype(
-        np.clip(np.rint(mapped_data),0,255) if target_dtype == np.dtype(np.uint8) else mapped_data
-    )
+    if target_dtype == np.dtype(np.uint8):
+        upper = 255 if rescale is None else float(rescale)
+        mapped_data = np.clip(np.rint(mapped_data), 0, upper)
+    mapped_data = sctype(mapped_data)
     new_img = nib.MGHImage(mapped_data, affine, h1)
 
     # make sure we store uchar
@@ -545,12 +631,16 @@ def conform(
 
 def is_conform(
         img: nib.analyze.SpatialImage,
-        conform_vox_size = 1.0,
+    vox_size = 1.0,
+    img_size = 256,
         eps: float = 1e-06,
-        check_dtype: bool = True,
+    check_dtype: bool = True,
         dtype: type | None = None,
+    orientation: str | None = "lia",
         verbose: bool = True,
-        conform_to_1mm_threshold: float | None = None
+    threshold_1mm: float | None = None,
+    conform_vox_size = None,
+    conform_to_1mm_threshold: float | None = None,
 ) -> bool:
     """Check if an image is already conformed or not.
 
@@ -591,8 +681,18 @@ def is_conform(
     This function only needs the header (not the data).
 
     """
-    conformed_vox_size, conformed_img_size = get_conformed_vox_img_size(
-        img, conform_vox_size, conform_to_1mm_threshold=conform_to_1mm_threshold
+    if conform_vox_size is not None:
+        vox_size = conform_vox_size
+    if conform_to_1mm_threshold is not None:
+        threshold_1mm = conform_to_1mm_threshold
+    if check_dtype is False:
+        dtype = None
+
+    target_vox_size, target_img_size = conformed_vox_img_size(
+        img,
+        vox_size,
+        img_size,
+        threshold_1mm=threshold_1mm,
     )
 
     ishape = img.shape
@@ -603,28 +703,29 @@ def is_conform(
         )
 
     criteria = {}
-    # check dimensions
-    criteria[f"Dimensions {conformed_img_size}x{conformed_img_size}x{conformed_img_size}"] = all(
-        s == conformed_img_size for s in ishape[:3]
-    )
+    if target_img_size is None:
+        criteria["Dimensions"] = True
+    else:
+        criteria[f"Dimensions {'x'.join(map(str, target_img_size.astype(int)))}"] = all(
+            s == int(target_img_size[i]) for i, s in enumerate(ishape[:3])
+        )
 
-    # check voxel size
-    izoom = np.array(img.header.get_zooms())
-    is_correct_vox_size = np.max(np.abs(izoom - conformed_vox_size) < eps)
-    criteria[f"Voxel Size {conformed_vox_size}x{conformed_vox_size}x{conformed_vox_size}"] = is_correct_vox_size
+    izoom = np.array(img.header.get_zooms()[:3])
+    if target_vox_size is None:
+        is_correct_vox_size = True
+        criteria["Voxel Size"] = True
+    else:
+        is_correct_vox_size = np.all(np.abs(izoom - target_vox_size) < eps)
+        criteria[f"Voxel Size {'x'.join(map(str, target_vox_size))}"] = is_correct_vox_size
 
-    # check orientation LIA
-    LIA_affine = np.array([[-1, 0, 0], [0, 0, 1], [0, -1, 0]])
-    iaffine = img.affine[0:3, 0:3] - LIA_affine * (
-        conformed_vox_size if is_correct_vox_size else izoom
-    )
-    criteria["Orientation LIA"] = np.max(np.abs(iaffine)) <= eps
+    if orientation is not None:
+        criteria[f"Orientation {orientation}"] = is_orientation(img.affine, orientation, eps=eps)
 
     # check dtype uchar
-    if check_dtype:
-        if dtype is None or (isinstance(dtype, str) and dtype.lower() == "uchar"):
+    if dtype is not None:
+        if isinstance(dtype, str) and dtype.lower() == "uchar":
             dtype = "uint8"
-        else:  # assume obj
+        else:
             dtype = np.dtype(np.obj2sctype(dtype)).name
         criteria[f"Dtype {dtype}"] = img.get_data_dtype() == dtype
 
@@ -635,9 +736,7 @@ def is_conform(
         if not _is_conform:
             logger.info("The input image is not conformed.")
 
-        conform_str = (
-            "conformed" if conform_vox_size == 1.0 else f"{conform_vox_size}-conformed"
-        )
+        conform_str = "conformed" if vox_size == 1.0 else f"{vox_size}-conformed"
         logger.info(f"A {conform_str} image must satisfy the following criteria:")
         for condition, value in criteria.items():
             logger.info(" - {:<30} {}".format(condition + ":", value))
@@ -667,24 +766,15 @@ def get_conformed_vox_img_size(
     [MISSING]
     
     """
-    # this is similar to mri_convert --conform_min
-    if isinstance(conform_vox_size, str) and conform_vox_size.lower() in [
-        "min",
+    vox_size, img_size = conformed_vox_img_size(
+        img,
+        conform_vox_size,
         "auto",
-    ]:
-        conformed_vox_size = find_min_size(img)
-        if (
-            conform_to_1mm_threshold is not None
-            and conformed_vox_size > conform_to_1mm_threshold
-        ):
-            conformed_vox_size = 1.0
-    # this is similar to mri_convert --conform_size <float>
-    elif isinstance(conform_vox_size, float) and 0.0 < conform_vox_size <= 1.0:
-        conformed_vox_size = conform_vox_size
-    else:
-        raise ValueError("Invalid value for conform_vox_size passed.")
-    conformed_img_size = find_img_size_by_fov(img, conformed_vox_size)
-    return conformed_vox_size, conformed_img_size
+        threshold_1mm=conform_to_1mm_threshold,
+    )
+    if vox_size is None or img_size is None:
+        raise ValueError("Invalid legacy conform_vox_size configuration.")
+    return float(vox_size[0]), int(img_size[0])
 
 
 def check_affine_in_nifti(

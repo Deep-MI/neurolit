@@ -17,8 +17,8 @@ def get_test_sample():
     nib_image = nib.load(filepath_image)
     nib_mask = nib.load(filepath_mask)
 
-    assert(conform.is_conform(nib_image, conform_vox_size='min', check_dtype=False, verbose=False)), "Image is not conform"
-    assert(conform.is_conform(nib_mask, conform_vox_size='min', check_dtype=False, verbose=False)), "Mask is not conform"
+    assert(conform.is_conform(nib_image, vox_size='min', img_size='auto', dtype=None, verbose=False)), "Image is not conform"
+    assert(conform.is_conform(nib_mask, vox_size='min', img_size='auto', dtype=None, verbose=False)), "Mask is not conform"
 
     sample = {
         'image': nib_image.get_fdata(),
