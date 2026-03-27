@@ -123,18 +123,13 @@ def conform_nifti(image: NiftiImage, keepgeom: bool = False) -> NiftiImage:
     if len(image.shape) > 3 and image.shape[3] != 1:
         raise ValueError(f"Multiple input frames ({image.shape[3]}) not supported!")
 
-    if keepgeom:
-        _vox_size: str | None = None
-        _img_size: int | str | None = None
-        _orientation: str | None = "native"
-        _rescale: int | float | None = None
-        _dtype: type | None = None
-    else:
-        _vox_size = "min"
-        _img_size = "auto"
-        _orientation = "lia"
-        _rescale = 255
-        _dtype = None
+    # keepgeom preserves output geometry at save time, but inference still runs
+    # in a model-safe conformed space.
+    _vox_size: str | None = "min"
+    _img_size: int | str | None = "auto"
+    _orientation: str | None = "lia"
+    _rescale: int | float | None = 255
+    _dtype: type | None = None
 
     try:
         if conform.is_conform(
@@ -202,6 +197,7 @@ def inpaint_volume(
     val_image_nib: NiftiImage | None = None,
     reference_image_nib: NiftiImage | None = None,
     pad_multiple: int = 16,
+    num_inference_steps: int = 1000,
 ) -> torch.Tensor:
     """Inpaint a volume using the trained diffusion models.
 
@@ -291,12 +287,15 @@ def inpaint_volume(
         model.eval()
     
 
+    if num_inference_steps <= 0:
+        raise ValueError("num_inference_steps must be > 0")
+
     if DDIM:
-        steps = 10
+        steps = num_inference_steps
         scheduler = DDIMScheduler(num_train_timesteps=1000, schedule="scaled_linear_beta", beta_start=0.0005, beta_end=0.0195, clip_sample=False)
         logger.info(f'Using DDIM scheduler with {steps} steps')
     else:
-        steps = 1000
+        steps = num_inference_steps
         scheduler = DDPMScheduler(num_train_timesteps=steps, schedule="scaled_linear_beta", beta_start=0.0005, beta_end=0.0195)
     scheduler.set_timesteps(num_inference_steps=steps, device=device)
 
@@ -382,6 +381,7 @@ def main(argv=None):
     parser.add_argument('--dilate', type=int, help='number of pixels to dilate the mask by',
                         required=False, default=0)
     parser.add_argument('--keepgeom', action='store_true', help='Keep native output geometry while running inference in internal space')
+    parser.add_argument('--num_inference_steps', type=int, default=1000, help='Number of diffusion inference iterations (default: 1000)')
     parser.add_argument('-c_coronal', '--checkpoint_coronal',
                         type=str, help='checkpoint to load for inference in coronal plane',
                         default=None, required=False)
@@ -518,7 +518,8 @@ def main(argv=None):
     inpaint_volume(models=model_dict, val_image=val_image, mask=mask, val_image_masked=val_image_masked, scale_factor=scale_factor,
                    out_dir=args.out_dir, SAVE_VOLUMES=SAVE_VOLUMES, SAVE_IMAGES=SAVE_IMAGES,
                    device=device, slice_input=False, slice_dim=DIM, val_image_nib=val_image_nib, DDIM=False,
-                   reference_image_nib=val_image_native_nib if args.keepgeom else None)
+                   reference_image_nib=val_image_native_nib if args.keepgeom else None,
+                   num_inference_steps=args.num_inference_steps)
 
 
 if __name__ == "__main__":

@@ -40,7 +40,19 @@ def plot_batch(image_batch: torch.Tensor, image_path: str, slice_cut: None | lis
     BATCH_SIZE = image_batch.shape[0]
 
     if slice_cut is None:
-        slice_cut = image_batch.shape[3] // 2
+        slice_cut = [image_batch.shape[2] // 2, image_batch.shape[3] // 2, image_batch.shape[4] // 2] if dim == 3 else [image_batch.shape[2] // 2, image_batch.shape[3] // 2]
+    else:
+        if torch.is_tensor(slice_cut):
+            slice_cut = slice_cut.detach().cpu().tolist()
+        slice_cut = [int(v) for v in slice_cut]
+
+    if dim == 3:
+        slice_cut[0] = int(np.clip(slice_cut[0], 0, image_batch.shape[2] - 1))
+        slice_cut[1] = int(np.clip(slice_cut[1], 0, image_batch.shape[3] - 1))
+        slice_cut[2] = int(np.clip(slice_cut[2], 0, image_batch.shape[4] - 1))
+    elif dim == 2:
+        slice_cut[0] = int(np.clip(slice_cut[0], 0, image_batch.shape[2] - 1))
+        slice_cut[1] = int(np.clip(slice_cut[1], 0, image_batch.shape[3] - 1))
 
     if dim == 3:
         slices = [[(i, 0, slice(None), slice(None), slice_cut[2]) for i in range(BATCH_SIZE)],
@@ -150,8 +162,17 @@ def plot_inpainting(val_image: torch.Tensor, val_image_masked: torch.Tensor,
         val_image_masked = val_image_masked[:, 0, ...]
         val_image_inpainted = val_image_inpainted[:, 0, ...]
 
+    if torch.is_tensor(SLICE_CUT):
+        slice_cut = SLICE_CUT.detach().cpu().tolist()
+    else:
+        slice_cut = [int(v) for v in SLICE_CUT]
+
+    spatial_shape = val_image.shape[1:4]
+    for axis in range(3):
+        slice_cut[axis] = int(np.clip(slice_cut[axis], 0, spatial_shape[axis] - 1))
+
     slicing = [0, slice(None), slice(None), slice(None)]
-    slicing[cut_dim+1] = SLICE_CUT[cut_dim].item()
+    slicing[cut_dim+1] = slice_cut[cut_dim]
     slicing = tuple(slicing)  # Convert to tuple for PyTorch 2.9+ compatibility
 
     fig, axs = plt.subplots(1, 3, figsize=(12, 4))
