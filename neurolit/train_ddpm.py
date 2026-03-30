@@ -49,6 +49,7 @@ from neurolit.data.datasets import SlicedDataset, get_base_dataset  # noqa: E402
 from neurolit.inference import DiffusionInfererVINN  # noqa: E402
 from neurolit.networks.DiffusionUnet import DiffusionModelUNetVINN  # noqa: E402
 from neurolit.utils import plot_batch  # noqa: E402
+from neurolit.utils.geometry_policy import vinn_internal_resolution_mm  # noqa: E402
 
 
 def argument_parser():
@@ -143,7 +144,7 @@ if __name__ == "__main__":
         SLICING_DIMENSION = 2
 
     if IS_VINN:
-        internal_res_mm = 256 / INTERNAL_SHAPE[0]
+        internal_res_mm = vinn_internal_resolution_mm(INTERNAL_SHAPE)
 
         def get_scale_factors(images):
             """Compute VINN scale factors from the metadata of `images`.

@@ -104,10 +104,19 @@ def test_keepgeom_anisotropic_smoke_30_steps_ci(tmp_path, monkeypatch):
     assert tracker["steps"] == 30
 
     output_path = out_dir / "inpainting_volumes" / "inpainting_result.nii.gz"
+    intermediate_path = out_dir / "inpainting_volumes" / "inpainting_original_image.nii.gz"
     assert output_path.exists()
+    assert intermediate_path.exists()
 
     src_img = nib.load(str(image_path))
     out_img = nib.load(str(output_path))
+    intermediate_img = nib.load(str(intermediate_path))
 
     assert out_img.shape[:3] == src_img.shape[:3]
     np.testing.assert_allclose(out_img.affine, src_img.affine, atol=1e-6)
+    assert nib.orientations.aff2axcodes(src_img.affine) == ("R", "A", "S")
+    assert nib.orientations.aff2axcodes(out_img.affine) == nib.orientations.aff2axcodes(src_img.affine)
+
+    # In keepgeom mode, inference runs in conformed/model space, while final
+    # output is resampled back to native geometry.
+    assert intermediate_img.shape[:3] != src_img.shape[:3]

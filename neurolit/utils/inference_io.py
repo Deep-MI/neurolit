@@ -43,6 +43,45 @@ def _normalize_min_shape(min_size: int | tuple[int, int, int] | None) -> tuple[i
     return tuple(int(v) for v in min_size)
 
 
+def compute_model_min_size(
+    internal_size: tuple[int, ...] | list[int] | None,
+    *,
+    multiple: int,
+    strict_larger: bool = True,
+) -> int | None:
+    """Derive a model-safe minimum side length aligned to ``multiple``.
+
+    Parameters
+    ----------
+    internal_size : tuple[int, ...] | list[int] | None
+        Model internal size tuple/list (e.g., ``(128, 128)``). ``None`` means
+        no model-specific minimum is enforced.
+    multiple : int
+        Spatial multiple required by the inference pipeline.
+    strict_larger : bool, optional
+        If ``True`` (default), require sizes to be strictly larger than
+        ``internal_size`` by adding 1 before alignment.
+
+    Returns
+    -------
+    int | None
+        Aligned minimum size or ``None`` when ``internal_size`` is ``None``.
+    """
+    if internal_size is None:
+        return None
+    if multiple <= 0:
+        raise ValueError("multiple must be > 0")
+    if len(internal_size) == 0:
+        raise ValueError("internal_size must not be empty")
+
+    margin = 1 if strict_larger else 0
+    required = max(int(v) for v in internal_size) + margin
+    if required <= 0:
+        raise ValueError("internal_size must contain positive values")
+
+    return ((required + multiple - 1) // multiple) * multiple
+
+
 def _compute_pad_spec(shape: tuple[int, int, int], target_shape: tuple[int, int, int]) -> tuple[int, int, int, int, int, int]:
     """Build symmetric pad spec for torch.nn.functional.pad on 3D spatial tensors."""
     pad_spec: list[int] = []

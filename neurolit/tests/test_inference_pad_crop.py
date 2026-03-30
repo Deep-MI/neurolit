@@ -1,6 +1,14 @@
 import torch
 
-from neurolit.utils.inference_io import crop_after_inference, pad_for_inference
+from neurolit.utils.inference_io import compute_model_min_size, crop_after_inference, pad_for_inference
+
+
+def test_compute_model_min_size_rounds_up_with_strict_margin():
+    assert compute_model_min_size((128, 128), multiple=16, strict_larger=True) == 144
+
+
+def test_compute_model_min_size_none_passthrough():
+    assert compute_model_min_size(None, multiple=16) is None
 
 
 def test_pad_and_crop_identity_for_odd_shapes():

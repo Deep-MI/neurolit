@@ -37,7 +37,16 @@ from torch.amp import autocast  # noqa: E402  # previous: from torch.cuda.amp im
 from neurolit.data import conform  # noqa: E402
 from neurolit.inference import OffsetTwoAndHalfDInpaintingInferer  # noqa: E402
 from neurolit.networks.DiffusionUnet import DiffusionModelUNetVINN  # noqa: E402
-from neurolit.utils.inference_io import crop_after_inference, pad_for_inference, resample_result_to_reference  # noqa: E402
+from neurolit.utils.geometry_policy import (  # noqa: E402
+    default_conform_kwargs,
+    vinn_scale_factor_from_zooms,
+)
+from neurolit.utils.inference_io import (  # noqa: E402
+    compute_model_min_size,
+    crop_after_inference,
+    pad_for_inference,
+    resample_result_to_reference,
+)
 from neurolit.utils.log import get_logger  # noqa: E402
 from neurolit.utils.plotting import plot_batch, plot_inpainting  # noqa: E402
 
@@ -123,30 +132,26 @@ def conform_nifti(image: NiftiImage) -> NiftiImage:
     if len(image.shape) > 3 and image.shape[3] != 1:
         raise ValueError(f"Multiple input frames ({image.shape[3]}) not supported!")
 
-    _vox_size: str | None = "min"
-    _img_size: int | str | None = "auto"
-    _orientation: str | None = "lia"
-    _rescale: int | float | None = 255
-    _dtype: type | None = None
+    conform_kwargs = default_conform_kwargs()
 
     try:
         if conform.is_conform(
             image,
-            vox_size=_vox_size,
-            img_size=_img_size,
-            orientation=_orientation,
-            dtype=_dtype,
+            vox_size=conform_kwargs["vox_size"],
+            img_size=conform_kwargs["img_size"],
+            orientation=conform_kwargs["orientation"],
+            dtype=conform_kwargs["dtype"],
             verbose=False,
         ):
             return image
         return conform.conform(
             image,
             order=2,
-            vox_size=_vox_size,
-            img_size=_img_size,
-            orientation=_orientation,
-            dtype=_dtype,
-            rescale=_rescale,
+            vox_size=conform_kwargs["vox_size"],
+            img_size=conform_kwargs["img_size"],
+            orientation=conform_kwargs["orientation"],
+            dtype=conform_kwargs["dtype"],
+            rescale=conform_kwargs["rescale"],
         )
     except ValueError as e:
         raise ValueError(e.args[0]) from e
@@ -302,11 +307,11 @@ def inpaint_volume(
     val_image = val_image.to(device)
     val_image_masked = val_image_masked.to(device)
 
-    model_min_size: int | None = None
-    if hasattr(test_model, "internal_size"):
-        # Model forward requires input size strictly larger than internal_size.
-        required = max(int(v) for v in test_model.internal_size) + 1
-        model_min_size = ((required + pad_multiple - 1) // pad_multiple) * pad_multiple
+    model_min_size = compute_model_min_size(
+        getattr(test_model, "internal_size", None),
+        multiple=pad_multiple,
+        strict_larger=True,
+    )
 
     # Deterministic inference-only padding for unsupported spatial dimensions.
     val_image, mask, val_image_masked, pad_metadata = pad_for_inference(
@@ -490,8 +495,7 @@ def main(argv=None):
 
     INTERNAL_SHAPE = list(model_dict.values())[0].internal_size
     zooms = val_image_nib.header.get_zooms()
-    internal_res_mm = 256 / INTERNAL_SHAPE[0]
-    scale_factor = internal_res_mm / zooms[0]
+    scale_factor = vinn_scale_factor_from_zooms(INTERNAL_SHAPE, zooms)
 
     val_sample = {'image': val_image, 'mask': mask}
 
