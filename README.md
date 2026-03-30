@@ -33,7 +33,21 @@ The most straight forward way of doing the inpainting is just providing
 ```bash
 ./neurolit/scripts/run_lit_containerized.sh --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output_directory output_directory --dilate 2
 ```
-The default is to use docker. Add the `--singularity` flag to use singularity instead. To use the containerized version of this tool either docker or singularity should be installed. To build the singularity image docker is also required, otherwise please download the prebuild image.
+The default is to use Docker. Add the `--singularity` flag to use Singularity or Apptainer instead:
+
+```bash
+./neurolit/scripts/run_lit_containerized.sh --singularity --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output_directory output_directory
+```
+
+On first use, the image is pulled from Docker Hub — **no root required**. The image is cached in `containerization/deepmi_lit_<version>.sif` and reused on subsequent runs.
+
+If you already have a `.sif` file, pass it directly to skip the pull:
+
+```bash
+./neurolit/scripts/run_lit_containerized.sh --singularity_image /path/to/deepmi_lit.sif --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz --output_directory output_directory
+```
+
+Both `singularity` and `apptainer` (the HPC-standard open-source fork) are supported automatically.
 
 
 The outputs will be placed in the output directory in the folder inpainting_volumes and contain

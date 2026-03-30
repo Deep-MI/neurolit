@@ -29,9 +29,12 @@ FLAGS:
   -o, --output_directory <output_directory>
       Path to the output directory
   --singularity
-      Use singularity instead of docker
+      Use singularity/apptainer instead of docker. The image is pulled from Docker Hub
+      on first use (no root required) and cached in containerization/deepmi_lit_<version>.sif.
+  --singularity_image <path>
+      Path to an existing Singularity/Apptainer image (.sif or .simg). Implies --singularity.
   --tag <tag>
-      Docker tag to use (e.g., 'latest' or '0.6dev'). If a full image name is 
+      Docker tag to use (e.g., 'latest' or '0.6dev'). If a full image name is
       provided (containing '/' or ':'), it overrides the default repository.
 
 Examples:
@@ -62,6 +65,7 @@ DOCKER_REPO="deepmi/lit"
 
 # Initialize variables
 USE_SINGULARITY=false
+SINGULARITY_IMAGE=""
 VERSION=""
 DEVICE="auto"
 
@@ -150,7 +154,17 @@ while [[ $# -gt 0 ]]; do
       ;;
     --singularity)
       USE_SINGULARITY=true
-      shift # past argument
+      shift
+      ;;
+    --singularity_image)
+      if [[ -z "$2" || "$2" == -* ]]; then
+        echo "Error: --singularity_image requires a value"
+        usage
+        exit 1
+      fi
+      SINGULARITY_IMAGE="$2"
+      USE_SINGULARITY=true
+      shift 2
       ;;
     --tag)
       if [[ -z "$2" || "$2" == -* ]]; then
@@ -231,13 +245,28 @@ fi
 
 # Run command based on the containerization tool
 if [ "$USE_SINGULARITY" = true ]; then
-  if [ ! -f "$PROJ_DIR/containerization/deepmi_lit.simg" ]; then
-    echo "=============== Pulling Singularity image from Docker Hub... ==============="
-    singularity pull "$PROJ_DIR/containerization/deepmi_lit.simg" docker://${IMAGE}
+  # Resolve singularity/apptainer binary
+  if command -v singularity >/dev/null 2>&1; then
+    SINGULARITY_CMD="singularity"
+  elif command -v apptainer >/dev/null 2>&1; then
+    SINGULARITY_CMD="apptainer"
+  else
+    echo "Error: neither 'singularity' nor 'apptainer' found in PATH"
+    exit 1
   fi
 
-  if [ ! -f "$PROJ_DIR/containerization/deepmi_lit.simg" ]; then
-    echo "Error: Singularity image not found: $PROJ_DIR/containerization/deepmi_lit.simg"
+  # Determine image path (versioned filename avoids stale cached images)
+  if [ -z "$SINGULARITY_IMAGE" ]; then
+    SINGULARITY_IMAGE="$PROJ_DIR/containerization/deepmi_lit_${VERSION}.sif"
+  fi
+
+  if [ ! -f "$SINGULARITY_IMAGE" ]; then
+    echo "=============== Pulling Singularity image from Docker Hub (no root required)... ==============="
+    $SINGULARITY_CMD pull "$SINGULARITY_IMAGE" docker://${IMAGE}
+  fi
+
+  if [ ! -f "$SINGULARITY_IMAGE" ]; then
+    echo "Error: Singularity image not found: $SINGULARITY_IMAGE"
     exit 1
   fi
 
@@ -246,11 +275,11 @@ if [ "$USE_SINGULARITY" = true ]; then
     SINGULARITY_ARGS+=(--nv)
   fi
 
-  singularity exec "${SINGULARITY_ARGS[@]}" \
+  $SINGULARITY_CMD exec "${SINGULARITY_ARGS[@]}" \
     -B "${INPUT_IMAGE}":"${INPUT_IMAGE}":ro \
     -B "${MASK_IMAGE}":"${MASK_IMAGE}":ro \
     -B "${OUT_DIR}":"${OUT_DIR}" \
-    $PROJ_DIR/containerization/deepmi_lit.simg \
+    "$SINGULARITY_IMAGE" \
     lit-inpainting -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" --device "${RESOLVED_DEVICE}" "${POSITIONAL_ARGS[@]}"
 else
   DOCKER_ARGS=(run --ipc=host
