@@ -457,7 +457,6 @@ def conformed_vox_img_size(
         vox_size = kwargs["conform_vox_size"]
 
     max_vox_size = 1.0
-    max_dimension = 256
 
     if isinstance(vox_size, str) and vox_size.lower() in ["min", "auto"]:
         decimals = int(np.ceil(-np.log10(vox_eps)))
@@ -487,7 +486,7 @@ def conformed_vox_img_size(
             fov = np.array(img.header.get_zooms()[:3]) * target_img_size
             target_img_size = np.ceil((fov / target_vox_size * 10000).astype(int).astype(float) / 10000).astype(int)
         if mode == "auto":
-            max_dim = int(np.amax(np.maximum(max_dimension, target_img_size)))
+            max_dim = int(np.amax(target_img_size))
             target_img_size = np.full((3,), max_dim)
     else:
         raise ValueError("Invalid value for img_size passed.")

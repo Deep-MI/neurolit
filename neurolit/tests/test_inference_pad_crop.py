@@ -37,3 +37,40 @@ def test_pad_noop_for_aligned_shape():
 
     cropped = crop_after_inference(image_padded, metadata)
     torch.testing.assert_close(cropped, image)
+
+
+def test_pad_enforces_model_min_size_even_if_aligned():
+    image = torch.randn(1, 96, 112, 128)
+    mask = torch.zeros_like(image)
+    masked = image.clone()
+
+    image_padded, mask_padded, masked_padded, metadata = pad_for_inference(
+        image,
+        mask,
+        masked,
+        multiple=16,
+        min_size=144,
+    )
+
+    assert image_padded.shape[-3:] == (144, 144, 144)
+    assert mask_padded.shape == image_padded.shape
+    assert masked_padded.shape == image_padded.shape
+
+    image_cropped = crop_after_inference(image_padded, metadata)
+    torch.testing.assert_close(image_cropped, image)
+
+
+def test_pad_min_size_rounds_to_multiple():
+    image = torch.randn(1, 129, 129, 129)
+    mask = torch.zeros_like(image)
+    masked = image.clone()
+
+    image_padded, _, _, _ = pad_for_inference(
+        image,
+        mask,
+        masked,
+        multiple=16,
+        min_size=129,
+    )
+
+    assert image_padded.shape[-3:] == (144, 144, 144)

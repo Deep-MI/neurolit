@@ -302,12 +302,19 @@ def inpaint_volume(
     val_image = val_image.to(device)
     val_image_masked = val_image_masked.to(device)
 
+    model_min_size: int | None = None
+    if hasattr(test_model, "internal_size"):
+        # Model forward requires input size strictly larger than internal_size.
+        required = max(int(v) for v in test_model.internal_size) + 1
+        model_min_size = ((required + pad_multiple - 1) // pad_multiple) * pad_multiple
+
     # Deterministic inference-only padding for unsupported spatial dimensions.
     val_image, mask, val_image_masked, pad_metadata = pad_for_inference(
         val_image,
         mask,
         val_image_masked,
         multiple=pad_multiple,
+        min_size=model_min_size,
     )
 
     # Run inpainting

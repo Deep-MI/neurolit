@@ -28,6 +28,21 @@ def _compute_target_shape(shape: tuple[int, int, int], multiple: int) -> tuple[i
     return tuple(((size + multiple - 1) // multiple) * multiple for size in shape)
 
 
+def _normalize_min_shape(min_size: int | tuple[int, int, int] | None) -> tuple[int, int, int] | None:
+    """Normalize minimum-size inputs to a 3D tuple."""
+    if min_size is None:
+        return None
+    if isinstance(min_size, int):
+        if min_size <= 0:
+            raise ValueError("min_size must be > 0")
+        return (min_size, min_size, min_size)
+    if len(min_size) != 3:
+        raise ValueError("min_size tuple must have length 3")
+    if any(v <= 0 for v in min_size):
+        raise ValueError("all min_size tuple values must be > 0")
+    return tuple(int(v) for v in min_size)
+
+
 def _compute_pad_spec(shape: tuple[int, int, int], target_shape: tuple[int, int, int]) -> tuple[int, int, int, int, int, int]:
     """Build symmetric pad spec for torch.nn.functional.pad on 3D spatial tensors."""
     pad_spec: list[int] = []
@@ -45,6 +60,7 @@ def pad_for_inference(
     masked_image: torch.Tensor,
     *,
     multiple: int = 16,
+    min_size: int | tuple[int, int, int] | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, InferencePadCropMetadata]:
     """Pad image/mask tensors jointly to inference-safe dimensions."""
     if multiple <= 0:
@@ -52,6 +68,10 @@ def pad_for_inference(
 
     spatial_shape = tuple(int(v) for v in image.shape[-3:])
     target_shape = _compute_target_shape(spatial_shape, multiple)
+    min_shape = _normalize_min_shape(min_size)
+    if min_shape is not None:
+        target_shape = tuple(max(t, m) for t, m in zip(target_shape, min_shape, strict=True))
+        target_shape = _compute_target_shape(target_shape, multiple)
     pad_spec = _compute_pad_spec(spatial_shape, target_shape)
 
     if not any(pad_spec):
