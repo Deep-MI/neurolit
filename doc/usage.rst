@@ -131,7 +131,7 @@ Or using Python:
        cmd = [
            "lit-inpainting",
            "--input_image", str(data_dir / subject / "T1w.nii.gz"),
-           "--mask_image", str(data_dir / subject / "lesion_mask.nii.gz"),
+           "--lesion_mask", str(data_dir / subject / "lesion_mask.nii.gz"),
            "--output_directory", f"output/{subject}",
            "--dilate", "2"
        ]

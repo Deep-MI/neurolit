@@ -225,6 +225,9 @@ def inpaint_volume(
     torch.Tensor
         Inpainted volume with the same shape as the input.
     """
+    if isinstance(device, str):
+        device = torch.device(device)
+
     # Input validation with type checking
     if not isinstance(models, dict):
         raise TypeError("models must be a dictionary")
@@ -349,7 +352,7 @@ def main(argv=None):
     SAVE_VOLUMES = True
     SAVE_IMAGES = True
 
-    parser = argparse.ArgumentParser(description="Train a 3D DDPM model")
+    parser = argparse.ArgumentParser(description="Run 3D image inpainting using a pretrained DDPM model")
     parser.add_argument("-o", "--out_dir", type=str, default="debug_run", help="experiment output directory")
     parser.add_argument("-i", "--input_image", type=str, help="input image", required=True)
     parser.add_argument("-m", "--mask_image", type=str, help="input mask", default=None, required=False)
