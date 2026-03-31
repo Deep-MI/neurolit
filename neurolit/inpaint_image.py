@@ -53,11 +53,11 @@ from neurolit.utils.plotting import plot_batch, plot_inpainting  # noqa: E402
 logger = get_logger(__name__)
 
 # use Agg backend on server
-if os.environ.get('DISPLAY','') == '':
-    #os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
-    os.makedirs('/tmp/', exist_ok=True)
-    os.environ['MPLCONFIGDIR'] = '/tmp'
-    matplotlib.use('Agg')
+if os.environ.get("DISPLAY", "") == "":
+    # os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
+    os.makedirs("/tmp/", exist_ok=True)
+    os.environ["MPLCONFIGDIR"] = "/tmp"
+    matplotlib.use("Agg")
 
 
 # Custom types
@@ -100,20 +100,13 @@ def dilate_mask(mask: torch.Tensor, num_iterations: int, kernel_size: int = 3) -
     dilated = mask
     padding = kernel_size // 2
     for _ in range(num_iterations):
-        dilated = F.max_pool3d(
-            dilated,
-            kernel_size=kernel_size,
-            stride=1,
-            padding=padding
-        )
+        dilated = F.max_pool3d(dilated, kernel_size=kernel_size, stride=1, padding=padding)
 
     # Restore original shape
     if len(orig_shape) == 3:
         dilated = dilated.squeeze(0).squeeze(0)
 
     return dilated
-
-
 
 
 def conform_nifti(image: NiftiImage) -> NiftiImage:
@@ -156,12 +149,8 @@ def conform_nifti(image: NiftiImage) -> NiftiImage:
     except ValueError as e:
         raise ValueError(e.args[0]) from e
 
-def get_slice_from_volume(
-    volume: torch.Tensor,
-    slice_dim: int,
-    slice_cut: int,
-    thickness: int
-) -> torch.Tensor:
+
+def get_slice_from_volume(volume: torch.Tensor, slice_dim: int, slice_cut: int, thickness: int) -> torch.Tensor:
     """Extract a slice from a volume with a specified thickness.
 
     Parameters
@@ -181,8 +170,9 @@ def get_slice_from_volume(
         Extracted slice tensor.
     """
     threed_to_twod_slice: list[slice] = [slice(None)] * 3
-    threed_to_twod_slice[slice_dim] = slice(slice_cut - thickness//2, slice_cut + thickness//2 + 1)
+    threed_to_twod_slice[slice_dim] = slice(slice_cut - thickness // 2, slice_cut + thickness // 2 + 1)
     return volume[tuple(threed_to_twod_slice)]
+
 
 def inpaint_volume(
     models: ModelDict,
@@ -262,7 +252,6 @@ def inpaint_volume(
 
     slice_dim = slice_dim or 0  # Default to first dimension
 
-
     # Current mean calculation could fail with empty mask
     mask_indices = torch.where(mask[volume_only_slice].bool())
     if not mask_indices[0].numel():
@@ -274,21 +263,21 @@ def inpaint_volume(
         affine_header = (val_image_nib.affine, val_image_nib.header) if val_image_nib else (np.eye(4), None)
 
         if SAVE_VOLUMES:
-            os.makedirs(os.path.join(out_dir, 'inpainting_volumes'), exist_ok=True)
-            for name, data in [('original_image', val_image), ('mask', mask), ('masked_image', val_image_masked)]:
-                nib.save(nib.Nifti1Image(data[volume_only_slice].cpu().numpy(), *affine_header),
-                        os.path.join(out_dir, f'inpainting_volumes/inpainting_{name}.nii.gz'))
+            os.makedirs(os.path.join(out_dir, "inpainting_volumes"), exist_ok=True)
+            for name, data in [("original_image", val_image), ("mask", mask), ("masked_image", val_image_masked)]:
+                nib.save(
+                    nib.Nifti1Image(data[volume_only_slice].cpu().numpy(), *affine_header),
+                    os.path.join(out_dir, f"inpainting_volumes/inpainting_{name}.nii.gz"),
+                )
 
         if SAVE_IMAGES:
-            os.makedirs(os.path.join(out_dir, 'inpainting_images'), exist_ok=True)
-            for name, data in [('original_image', val_image), ('mask', mask), ('masked_image', val_image_masked)]:
-                plot_batch(data, os.path.join(out_dir, f'inpainting_images/inpainting_{name}.png'), 
-                          slice_cut=SLICE_CUT)
+            os.makedirs(os.path.join(out_dir, "inpainting_images"), exist_ok=True)
+            for name, data in [("original_image", val_image), ("mask", mask), ("masked_image", val_image_masked)]:
+                plot_batch(data, os.path.join(out_dir, f"inpainting_images/inpainting_{name}.png"), slice_cut=SLICE_CUT)
 
     # Setup models and scheduler
     for model in models.values():
         model.eval()
-    
 
     if num_inference_steps <= 0:
         raise ValueError("num_inference_steps must be > 0")
@@ -296,10 +285,10 @@ def inpaint_volume(
     if DDIM:
         steps = num_inference_steps
         scheduler = DDIMScheduler(num_train_timesteps=1000, schedule="scaled_linear_beta", beta_start=0.0005, beta_end=0.0195, clip_sample=False)
-        logger.info(f'Using DDIM scheduler with {steps} steps')
+        logger.info(f"Using DDIM scheduler with {steps} steps")
     else:
         steps = num_inference_steps
-        scheduler = DDPMScheduler(num_train_timesteps=steps, schedule="scaled_linear_beta", beta_start=0.0005, beta_end=0.0195)
+        scheduler = DDPMScheduler(num_train_timesteps=1000, schedule="scaled_linear_beta", beta_start=0.0005, beta_end=0.0195)
     scheduler.set_timesteps(num_inference_steps=steps, device=device)
 
     # Prepare inputs
@@ -323,15 +312,12 @@ def inpaint_volume(
     )
 
     # Run inpainting
-    logger.info('Using 2.5D inpainting with view aggregation')
-    Inpainter = OffsetTwoAndHalfDInpaintingInferer(
-        inference_steps=steps,
-        scheduler=scheduler,
-        diffusion_model_dict=models
-    )
+    logger.info("Using 2.5D inpainting with view aggregation")
+    Inpainter = OffsetTwoAndHalfDInpaintingInferer(inference_steps=steps, scheduler=scheduler, diffusion_model_dict=models)
 
-    #import pdb; pdb.set_trace()
-    with torch.inference_mode(), autocast(enabled=True, device_type='cuda'):
+    # import pdb; pdb.set_trace()
+    device_type = torch.device(device).type
+    with torch.inference_mode(), autocast(enabled=True, device_type=device_type):
         val_image_inpainted = Inpainter(
             mask=mask[0],
             image_masked=val_image_masked[0],
@@ -339,17 +325,23 @@ def inpaint_volume(
             num_resample_jumps=15,
             batch_size=8,
             get_intermediates=False,
-            scale_factor=scale_factor
+            scale_factor=scale_factor,
         )
     val_image_inpainted = val_image_inpainted.unsqueeze(0)
     val_image_inpainted = crop_after_inference(val_image_inpainted, pad_metadata)
+    val_image = crop_after_inference(val_image, pad_metadata)
+    val_image_masked = crop_after_inference(val_image_masked, pad_metadata)
 
     # Save results
     if SAVE_IMAGES:
-        plot_inpainting(val_image, val_image_masked, val_image_inpainted,
-                       out_file=os.path.join(out_dir, 'inpainting_images/inpainting_result.png'),
-                       SLICE_CUT=SLICE_CUT, cut_dim=0)
-
+        plot_inpainting(
+            val_image,
+            val_image_masked,
+            val_image_inpainted,
+            out_file=os.path.join(out_dir, "inpainting_images/inpainting_result.png"),
+            SLICE_CUT=SLICE_CUT,
+            cut_dim=0,
+        )
 
         # ##### plotting of intermediates
         # if len(models) == 3: # view agg gives 3d intermediates
@@ -360,7 +352,7 @@ def inpaint_volume(
         #     slice_c = SLICE_CUT[[0,2]]
         # elif slice_dim == 2:
         #     slice_c = SLICE_CUT[[0,1]]
-        # plot_batch(intermediates, os.path.join(out_dir,'inpainting_images/inpainting_intermediates.png'), 
+        # plot_batch(intermediates, os.path.join(out_dir,'inpainting_images/inpainting_intermediates.png'),
         #            slice_cut=slice_c)
 
     if SAVE_VOLUMES:
@@ -369,10 +361,10 @@ def inpaint_volume(
             output_nib = resample_result_to_reference(output_data, val_image_nib, reference_image_nib, order=1)
         else:
             output_nib = nib.Nifti1Image(output_data, *affine_header)
-        nib.save(output_nib, os.path.join(out_dir, 'inpainting_volumes/inpainting_result.nii.gz'))
-        logger.info('Saved inpainting result as inpainting_volumes/inpainting_result.nii.gz')
+        nib.save(output_nib, os.path.join(out_dir, "inpainting_volumes/inpainting_result.nii.gz"))
+        logger.info("Saved inpainting result as inpainting_volumes/inpainting_result.nii.gz")
 
-    logger.info('Finished inpainting')
+    logger.info("Finished inpainting")
     return val_image_inpainted
 
 
@@ -384,36 +376,33 @@ def main(argv=None):
     SAVE_VOLUMES = True
     SAVE_IMAGES = True
 
-    parser = argparse.ArgumentParser(description='Train a 3D DDPM model')
-    parser.add_argument('-o','--out_dir', type=str, default='debug_run', help='experiment output directory')
-    parser.add_argument('-i', '--input_image', type=str, help='input image', required=True)
-    parser.add_argument('-m', '--mask_image', type=str, help='input mask', default=None, required=False)
-    parser.add_argument('--dilate', type=int, help='number of pixels to dilate the mask by',
-                        required=False, default=0)
-    parser.add_argument('--keepgeom', action='store_true', help='Keep native output geometry while running inference in internal space')
-    parser.add_argument('--num_inference_steps', type=int, default=1000, help='Number of diffusion inference iterations (default: 1000)')
-    parser.add_argument('-c_coronal', '--checkpoint_coronal',
-                        type=str, help='checkpoint to load for inference in coronal plane',
-                        default=None, required=False)
-    parser.add_argument('-c_axial', '--checkpoint_axial', 
-                        type=str, help='checkpoint to load for inference in axial plane', 
-                        default=None, required=False)
-    parser.add_argument('-c_sagittal', '--checkpoint_sagittal',
-                        type=str, help='checkpoint to load for inference in sagittal plane',
-                        default=None, required=False)
+    parser = argparse.ArgumentParser(description="Train a 3D DDPM model")
+    parser.add_argument("-o", "--out_dir", type=str, default="debug_run", help="experiment output directory")
+    parser.add_argument("-i", "--input_image", type=str, help="input image", required=True)
+    parser.add_argument("-m", "--mask_image", type=str, help="input mask", default=None, required=False)
+    parser.add_argument("--dilate", type=int, help="number of pixels to dilate the mask by", required=False, default=0)
+    parser.add_argument("--keepgeom", action="store_true", help="Keep native output geometry while running inference in internal space")
+    parser.add_argument("--num_inference_steps", type=int, default=1000, help="Number of diffusion inference iterations (default: 1000)")
+    parser.add_argument(
+        "-c_coronal", "--checkpoint_coronal", type=str, help="checkpoint to load for inference in coronal plane", default=None, required=False
+    )
+    parser.add_argument(
+        "-c_axial", "--checkpoint_axial", type=str, help="checkpoint to load for inference in axial plane", default=None, required=False
+    )
+    parser.add_argument(
+        "-c_sagittal", "--checkpoint_sagittal", type=str, help="checkpoint to load for inference in sagittal plane", default=None, required=False
+    )
 
     args = parser.parse_args(argv)
-
 
     # load models
     model_state_dicts = {}
     if args.checkpoint_coronal is not None:
-        model_state_dicts['coronal'] = torch.load(args.checkpoint_coronal, weights_only=True)
+        model_state_dicts["coronal"] = torch.load(args.checkpoint_coronal, weights_only=True)
     if args.checkpoint_axial is not None:
-        model_state_dicts['axial'] = torch.load(args.checkpoint_axial, weights_only=True)
+        model_state_dicts["axial"] = torch.load(args.checkpoint_axial, weights_only=True)
     if args.checkpoint_sagittal is not None:
-        model_state_dicts['sagittal'] = torch.load(args.checkpoint_sagittal, weights_only=True)
-
+        model_state_dicts["sagittal"] = torch.load(args.checkpoint_sagittal, weights_only=True)
 
     # setup model
     device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
@@ -423,24 +412,23 @@ def main(argv=None):
     for model_name, model_state_dict in model_state_dicts.items():
         model_dict[model_name] = DiffusionModelUNetVINN(
             spatial_dims=2,
-            internal_size=(128,128),
+            internal_size=(128, 128),
             in_channels=SLICE_THICKNESS,
             out_channels=SLICE_THICKNESS,
-            num_channels=[128, 256, 512],#[256, 256, 512],
+            num_channels=[128, 256, 512],  # [256, 256, 512],
             attention_levels=[False, False, True],
             num_head_channels=[0, 0, 512],
             num_res_blocks=2,
             norm_num_groups=4,
             use_fp16_VINN=False,
             is_vinn=True,
-            interpolation_mode='bilinear',
+            interpolation_mode="bilinear",
         )
         model_dict[model_name].load_state_dict(model_state_dict)
         model_dict[model_name].to(device)
 
-
     # Add compilation for PyTorch 2.0+
-    #print(f'Torch version: {torch.__version__}')
+    # print(f'Torch version: {torch.__version__}')
     # if torch.__version__ >= "2.0.0" and (isinstance(device, torch.device) and device.type == 'cuda'):
     #     print("Compiling models with torch.compile()...")
     #     try:
@@ -464,8 +452,8 @@ def main(argv=None):
     #         print("Continuing with uncompiled models...")
 
     # setup parameters (i.e. whether to use view aggregation, 2d or 3d model)
-    model_to_dim = {'coronal': 2, 'axial': 1, 'sagittal': 0}
-    if len(model_dict) == 0:    
+    model_to_dim = {"coronal": 2, "axial": 1, "sagittal": 0}
+    if len(model_dict) == 0:
         print("ERROR: At least one checkpoint must be specified", file=sys.stderr)
         sys.exit(1)
     elif len(model_dict) == 1:
@@ -476,7 +464,7 @@ def main(argv=None):
         print(f"ERROR: One or three checkpoints must be specified, but got {len(model_dict)}", file=sys.stderr)
         sys.exit(1)
 
-    assert(list(model_dict.values())[0].is_vinn)
+    assert list(model_dict.values())[0].is_vinn
 
     val_image_native_nib = nib.load(args.input_image)
     val_image_nib = conform_nifti(val_image_native_nib)
@@ -485,51 +473,60 @@ def main(argv=None):
 
     mask_nib = nib.load(args.mask_image)
     # resample mask to image affine
-    mask_nib = nibabel.processing.resample_from_to(mask_nib, val_image_nib, order=0, mode='constant', cval=0)
+    mask_nib = nibabel.processing.resample_from_to(mask_nib, val_image_nib, order=0, mode="constant", cval=0)
 
     mask = torch.from_numpy(mask_nib.get_fdata()).float()
 
     if args.dilate > 0:
         mask = dilate_mask(mask, args.dilate)
 
-
     INTERNAL_SHAPE = list(model_dict.values())[0].internal_size
     zooms = val_image_nib.header.get_zooms()
     scale_factor = vinn_scale_factor_from_zooms(INTERNAL_SHAPE, zooms)
 
-    val_sample = {'image': val_image, 'mask': mask}
+    val_sample = {"image": val_image, "mask": mask}
 
-    if not os.path.exists(os.path.join(args.out_dir,'inpainting_images')) or not os.path.exists(os.path.join(args.out_dir,'inpainting_volumes')):
-        os.makedirs(os.path.join(args.out_dir,'inpainting_images'), exist_ok=True)
-        os.makedirs(os.path.join(args.out_dir,'inpainting_volumes'), exist_ok=True)
-        logger.info(f'Created output directory: {args.out_dir}')
+    if not os.path.exists(os.path.join(args.out_dir, "inpainting_images")) or not os.path.exists(os.path.join(args.out_dir, "inpainting_volumes")):
+        os.makedirs(os.path.join(args.out_dir, "inpainting_images"), exist_ok=True)
+        os.makedirs(os.path.join(args.out_dir, "inpainting_volumes"), exist_ok=True)
+        logger.info(f"Created output directory: {args.out_dir}")
     else:
-        logger.info(f'Output directory already exists: {args.out_dir}')
-
+        logger.info(f"Output directory already exists: {args.out_dir}")
 
     tr = [
-        #transforms.AddChanneld(keys=['image', 'mask']),
-        transforms.EnsureChannelFirstd(keys=['image', 'mask'], channel_dim='no_channel'),
-        transforms.ScaleIntensityd(keys=['image']),
+        # transforms.AddChanneld(keys=['image', 'mask']),
+        transforms.EnsureChannelFirstd(keys=["image", "mask"], channel_dim="no_channel"),
+        transforms.ScaleIntensityd(keys=["image"]),
     ]
 
     data_transform = transforms.Compose(tr)
     val_sample_preproc = data_transform(val_sample)
 
-
-
-    assert(val_sample_preproc['image'].shape == val_sample_preproc['mask'].shape), \
+    assert val_sample_preproc["image"].shape == val_sample_preproc["mask"].shape, (
         f"Image and mask must have the same shape, but got {val_sample_preproc['image'].shape} and {val_sample_preproc['mask'].shape}"
-    val_image = val_sample_preproc['image']
-    mask = val_sample_preproc['mask']
+    )
+    val_image = val_sample_preproc["image"]
+    mask = val_sample_preproc["mask"]
 
     val_image_masked = val_image * (~(mask > 0)).float()
 
-    inpaint_volume(models=model_dict, val_image=val_image, mask=mask, val_image_masked=val_image_masked, scale_factor=scale_factor,
-                   out_dir=args.out_dir, SAVE_VOLUMES=SAVE_VOLUMES, SAVE_IMAGES=SAVE_IMAGES,
-                   device=device, slice_input=False, slice_dim=DIM, val_image_nib=val_image_nib, DDIM=False,
-                   reference_image_nib=val_image_native_nib if args.keepgeom else None,
-                   num_inference_steps=args.num_inference_steps)
+    inpaint_volume(
+        models=model_dict,
+        val_image=val_image,
+        mask=mask,
+        val_image_masked=val_image_masked,
+        scale_factor=scale_factor,
+        out_dir=args.out_dir,
+        SAVE_VOLUMES=SAVE_VOLUMES,
+        SAVE_IMAGES=SAVE_IMAGES,
+        device=device,
+        slice_input=False,
+        slice_dim=DIM,
+        val_image_nib=val_image_nib,
+        DDIM=False,
+        reference_image_nib=val_image_native_nib if args.keepgeom else None,
+        num_inference_steps=args.num_inference_steps,
+    )
 
 
 if __name__ == "__main__":
