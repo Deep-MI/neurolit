@@ -25,6 +25,7 @@ def run_lit():
 
     # Optional arguments
     parser.add_argument("--dilate", type=int, default=0, help="Number of times to dilate the lesion mask (default: 0)")
+    parser.add_argument("--keepgeom", action="store_true", help="Preserve native output geometry")
     parser.add_argument(
         "--device",
         choices=["auto", "cpu", "cuda"],
@@ -37,7 +38,6 @@ def run_lit():
         default=8,
         help="Slices per GPU batch (default: 8); reduce to lower GPU memory usage",
     )
-
     # Other arguments
     parser.add_argument("-h", "--help", action="store_true", help="Show help message and exit")
     parser.add_argument("-v", "--version", action="version", version=get_version_with_hash(), help="Print version number and exit")
@@ -52,6 +52,7 @@ def run_lit():
         print("  -o, --sd, --out_dir, --output_directory : Output directory")
         print("Optional arguments:")
         print("  --dilate              : Number of times to dilate the lesion mask (default: 0)")
+        print("  --keepgeom            : Preserve native output geometry")
         print("  --device              : Inference device: auto, cpu, or cuda (default: auto)")
         print("  --batch_size          : Slices per GPU batch (default: 8); reduce to lower GPU memory usage")
         print("Other arguments:")
@@ -65,8 +66,8 @@ def run_lit():
         print("  https://doi.org/10.1162/imag_a_00446")
         sys.exit(0)
 
-    if not args.input_image or not args.sd:
-        print("Error: Input image and output directory are required")
+    if not args.input_image or not args.sd or not args.lesion_mask:
+        print("Error: Input image, lesion mask, and output directory are required")
         sys.exit(1)
 
     # Validate input files
@@ -102,38 +103,40 @@ def run_lit():
             sys.exit(1)
 
     # Run inpainting
-    if mask_image:
-        inpainted_img = out_dir / "inpainting_volumes" / "inpainting_result.nii.gz"
-        if not inpainted_img.exists():
-            print("Running inpainting...")
+    inpainted_img = out_dir / "inpainting_volumes" / "inpainting_result.nii.gz"
+    if not inpainted_img.exists():
+        print("Running inpainting...")
 
-            inpaint_argv = [
-                "--input_image",
-                str(input_image),
-                "--mask_image",
-                str(mask_image),
-                "--out_dir",
-                str(out_dir),
-                "--checkpoint_axial",
-                str(ckpt_axial),
-                "--checkpoint_sagittal",
-                str(ckpt_sagittal),
-                "--checkpoint_coronal",
-                str(ckpt_coronal),
-                "--dilate",
-                str(args.dilate),
-                "--device",
-                args.device,
-                "--batch_size",
-                str(args.batch_size),
-            ]
+        inpaint_argv = [
+            "--input_image",
+            str(input_image),
+            "--mask_image",
+            str(mask_image),
+            "--out_dir",
+            str(out_dir),
+            "--checkpoint_axial",
+            str(ckpt_axial),
+            "--checkpoint_sagittal",
+            str(ckpt_sagittal),
+            "--checkpoint_coronal",
+            str(ckpt_coronal),
+            "--dilate",
+            str(args.dilate),
+            "--device",
+            args.device,
+            "--batch_size",
+            str(args.batch_size),
+        ]
 
-            # Forward any unknown arguments
-            inpaint_argv.extend(unknown)
+        if args.keepgeom:
+            inpaint_argv.append("--keepgeom")
 
-            inpaint_main(inpaint_argv)
-        else:
-            print(f"Inpainted image already exists: {inpainted_img}")
+        # Forward any unknown arguments
+        inpaint_argv.extend(unknown)
+
+        inpaint_main(inpaint_argv)
+    else:
+        print(f"Inpainted image already exists: {inpainted_img}")
 
     print("Finished inpainting")
 

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+from collections.abc import Sequence
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -20,7 +21,7 @@ import numpy as np
 import torch
 
 
-def plot_batch(image_batch: torch.Tensor, image_path: str, slice_cut: None | list[int] = None) -> None:
+def plot_batch(image_batch: torch.Tensor, image_path: str, slice_cut: None | list[int] | torch.Tensor = None) -> None:
     """Plot a batch of 2D or 3D images with different slice views.
 
     Parameters
@@ -40,21 +41,44 @@ def plot_batch(image_batch: torch.Tensor, image_path: str, slice_cut: None | lis
     BATCH_SIZE = image_batch.shape[0]
 
     if slice_cut is None:
-        slice_cut = image_batch.shape[3] // 2
+        if dim == 3:
+            slice_cut = [
+                image_batch.shape[2] // 2,
+                image_batch.shape[3] // 2,
+                image_batch.shape[4] // 2,
+            ]
+        else:
+            slice_cut = [image_batch.shape[2] // 2, image_batch.shape[3] // 2]
+    else:
+        if torch.is_tensor(slice_cut):
+            slice_cut = slice_cut.detach().cpu().tolist()
+        slice_cut = [int(v) for v in slice_cut]
 
     if dim == 3:
-        slices = [[(i, 0, slice(None), slice(None), slice_cut[2]) for i in range(BATCH_SIZE)],
-                  [(i, 0, slice(None), slice_cut[1], slice(None)) for i in range(BATCH_SIZE)],
-                  [(i, 0, slice_cut[0], slice(None), slice(None)) for i in range(BATCH_SIZE)]]
+        slice_cut[0] = int(np.clip(slice_cut[0], 0, image_batch.shape[2] - 1))
+        slice_cut[1] = int(np.clip(slice_cut[1], 0, image_batch.shape[3] - 1))
+        slice_cut[2] = int(np.clip(slice_cut[2], 0, image_batch.shape[4] - 1))
+    elif dim == 2:
+        slice_cut[0] = int(np.clip(slice_cut[0], 0, image_batch.shape[2] - 1))
+        slice_cut[1] = int(np.clip(slice_cut[1], 0, image_batch.shape[3] - 1))
+
+    if dim == 3:
+        slices = [
+            [(i, 0, slice(None), slice(None), slice_cut[2]) for i in range(BATCH_SIZE)],
+            [(i, 0, slice(None), slice_cut[1], slice(None)) for i in range(BATCH_SIZE)],
+            [(i, 0, slice_cut[0], slice(None), slice(None)) for i in range(BATCH_SIZE)],
+        ]
     elif dim == 2:
         middle_slice = image_batch.shape[1] // 2
-        slices = [[(i, middle_slice, slice(None), slice(None)) for i in range(BATCH_SIZE)],
-                  [(i, slice(None), slice_cut[0], slice(None)) for i in range(BATCH_SIZE)],
-                  [(i, slice(None), slice(None), slice_cut[1]) for i in range(BATCH_SIZE)]]
+        slices = [
+            [(i, middle_slice, slice(None), slice(None)) for i in range(BATCH_SIZE)],
+            [(i, slice(None), slice_cut[0], slice(None)) for i in range(BATCH_SIZE)],
+            [(i, slice(None), slice(None), slice_cut[1]) for i in range(BATCH_SIZE)],
+        ]
     else:
         raise ValueError("Invalid dimension")
 
-    fig, axs = plt.subplots(3, BATCH_SIZE, figsize=(1.5*BATCH_SIZE, 3))
+    fig, axs = plt.subplots(3, BATCH_SIZE, figsize=(1.5 * BATCH_SIZE, 3))
 
     if BATCH_SIZE == 1:
         axs = np.expand_dims(axs, axis=1)
@@ -62,17 +86,16 @@ def plot_batch(image_batch: torch.Tensor, image_path: str, slice_cut: None | lis
     for s, ax in zip(slices, axs, strict=True):
         for i in range(BATCH_SIZE):
             ax[i].imshow(image_batch[s[i]].detach().cpu(), vmin=0, vmax=1, cmap="gray")
-            #plt.axis("off")
+            # plt.axis("off")
             ax[i].set_xticks([])
             ax[i].set_yticks([])
 
     plt.tight_layout()
-    plt.savefig(image_path, dpi=300, bbox_inches='tight')
+    plt.savefig(image_path, dpi=300, bbox_inches="tight")
     plt.close()
 
-def plot_learning_curve(n_epochs: int, epoch_loss_list: list[float], 
-                       val_epoch_loss_list: list[float], args: Any, 
-                       VAL_INTERVAL: int) -> None:
+
+def plot_learning_curve(n_epochs: int, epoch_loss_list: list[float], val_epoch_loss_list: list[float], args: Any, VAL_INTERVAL: int) -> None:
     """Plot training and validation learning curves.
 
     Parameters
@@ -105,8 +128,9 @@ def plot_learning_curve(n_epochs: int, epoch_loss_list: list[float],
     plt.legend(prop={"size": 14})
     # log scale
     plt.yscale("log")
-    plt.savefig(os.path.join(args.out_dir,'images/learning_curves.png'), dpi=100, bbox_inches='tight')
+    plt.savefig(os.path.join(args.out_dir, "images/learning_curves.png"), dpi=100, bbox_inches="tight")
     plt.close()
+
 
 def plot_scheduler(scheduler: Any, output_file: str) -> None:
     """Plot the scheduler's alpha values over time.
@@ -121,12 +145,18 @@ def plot_scheduler(scheduler: Any, output_file: str) -> None:
     plt.plot(scheduler.alphas_cumprod.cpu(), color=(2 / 255, 163 / 255, 163 / 255), linewidth=2)
     plt.xlabel("Timestep [t]")
     plt.ylabel("alpha cumprod")
-    plt.savefig(output_file, dpi=100, bbox_inches='tight')
+    plt.savefig(output_file, dpi=100, bbox_inches="tight")
     plt.close()
 
-def plot_inpainting(val_image: torch.Tensor, val_image_masked: torch.Tensor, 
-                   val_image_inpainted: torch.Tensor, out_file: str,
-                   SLICE_CUT: torch.Tensor, cut_dim: int = 0) -> None:
+
+def plot_inpainting(
+    val_image: torch.Tensor,
+    val_image_masked: torch.Tensor,
+    val_image_inpainted: torch.Tensor,
+    out_file: str,
+    SLICE_CUT: torch.Tensor | Sequence[int],
+    cut_dim: int = 0,
+) -> None:
     """Plot original, masked, and inpainted images side by side.
 
     Parameters
@@ -150,8 +180,17 @@ def plot_inpainting(val_image: torch.Tensor, val_image_masked: torch.Tensor,
         val_image_masked = val_image_masked[:, 0, ...]
         val_image_inpainted = val_image_inpainted[:, 0, ...]
 
+    if torch.is_tensor(SLICE_CUT):
+        slice_cut = SLICE_CUT.detach().cpu().tolist()
+    else:
+        slice_cut = [int(v) for v in SLICE_CUT]
+
+    spatial_shape = val_image.shape[1:4]
+    for axis in range(3):
+        slice_cut[axis] = int(np.clip(slice_cut[axis], 0, spatial_shape[axis] - 1))
+
     slicing = [0, slice(None), slice(None), slice(None)]
-    slicing[cut_dim+1] = SLICE_CUT[cut_dim].item()
+    slicing[cut_dim + 1] = slice_cut[cut_dim]
     slicing = tuple(slicing)  # Convert to tuple for PyTorch 2.9+ compatibility
 
     fig, axs = plt.subplots(1, 3, figsize=(12, 4))
@@ -164,5 +203,5 @@ def plot_inpainting(val_image: torch.Tensor, val_image_masked: torch.Tensor,
     axs[2].imshow(val_image_inpainted[slicing].cpu(), cmap="gray")
     axs[2].axis("off")
     axs[2].set_title("Inpainted image")
-    plt.savefig(out_file, dpi=300, bbox_inches='tight')
+    plt.savefig(out_file, dpi=300, bbox_inches="tight")
     plt.close()

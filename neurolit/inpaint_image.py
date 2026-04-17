@@ -37,6 +37,16 @@ from torch.amp import autocast  # noqa: E402  # previous: from torch.cuda.amp im
 from neurolit.data import conform  # noqa: E402
 from neurolit.inference import OffsetTwoAndHalfDInpaintingInferer  # noqa: E402
 from neurolit.networks.DiffusionUnet import DiffusionModelUNetVINN  # noqa: E402
+from neurolit.utils.geometry_policy import (  # noqa: E402
+    default_conform_kwargs,
+    vinn_scale_factor_from_zooms,
+)
+from neurolit.utils.inference_io import (  # noqa: E402
+    compute_model_min_size,
+    crop_after_inference,
+    pad_for_inference,
+    resample_result_to_reference,
+)
 from neurolit.utils.log import get_logger  # noqa: E402
 from neurolit.utils.plotting import plot_batch, plot_inpainting  # noqa: E402
 
@@ -140,11 +150,28 @@ def conform_nifti(image: NiftiImage) -> NiftiImage:
     if len(image.shape) > 3 and image.shape[3] != 1:
         raise ValueError(f"Multiple input frames ({image.shape[3]}) not supported!")
 
-    _vox_size: str = "min"
+    conform_kwargs = default_conform_kwargs()
+    is_conform_kwargs = {
+        "vox_size": conform_kwargs["vox_size"],
+        "img_size": conform_kwargs["img_size"],
+        "orientation": conform_kwargs["orientation"],
+        "verbose": False,
+    }
+    if conform_kwargs["dtype"] is not None:
+        is_conform_kwargs["dtype"] = conform_kwargs["dtype"]
+
     try:
-        if conform.is_conform(image, conform_vox_size=_vox_size, verbose=False):
+        if conform.is_conform(image, **is_conform_kwargs):
             return image
-        return conform.conform(image, order=2, conform_vox_size=_vox_size)
+        return conform.conform(
+            image,
+            order=2,
+            vox_size=conform_kwargs["vox_size"],
+            img_size=conform_kwargs["img_size"],
+            orientation=conform_kwargs["orientation"],
+            dtype=conform_kwargs["dtype"],
+            rescale=conform_kwargs["rescale"],
+        )
     except ValueError as e:
         raise ValueError(e.args[0]) from e
 
@@ -187,6 +214,9 @@ def inpaint_volume(
     device: torch.device | str = "cuda",
     DDIM: bool = False,
     val_image_nib: NiftiImage | None = None,
+    reference_image_nib: NiftiImage | None = None,
+    pad_multiple: int = 16,
+    num_inference_steps: int = 1000,
     batch_size: int = 8,
 ) -> torch.Tensor:
     """Inpaint a volume using the trained diffusion models.
@@ -279,19 +309,37 @@ def inpaint_volume(
     for model in models.values():
         model.eval()
 
+    if num_inference_steps <= 0:
+        raise ValueError("num_inference_steps must be > 0")
+
     if DDIM:
-        steps = 10
+        steps = num_inference_steps
         scheduler = DDIMScheduler(num_train_timesteps=1000, schedule="scaled_linear_beta", beta_start=0.0005, beta_end=0.0195, clip_sample=False)
         logger.info(f"Using DDIM scheduler with {steps} steps")
     else:
-        steps = 1000
-        scheduler = DDPMScheduler(num_train_timesteps=steps, schedule="scaled_linear_beta", beta_start=0.0005, beta_end=0.0195)
+        steps = num_inference_steps
+        scheduler = DDPMScheduler(num_train_timesteps=1000, schedule="scaled_linear_beta", beta_start=0.0005, beta_end=0.0195)
     scheduler.set_timesteps(num_inference_steps=steps, device=device)
 
     # Prepare inputs
     mask = (mask > 0).to(device)
     val_image = val_image.to(device)
     val_image_masked = val_image_masked.to(device)
+
+    model_min_size = compute_model_min_size(
+        getattr(test_model, "internal_size", None),
+        multiple=pad_multiple,
+        strict_larger=True,
+    )
+
+    # Deterministic inference-only padding for unsupported spatial dimensions.
+    val_image, mask, val_image_masked, pad_metadata = pad_for_inference(
+        val_image,
+        mask,
+        val_image_masked,
+        multiple=pad_multiple,
+        min_size=model_min_size,
+    )
 
     # Run inpainting
     logger.info("Using 2.5D inpainting with view aggregation")
@@ -309,6 +357,9 @@ def inpaint_volume(
             scale_factor=scale_factor,
         )
     val_image_inpainted = val_image_inpainted.unsqueeze(0)
+    val_image_inpainted = crop_after_inference(val_image_inpainted, pad_metadata)
+    val_image = crop_after_inference(val_image, pad_metadata)
+    val_image_masked = crop_after_inference(val_image_masked, pad_metadata)
 
     # Save results
     if SAVE_IMAGES:
@@ -334,10 +385,12 @@ def inpaint_volume(
         #            slice_cut=slice_c)
 
     if SAVE_VOLUMES:
-        nib.save(
-            nib.Nifti1Image(val_image_inpainted[volume_only_slice].cpu().numpy() * 255, *affine_header),
-            os.path.join(out_dir, "inpainting_volumes/inpainting_result.nii.gz"),
-        )
+        output_data = val_image_inpainted[volume_only_slice].cpu().numpy() * 255
+        if reference_image_nib is not None and val_image_nib is not None:
+            output_nib = resample_result_to_reference(output_data, val_image_nib, reference_image_nib, order=1)
+        else:
+            output_nib = nib.Nifti1Image(output_data, *affine_header)
+        nib.save(output_nib, os.path.join(out_dir, "inpainting_volumes/inpainting_result.nii.gz"))
         logger.info("Saved inpainting result as inpainting_volumes/inpainting_result.nii.gz")
 
     logger.info("Finished inpainting")
@@ -357,6 +410,8 @@ def main(argv=None):
     parser.add_argument("-i", "--input_image", type=str, help="input image", required=True)
     parser.add_argument("-m", "--mask_image", type=str, help="input mask", default=None, required=False)
     parser.add_argument("--dilate", type=int, help="number of pixels to dilate the mask by", required=False, default=0)
+    parser.add_argument("--keepgeom", action="store_true", help="Keep native output geometry while running inference in internal space")
+    parser.add_argument("--num_inference_steps", type=int, default=1000, help="Number of diffusion inference iterations (default: 1000)")
     parser.add_argument(
         "-c_coronal", "--checkpoint_coronal", type=str, help="checkpoint to load for inference in coronal plane", default=None, required=False
     )
@@ -440,18 +495,20 @@ def main(argv=None):
     # setup parameters (i.e. whether to use view aggregation, 2d or 3d model)
     model_to_dim = {"coronal": 2, "axial": 1, "sagittal": 0}
     if len(model_dict) == 0:
-        sys.exit("ERROR: At least one checkpoint must be specified", file=sys.stderr)
+        print("ERROR: At least one checkpoint must be specified", file=sys.stderr)
+        sys.exit(1)
     elif len(model_dict) == 1:
         DIM = model_to_dim[list(model_dict.keys())[0]]
     elif len(model_dict) == 3:
         DIM = 0
     else:
-        sys.exit(f"ERROR: One or three checkpoints must be specified, but got {len(model_dict)}", file=sys.stderr)
+        print(f"ERROR: One or three checkpoints must be specified, but got {len(model_dict)}", file=sys.stderr)
+        sys.exit(1)
 
     assert list(model_dict.values())[0].is_vinn
 
-    val_image_nib = nib.load(args.input_image)
-    val_image_nib = conform_nifti(val_image_nib)
+    val_image_native_nib = nib.load(args.input_image)
+    val_image_nib = conform_nifti(val_image_native_nib)
 
     val_image = torch.from_numpy(val_image_nib.get_fdata()).float()
 
@@ -466,8 +523,7 @@ def main(argv=None):
 
     INTERNAL_SHAPE = list(model_dict.values())[0].internal_size
     zooms = val_image_nib.header.get_zooms()
-    internal_res_mm = 256 / INTERNAL_SHAPE[0]
-    scale_factor = internal_res_mm / zooms[0]
+    scale_factor = vinn_scale_factor_from_zooms(INTERNAL_SHAPE, zooms)
 
     val_sample = {"image": val_image, "mask": mask}
 
@@ -509,6 +565,8 @@ def main(argv=None):
         slice_dim=DIM,
         val_image_nib=val_image_nib,
         DDIM=False,
+        reference_image_nib=val_image_native_nib if args.keepgeom else None,
+        num_inference_steps=args.num_inference_steps,
         batch_size=args.batch_size,
     )
 
