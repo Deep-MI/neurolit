@@ -16,19 +16,28 @@ def run_lit():
     command-line interface. It parses command-line arguments, validates inputs,
     and initiates the inpainting process.
     """
-    parser = argparse.ArgumentParser(
-        description="neuroLIT: Neuro Lesion Inpainting Tool",
-        add_help=False
-    )
-    
+    parser = argparse.ArgumentParser(description="neuroLIT: Neuro Lesion Inpainting Tool", add_help=False)
+
     # Required/Common arguments (as used in run_lit.sh)
     parser.add_argument("-i", "--input_image", "--t1", help="Input T1w image")
-    parser.add_argument("-m", "--lesion_mask", help="Lesion mask")
+    parser.add_argument("-m", "--lesion_mask", "--mask_image", help="Lesion mask")
     parser.add_argument("-o", "--sd", "--out_dir", "--output_dir", "--output_directory", help="Output directory")
-    
+
     # Optional arguments
     parser.add_argument("--dilate", type=int, default=0, help="Number of times to dilate the lesion mask (default: 0)")
-    
+    parser.add_argument(
+        "--device",
+        choices=["auto", "cpu", "cuda"],
+        default="auto",
+        help="Inference device to use (default: auto)",
+    )
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=8,
+        help="Slices per GPU batch (default: 8); reduce to lower GPU memory usage",
+    )
+
     # Other arguments
     parser.add_argument("-h", "--help", action="store_true", help="Show help message and exit")
     parser.add_argument("-v", "--version", action="version", version=get_version_with_hash(), help="Print version number and exit")
@@ -39,10 +48,12 @@ def run_lit():
         print("Usage: lit-inpainting -i <input_t1w> -m <lesion_mask> -o <output_dir>")
         print("Required arguments:")
         print("  -i, --input_image     : Input T1w image")
-        print("  -m, --lesion_mask     : Lesion mask")
+        print("  -m, --lesion_mask, --mask_image : Lesion mask")
         print("  -o, --sd, --out_dir, --output_directory : Output directory")
         print("Optional arguments:")
         print("  --dilate              : Number of times to dilate the lesion mask (default: 0)")
+        print("  --device              : Inference device: auto, cpu, or cuda (default: auto)")
+        print("  --batch_size          : Slices per GPU batch (default: 8); reduce to lower GPU memory usage")
         print("Other arguments:")
         print("  -v, --version         : Print version number and exit")
         print("  -h, --help            : Show help message and exit")
@@ -50,7 +61,8 @@ def run_lit():
         print("If you use neuroLIT for research publications, please cite:")
         print("")
         print("Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpainting Tool for Whole")
-        print("  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Accepted for Imaging Neuroscience.")
+        print("  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Imaging Neuroscience 2025.")
+        print("  https://doi.org/10.1162/imag_a_00446")
         sys.exit(0)
 
     if not args.input_image or not args.sd:
@@ -94,20 +106,31 @@ def run_lit():
         inpainted_img = out_dir / "inpainting_volumes" / "inpainting_result.nii.gz"
         if not inpainted_img.exists():
             print("Running inpainting...")
-            
+
             inpaint_argv = [
-                "--input_image", str(input_image),
-                "--mask_image", str(mask_image),
-                "--out_dir", str(out_dir),
-                "--checkpoint_axial", str(ckpt_axial),
-                "--checkpoint_sagittal", str(ckpt_sagittal),
-                "--checkpoint_coronal", str(ckpt_coronal),
-                "--dilate", str(args.dilate)
+                "--input_image",
+                str(input_image),
+                "--mask_image",
+                str(mask_image),
+                "--out_dir",
+                str(out_dir),
+                "--checkpoint_axial",
+                str(ckpt_axial),
+                "--checkpoint_sagittal",
+                str(ckpt_sagittal),
+                "--checkpoint_coronal",
+                str(ckpt_coronal),
+                "--dilate",
+                str(args.dilate),
+                "--device",
+                args.device,
+                "--batch_size",
+                str(args.batch_size),
             ]
-            
+
             # Forward any unknown arguments
             inpaint_argv.extend(unknown)
-            
+
             inpaint_main(inpaint_argv)
         else:
             print(f"Inpainted image already exists: {inpainted_img}")

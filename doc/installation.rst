@@ -45,7 +45,7 @@ neuroLIT is available on PyPI.
 
 **Download Model Checkpoints:**
 
-After installation, download the required model checkpoints (~500MB):
+After installation, download the required model checkpoints (~700MB):
 
 .. code-block:: bash
 

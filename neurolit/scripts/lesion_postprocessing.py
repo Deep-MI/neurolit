@@ -49,7 +49,8 @@ Note: Either FastSurfer or FreeSurfer is required unless --skip-segstats is used
 If you use neuroLIT for research publications, please cite:
 
 Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpainting Tool for Whole
-  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Accepted for Imaging Neuroscience.
+  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Imaging Neuroscience 2025.
+  https://doi.org/10.1162/imag_a_00446
         """
     )
     parser.add_argument('-sid', '--subject-id', required=True,
@@ -303,7 +304,10 @@ def check_required_files(subjects_dir: Path, subject_id: str, config: dict[str, 
     
     required_files = [
         subjects_dir / subject_id / "inpainting" / "inpainting_mask.nii.gz",
+    ]
+    optional_segstats_inputs = [
         subjects_dir / subject_id / "mri" / "orig_nu.mgz",
+        subjects_dir / subject_id / "mri" / "norm.mgz",
         subjects_dir / subject_id / "mri" / "mask.mgz",
     ]
     
@@ -321,8 +325,89 @@ def check_required_files(subjects_dir: Path, subject_id: str, config: dict[str, 
         if not file_path.exists():
             logger.error(f"Required file not found: {file_path}")
             sys.exit(1)
+
+    for file_path in optional_segstats_inputs:
+        rel_path = file_path.relative_to(subjects_dir / subject_id)
+        if file_path.exists():
+            logger.info(f"  Found optional segstats input: {rel_path}")
+        else:
+            logger.info(f"  Optional segstats input not found: {rel_path}")
     
     logger.info("All critical files found. Proceeding with processing...")
+
+
+def _subject_relative_path(path: Path, subject_path: Path) -> str:
+    """Return a subject-relative string when possible."""
+    try:
+        return str(path.relative_to(subject_path))
+    except ValueError:
+        return str(path)
+
+
+def _collect_segstats_dependencies(subjects_dir: Path, subject_id: str,
+                                   config: dict[str, Any]) -> list[Path]:
+    """Collect input paths required for a segstats call.
+
+    This includes primary inputs such as ``segfile``/``normfile`` as well as
+    secondary dependencies referenced through ``measures --file`` and
+    ``Mask(...)`` expressions.
+    """
+    subj_path = subjects_dir / subject_id
+    dependencies: list[Path] = []
+
+    for key in ("segfile", "in_file", "normfile", "pvfile"):
+        if key in config:
+            dependencies.append(subj_path / config[key])
+
+    if "annot" in config:
+        hemi, atlas = config["annot"]
+        dependencies.append(subj_path / "label" / f"{hemi}.{atlas}.annot")
+
+    measures = config.get("measures", {})
+    if "file" in measures:
+        dependencies.append(subj_path / measures["file"])
+
+    for item in measures.get("compute", []):
+        if not item.startswith("Mask(") or not item.endswith(")"):
+            continue
+        mask_ref = item[5:-1]
+        mask_path = Path(mask_ref)
+        if not mask_path.is_absolute():
+            mask_path = subj_path / mask_ref
+        dependencies.append(mask_path)
+
+    seen: set[Path] = set()
+    unique_dependencies: list[Path] = []
+    for dep in dependencies:
+        if dep in seen:
+            continue
+        seen.add(dep)
+        unique_dependencies.append(dep)
+
+    return unique_dependencies
+
+
+def _segstats_output_path(config: dict[str, Any]) -> str | None:
+    """Return the configured output stats path for a segstats call."""
+    return config.get("segstatsfile") or config.get("sum")
+
+
+def _missing_segstats_dependencies(subjects_dir: Path, subject_id: str,
+                                   config: dict[str, Any],
+                                   unavailable_outputs: set[str]) -> list[str]:
+    """Return missing or blocked dependencies for a segstats call."""
+    subj_path = subjects_dir / subject_id
+    missing: list[str] = []
+
+    for dep in _collect_segstats_dependencies(subjects_dir, subject_id, config):
+        rel_dep = _subject_relative_path(dep, subj_path)
+        if rel_dep in unavailable_outputs:
+            missing.append(f"{rel_dep} (unavailable from skipped prior step)")
+            continue
+        if not dep.exists():
+            missing.append(rel_dep)
+
+    return missing
 
 
 def run_command(cmd: list[str], description: str, env: dict[str, str] | None = None,
@@ -772,9 +857,11 @@ def _format_inputs(inputs: list[str]) -> str:
     return " + ".join(inputs)
 
 
-def build_stats_overview(subject_id: str, config: dict[str, Any], surf_config: dict[str, Any]) -> list[str]:
+def build_stats_overview(subjects_dir: Path, subject_id: str,
+                         config: dict[str, Any], surf_config: dict[str, Any]) -> list[str]:
     """Build human-readable mapping of inputs to output stats files."""
     overview: list[str] = []
+    subj_path = subjects_dir / subject_id
 
     for segstats_call in config.get("segstats_calls", []):
         inputs: list[str] = []
@@ -792,7 +879,7 @@ def build_stats_overview(subject_id: str, config: dict[str, Any], surf_config: d
             inputs.append(f"label/{hemi}.{atlas}.annot")
 
         output = segstats_call.get("segstatsfile") or segstats_call.get("sum")
-        if inputs and output:
+        if inputs and output and (subj_path / output).exists():
             overview.append(f"{_format_inputs(inputs)} => {output}")
 
     for surfstats_call in surf_config.get("surfstats_calls", []):
@@ -811,7 +898,7 @@ def build_stats_overview(subject_id: str, config: dict[str, Any], surf_config: d
             if output:
                 output = output.format(hemi=hemisphere)
 
-            if inputs and output:
+            if inputs and output and (subj_path / output).exists():
                 overview.append(f"{_format_inputs(inputs)} => {output}")
 
     return overview
@@ -1020,6 +1107,7 @@ def main():
     
     # Run all segstats calls (unless skipped)
     surface_segstats_calls: list[dict[str, Any]] = []
+    unavailable_segstats_outputs: set[str] = set()
     if not args.skip_segstats:
         logger.info("=" * 60)
         logger.info("STEP 2: Running segstats for all configurations")
@@ -1045,23 +1133,21 @@ def main():
             logger.info("-" * 60)
             logger.info(f"Running: {segstats_config['name']}")
             logger.info("-" * 60)
-            
-            # Check if input file exists
-            input_path = None
-            input_name = None
-            if 'segfile' in segstats_config:
-                input_path = subjects_dir / subject_id / segstats_config['segfile']
-                input_name = "segfile"
-            elif 'in_file' in segstats_config:
-                input_path = subjects_dir / subject_id / segstats_config['in_file']
-                input_name = "in_file"
 
-            if input_path and not input_path.exists():
-                logger.info(f"  Skipping ({input_name} not found): {input_path}")
+            output_path = _segstats_output_path(segstats_config)
+            missing_inputs = _missing_segstats_dependencies(
+                subjects_dir, subject_id, segstats_config, unavailable_segstats_outputs
+            )
+            if missing_inputs:
+                logger.info(f"  Skipping (missing inputs): {', '.join(missing_inputs)}")
+                if output_path:
+                    unavailable_segstats_outputs.add(output_path)
                 continue
-            
-            run_segstats(fastsurfer_path, subjects_dir, subject_id, segstats_config, 
-                        fs_home, call_use_mri_segstats, args.python_cmd)
+
+            success = run_segstats(fastsurfer_path, subjects_dir, subject_id, segstats_config,
+                                   fs_home, call_use_mri_segstats, args.python_cmd)
+            if not success and output_path:
+                unavailable_segstats_outputs.add(output_path)
 
     else:
         logger.info("=" * 60)
@@ -1100,21 +1186,20 @@ def main():
             logger.info(f"Running: {segstats_config['name']}")
             logger.info("-" * 60)
 
-            input_path = None
-            input_name = None
-            if 'segfile' in segstats_config:
-                input_path = subjects_dir / subject_id / segstats_config['segfile']
-                input_name = "segfile"
-            elif 'in_file' in segstats_config:
-                input_path = subjects_dir / subject_id / segstats_config['in_file']
-                input_name = "in_file"
-
-            if input_path and not input_path.exists():
-                logger.info(f"  Skipping ({input_name} not found): {input_path}")
+            output_path = _segstats_output_path(segstats_config)
+            missing_inputs = _missing_segstats_dependencies(
+                subjects_dir, subject_id, segstats_config, unavailable_segstats_outputs
+            )
+            if missing_inputs:
+                logger.info(f"  Skipping (missing inputs): {', '.join(missing_inputs)}")
+                if output_path:
+                    unavailable_segstats_outputs.add(output_path)
                 continue
 
-            run_segstats(fastsurfer_path, subjects_dir, subject_id, segstats_config,
-                        fs_home, True, args.python_cmd)
+            success = run_segstats(fastsurfer_path, subjects_dir, subject_id, segstats_config,
+                                   fs_home, True, args.python_cmd)
+            if not success and output_path:
+                unavailable_segstats_outputs.add(output_path)
 
     # Run surface-based statistics
     if not args.skip_surface_masking and surf_config.get("surfstats_calls"):
@@ -1131,7 +1216,7 @@ def main():
     logger.info("=" * 60)
     
     # List output files with input overview
-    overview = build_stats_overview(subject_id, config, surf_config)
+    overview = build_stats_overview(subjects_dir, subject_id, config, surf_config)
     overview.extend(f"{seg} => {report}" for seg, report in mapping_reports)
     overview.extend(f"{seg} => {report}" for seg, report in surface_reports)
     
@@ -1148,4 +1233,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
