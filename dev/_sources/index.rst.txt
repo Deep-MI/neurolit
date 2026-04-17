@@ -45,7 +45,7 @@ Using PyPI Package
    lit-download-models
    
    # Run LIT
-   lit-inpainting --input_image T1w.nii.gz --mask_image lesion_mask.nii.gz \\
+   lit-inpainting --input_image T1w.nii.gz --lesion_mask lesion_mask.nii.gz \\
        --output_directory output_directory --dilate 2
 
 .. toctree::
@@ -54,6 +54,7 @@ Using PyPI Package
 
    installation
    usage
+   downstream_analysis
    training
 
 .. toctree::
@@ -76,4 +77,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

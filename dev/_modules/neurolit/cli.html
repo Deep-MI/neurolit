@@ -96,6 +96,23 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../downstream_analysis.html">Downstream Analysis with Lesion Exclusion</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../downstream_analysis.html#surface-based-analysis">Surface-Based Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../downstream_analysis.html#step-1-obtain-lesion-surface-labels">Step 1 — Obtain Lesion Surface Labels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../downstream_analysis.html#step-2-extract-regional-statistics-optional">Step 2 — Extract Regional Statistics (Optional)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../downstream_analysis.html#step-3-project-to-common-surface-template">Step 3 — Project to Common Surface Template</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../downstream_analysis.html#step-4-mask-lesion-vertices">Step 4 — Mask Lesion Vertices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../downstream_analysis.html#step-5-run-your-statistical-analysis">Step 5 — Run Your Statistical Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../downstream_analysis.html#step-6-visualize-on-the-cortical-surface-optional">Step 6 — Visualize on the Cortical Surface (Optional)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../downstream_analysis.html#volumetric-analysis">Volumetric Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../downstream_analysis.html#anatomy-reports">Anatomy Reports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../downstream_analysis.html#excluding-affected-regions">Excluding Affected Regions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../downstream_analysis.html#choosing-which-categories-to-exclude">Choosing Which Categories to Exclude</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../downstream_analysis.html#dependencies">Dependencies</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../../training.html">Training</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../training.html#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../training.html#data-preparation">Data Preparation</a><ul>
@@ -199,6 +216,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.resolve_inference_device"><code class="docutils literal notranslate"><span class="pre">resolve_inference_device()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">get_slice_from_volume()</span></code></a></li>
@@ -366,19 +384,28 @@
 <span class="sd">    command-line interface. It parses command-line arguments, validates inputs,</span>
 <span class="sd">    and initiates the inpainting process.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
-        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;neuroLIT: Neuro Lesion Inpainting Tool&quot;</span><span class="p">,</span>
-        <span class="n">add_help</span><span class="o">=</span><span class="kc">False</span>
-    <span class="p">)</span>
-    
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;neuroLIT: Neuro Lesion Inpainting Tool&quot;</span><span class="p">,</span> <span class="n">add_help</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
     <span class="c1"># Required/Common arguments (as used in run_lit.sh)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="s2">&quot;--input_image&quot;</span><span class="p">,</span> <span class="s2">&quot;--t1&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Input T1w image&quot;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="s2">&quot;--lesion_mask&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Lesion mask&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="s2">&quot;--lesion_mask&quot;</span><span class="p">,</span> <span class="s2">&quot;--mask_image&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Lesion mask&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;--sd&quot;</span><span class="p">,</span> <span class="s2">&quot;--out_dir&quot;</span><span class="p">,</span> <span class="s2">&quot;--output_dir&quot;</span><span class="p">,</span> <span class="s2">&quot;--output_directory&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Output directory&quot;</span><span class="p">)</span>
-    
+
     <span class="c1"># Optional arguments</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--dilate&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Number of times to dilate the lesion mask (default: 0)&quot;</span><span class="p">)</span>
-    
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--device&quot;</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s2">&quot;cuda&quot;</span><span class="p">],</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Inference device to use (default: auto)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--batch_size&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Slices per GPU batch (default: 8); reduce to lower GPU memory usage&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
     <span class="c1"># Other arguments</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-h&quot;</span><span class="p">,</span> <span class="s2">&quot;--help&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Show help message and exit&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-v&quot;</span><span class="p">,</span> <span class="s2">&quot;--version&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">get_version_with_hash</span><span class="p">(),</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Print version number and exit&quot;</span><span class="p">)</span>
@@ -389,10 +416,12 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Usage: lit-inpainting -i &lt;input_t1w&gt; -m &lt;lesion_mask&gt; -o &lt;output_dir&gt;&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Required arguments:&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  -i, --input_image     : Input T1w image&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  -m, --lesion_mask     : Lesion mask&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  -m, --lesion_mask, --mask_image : Lesion mask&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  -o, --sd, --out_dir, --output_directory : Output directory&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optional arguments:&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  --dilate              : Number of times to dilate the lesion mask (default: 0)&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  --device              : Inference device: auto, cpu, or cuda (default: auto)&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  --batch_size          : Slices per GPU batch (default: 8); reduce to lower GPU memory usage&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Other arguments:&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  -v, --version         : Print version number and exit&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  -h, --help            : Show help message and exit&quot;</span><span class="p">)</span>
@@ -400,7 +429,8 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;If you use neuroLIT for research publications, please cite:&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpainting Tool for Whole&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Accepted for Imaging Neuroscience.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Imaging Neuroscience 2025.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  https://doi.org/10.1162/imag_a_00446&quot;</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">input_image</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">sd</span><span class="p">:</span>
@@ -444,20 +474,31 @@
         <span class="n">inpainted_img</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">&quot;inpainting_volumes&quot;</span> <span class="o">/</span> <span class="s2">&quot;inpainting_result.nii.gz&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">inpainted_img</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running inpainting...&quot;</span><span class="p">)</span>
-            
+
             <span class="n">inpaint_argv</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="s2">&quot;--input_image&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">input_image</span><span class="p">),</span>
-                <span class="s2">&quot;--mask_image&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">mask_image</span><span class="p">),</span>
-                <span class="s2">&quot;--out_dir&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">out_dir</span><span class="p">),</span>
-                <span class="s2">&quot;--checkpoint_axial&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">ckpt_axial</span><span class="p">),</span>
-                <span class="s2">&quot;--checkpoint_sagittal&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">ckpt_sagittal</span><span class="p">),</span>
-                <span class="s2">&quot;--checkpoint_coronal&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">ckpt_coronal</span><span class="p">),</span>
-                <span class="s2">&quot;--dilate&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">dilate</span><span class="p">)</span>
+                <span class="s2">&quot;--input_image&quot;</span><span class="p">,</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">input_image</span><span class="p">),</span>
+                <span class="s2">&quot;--mask_image&quot;</span><span class="p">,</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">mask_image</span><span class="p">),</span>
+                <span class="s2">&quot;--out_dir&quot;</span><span class="p">,</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">out_dir</span><span class="p">),</span>
+                <span class="s2">&quot;--checkpoint_axial&quot;</span><span class="p">,</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">ckpt_axial</span><span class="p">),</span>
+                <span class="s2">&quot;--checkpoint_sagittal&quot;</span><span class="p">,</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">ckpt_sagittal</span><span class="p">),</span>
+                <span class="s2">&quot;--checkpoint_coronal&quot;</span><span class="p">,</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">ckpt_coronal</span><span class="p">),</span>
+                <span class="s2">&quot;--dilate&quot;</span><span class="p">,</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">dilate</span><span class="p">),</span>
+                <span class="s2">&quot;--device&quot;</span><span class="p">,</span>
+                <span class="n">args</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+                <span class="s2">&quot;--batch_size&quot;</span><span class="p">,</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">batch_size</span><span class="p">),</span>
             <span class="p">]</span>
-            
+
             <span class="c1"># Forward any unknown arguments</span>
             <span class="n">inpaint_argv</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">unknown</span><span class="p">)</span>
-            
+
             <span class="n">inpaint_main</span><span class="p">(</span><span class="n">inpaint_argv</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inpainted image already exists: </span><span class="si">{</span><span class="n">inpainted_img</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>

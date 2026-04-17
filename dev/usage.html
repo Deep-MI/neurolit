@@ -19,7 +19,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Training" href="training.html" />
+    <link rel="next" title="Downstream Analysis with Lesion Exclusion" href="downstream_analysis.html" />
     <link rel="prev" title="Installation" href="installation.html" /> 
 </head>
 
@@ -97,6 +97,23 @@
 <li class="toctree-l3"><a class="reference internal" href="#out-of-memory-errors">Out of Memory Errors</a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="downstream_analysis.html">Downstream Analysis with Lesion Exclusion</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#surface-based-analysis">Surface-Based Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#step-1-obtain-lesion-surface-labels">Step 1 — Obtain Lesion Surface Labels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#step-2-extract-regional-statistics-optional">Step 2 — Extract Regional Statistics (Optional)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#step-3-project-to-common-surface-template">Step 3 — Project to Common Surface Template</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#step-4-mask-lesion-vertices">Step 4 — Mask Lesion Vertices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#step-5-run-your-statistical-analysis">Step 5 — Run Your Statistical Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#step-6-visualize-on-the-cortical-surface-optional">Step 6 — Visualize on the Cortical Surface (Optional)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#volumetric-analysis">Volumetric Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="downstream_analysis.html#anatomy-reports">Anatomy Reports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="downstream_analysis.html#excluding-affected-regions">Excluding Affected Regions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="downstream_analysis.html#choosing-which-categories-to-exclude">Choosing Which Categories to Exclude</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#dependencies">Dependencies</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="training.html">Training</a><ul>
@@ -202,6 +219,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="api/inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.resolve_inference_device"><code class="docutils literal notranslate"><span class="pre">resolve_inference_device()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">get_slice_from_volume()</span></code></a></li>
@@ -376,7 +394,7 @@
 <p>If you installed via pip:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>lit-inpainting<span class="w"> </span><span class="se">\\</span>
 <span class="w">    </span>--input_image<span class="w"> </span>T1w.nii.gz<span class="w"> </span><span class="se">\\</span>
-<span class="w">    </span>--mask_image<span class="w"> </span>lesion_mask.nii.gz<span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--lesion_mask<span class="w"> </span>lesion_mask.nii.gz<span class="w"> </span><span class="se">\\</span>
 <span class="w">    </span>--output_directory<span class="w"> </span>output_directory<span class="w"> </span><span class="se">\\</span>
 <span class="w">    </span>--dilate<span class="w"> </span><span class="m">2</span>
 </pre></div>
@@ -423,22 +441,15 @@ This will increase the size of the lesion mask, potentially removing more region
 <h2>Advanced Usage<a class="headerlink" href="#advanced-usage" title="Link to this heading"></a></h2>
 <section id="direct-inpainting-python-api">
 <h3>Direct Inpainting (Python API)<a class="headerlink" href="#direct-inpainting-python-api" title="Link to this heading"></a></h3>
-<p>For programmatic access, use the direct inpainting function:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.inpaint_image</span><span class="w"> </span><span class="kn">import</span> <span class="n">main</span> <span class="k">as</span> <span class="n">inpaint</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<p>For programmatic access, call the inpainting entry point directly with an argument list:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.inpaint_image</span><span class="w"> </span><span class="kn">import</span> <span class="n">main</span> <span class="k">as</span> <span class="n">inpaint_main</span>
 
-<span class="c1"># Prepare arguments</span>
-<span class="n">args</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">(</span>
-    <span class="n">input_image</span><span class="o">=</span><span class="s1">&#39;T1w.nii.gz&#39;</span><span class="p">,</span>
-    <span class="n">mask_image</span><span class="o">=</span><span class="s1">&#39;lesion_mask.nii.gz&#39;</span><span class="p">,</span>
-    <span class="n">out_dir</span><span class="o">=</span><span class="s1">&#39;output&#39;</span><span class="p">,</span>
-    <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">,</span>  <span class="c1"># or &#39;cpu&#39;</span>
-    <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
-    <span class="n">num_samples</span><span class="o">=</span><span class="mi">100</span>
-<span class="p">)</span>
-
-<span class="c1"># Run inpainting</span>
-<span class="n">inpaint</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+<span class="n">inpaint_main</span><span class="p">([</span>
+    <span class="s2">&quot;--input_image&quot;</span><span class="p">,</span> <span class="s2">&quot;T1w.nii.gz&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;--mask_image&quot;</span><span class="p">,</span> <span class="s2">&quot;lesion_mask.nii.gz&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;--out_dir&quot;</span><span class="p">,</span> <span class="s2">&quot;output&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;--device&quot;</span><span class="p">,</span> <span class="s2">&quot;cuda&quot;</span><span class="p">,</span>  <span class="c1"># or &#39;cpu&#39;</span>
+<span class="p">])</span>
 </pre></div>
 </div>
 </section>
@@ -472,7 +483,7 @@ This will increase the size of the lesion mask, potentially removing more region
     <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s2">&quot;lit-inpainting&quot;</span><span class="p">,</span>
         <span class="s2">&quot;--input_image&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">data_dir</span> <span class="o">/</span> <span class="n">subject</span> <span class="o">/</span> <span class="s2">&quot;T1w.nii.gz&quot;</span><span class="p">),</span>
-        <span class="s2">&quot;--mask_image&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">data_dir</span> <span class="o">/</span> <span class="n">subject</span> <span class="o">/</span> <span class="s2">&quot;lesion_mask.nii.gz&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;--lesion_mask&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">data_dir</span> <span class="o">/</span> <span class="n">subject</span> <span class="o">/</span> <span class="s2">&quot;lesion_mask.nii.gz&quot;</span><span class="p">),</span>
         <span class="s2">&quot;--output_directory&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;output/</span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
         <span class="s2">&quot;--dilate&quot;</span><span class="p">,</span> <span class="s2">&quot;2&quot;</span>
     <span class="p">]</span>
@@ -487,73 +498,42 @@ This will increase the size of the lesion mask, potentially removing more region
 <h3>lit-inpainting<a class="headerlink" href="#lit-inpainting" title="Link to this heading"></a></h3>
 <p>Main command to run the neuroLIT inpainting.</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>lit-inpainting [OPTIONS]
+
+Options:
+  -i, --input_image PATH                          Path to input T1w image [required]
+  -m, --lesion_mask PATH                          Path to lesion mask [required]
+  -o, --sd / --out_dir / --output_directory PATH  Output directory [required]
+  --dilate INTEGER                                Number of dilation iterations [default: 0]
+  --device [auto|cpu|cuda]                        Inference device [default: auto]
+  --batch_size INTEGER                            Slices per GPU batch [default: 8]; reduce to lower GPU memory usage
+  -h, --help                                      Show this message and exit
 </pre></div>
 </div>
-<dl>
-<dt>Options:</dt><dd><dl class="option-list">
-<dt><kbd><span class="option">--input_image <var>PATH</var></span></kbd></dt>
-<dd><p>Path to input T1w image [required]</p>
-</dd>
-<dt><kbd><span class="option">--mask_image <var>PATH</var></span></kbd></dt>
-<dd><p>Path to lesion mask [required]</p>
-</dd>
-<dt><kbd><span class="option">--output_directory <var>PATH</var></span></kbd></dt>
-<dd><p>Output directory [required]</p>
-</dd>
-<dt><kbd><span class="option">--dilate <var>INTEGER</var></span></kbd></dt>
-<dd><p>Number of dilation iterations [default: 0]</p>
-</dd>
-<dt><kbd><span class="option">--help</span></kbd></dt>
-<dd><p>Show this message and exit</p>
-</dd>
-</dl>
-</dd>
-</dl>
 </section>
 <section id="lit-download-models">
 <h3>lit-download-models<a class="headerlink" href="#lit-download-models" title="Link to this heading"></a></h3>
 <p>Download required model checkpoints.</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>lit-download-models [OPTIONS]
+
+Options:
+  --force                  Force re-download even if models exist
+  --help                   Show this message and exit
 </pre></div>
 </div>
-<dl>
-<dt>Options:</dt><dd><dl class="option-list">
-<dt><kbd><span class="option">--force</span></kbd></dt>
-<dd><p>Force re-download even if models exist</p>
-</dd>
-<dt><kbd><span class="option">--help</span></kbd></dt>
-<dd><p>Show this message and exit</p>
-</dd>
-</dl>
-</dd>
-</dl>
 </section>
 <section id="lit-postprocessing">
 <h3>lit-postprocessing<a class="headerlink" href="#lit-postprocessing" title="Link to this heading"></a></h3>
 <p>Integrate lesion masks into FastSurfer/FreeSurfer outputs.</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>lit-postprocessing [OPTIONS]
+
+Options:
+  --subject-id TEXT        Subject ID [required]
+  --subjects-dir PATH      Subjects directory [required]
+  --skip-segstats          Skip volumetric statistics
+  --skip-surface-masking   Skip surface masking
+  --help                   Show this message and exit
 </pre></div>
 </div>
-<dl>
-<dt>Options:</dt><dd><dl class="option-list">
-<dt><kbd><span class="option">--subject-id <var>TEXT</var></span></kbd></dt>
-<dd><p>Subject ID [required]</p>
-</dd>
-<dt><kbd><span class="option">--subjects-dir <var>PATH</var></span></kbd></dt>
-<dd><p>Subjects directory [required]</p>
-</dd>
-<dt><kbd><span class="option">--skip-segstats</span></kbd></dt>
-<dd><p>Skip volumetric statistics</p>
-</dd>
-<dt><kbd><span class="option">--skip-surface-masking</span></kbd></dt>
-<dd><p>Skip surface masking</p>
-</dd>
-<dt><kbd><span class="option">--help</span></kbd></dt>
-<dd><p>Show this message and exit</p>
-</dd>
-</dl>
-</dd>
-</dl>
 </section>
 </section>
 <section id="best-practices">
@@ -568,8 +548,7 @@ This will increase the size of the lesion mask, potentially removing more region
 <section id="performance">
 <h3>Performance<a class="headerlink" href="#performance" title="Link to this heading"></a></h3>
 <ol class="arabic simple">
-<li><p><strong>GPU Usage:</strong> Use GPU when available for significant speedup, processing with CPU is not recommended.</p></li>
-<li><p><strong>Batch Size:</strong> Increase batch size on high-memory GPUs (default: 16)</p></li>
+<li><p><strong>GPU Usage:</strong> Use GPU when available for significant speedup. CPU is feasible for batch or overnight processing; see Expected Runtimes in the README.</p></li>
 <li><p><strong>Mask Size:</strong> Larger lesion masks require longer inference.</p></li>
 </ol>
 </section>
@@ -644,8 +623,8 @@ lit-postprocessing<span class="w"> </span><span class="se">\\</span>
 <p><strong>Problem:</strong> CUDA out of memory error</p>
 <p><strong>Solutions:</strong></p>
 <ul class="simple">
-<li><p>Reduce batch size: <code class="docutils literal notranslate"><span class="pre">--batch_size</span> <span class="pre">8</span></code> or <code class="docutils literal notranslate"><span class="pre">--batch_size</span> <span class="pre">4</span></code></p></li>
-<li><p>Use CPU mode (very slow): <code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span></code></p></li>
+<li><p>Reduce batch size: <code class="docutils literal notranslate"><span class="pre">--batch_size</span> <span class="pre">4</span></code> or <code class="docutils literal notranslate"><span class="pre">--batch_size</span> <span class="pre">2</span></code></p></li>
+<li><p>Switch to CPU mode: <code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span></code> (slower but avoids GPU memory limits)</p></li>
 <li><p>Process on a machine with more GPU memory</p></li>
 </ul>
 </section>
@@ -657,7 +636,7 @@ lit-postprocessing<span class="w"> </span><span class="se">\\</span>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="training.html" class="btn btn-neutral float-right" title="Training" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="downstream_analysis.html" class="btn btn-neutral float-right" title="Downstream Analysis with Lesion Exclusion" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

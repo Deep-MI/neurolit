@@ -98,6 +98,23 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="downstream_analysis.html">Downstream Analysis with Lesion Exclusion</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#surface-based-analysis">Surface-Based Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#step-1-obtain-lesion-surface-labels">Step 1 — Obtain Lesion Surface Labels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#step-2-extract-regional-statistics-optional">Step 2 — Extract Regional Statistics (Optional)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#step-3-project-to-common-surface-template">Step 3 — Project to Common Surface Template</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#step-4-mask-lesion-vertices">Step 4 — Mask Lesion Vertices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#step-5-run-your-statistical-analysis">Step 5 — Run Your Statistical Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#step-6-visualize-on-the-cortical-surface-optional">Step 6 — Visualize on the Cortical Surface (Optional)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#volumetric-analysis">Volumetric Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="downstream_analysis.html#anatomy-reports">Anatomy Reports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="downstream_analysis.html#excluding-affected-regions">Excluding Affected Regions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="downstream_analysis.html#choosing-which-categories-to-exclude">Choosing Which Categories to Exclude</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#dependencies">Dependencies</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="training.html">Training</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="training.html#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="training.html#data-preparation">Data Preparation</a><ul>
@@ -201,6 +218,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="api/inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.resolve_inference_device"><code class="docutils literal notranslate"><span class="pre">resolve_inference_device()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">get_slice_from_volume()</span></code></a></li>
@@ -382,7 +400,7 @@ pip<span class="w"> </span>install<span class="w"> </span>neurolit
 lit-download-models
 
 <span class="c1"># Run LIT</span>
-lit-inpainting<span class="w"> </span>--input_image<span class="w"> </span>T1w.nii.gz<span class="w"> </span>--mask_image<span class="w"> </span>lesion_mask.nii.gz<span class="w"> </span><span class="se">\\</span>
+lit-inpainting<span class="w"> </span>--input_image<span class="w"> </span>T1w.nii.gz<span class="w"> </span>--lesion_mask<span class="w"> </span>lesion_mask.nii.gz<span class="w"> </span><span class="se">\\</span>
 <span class="w">    </span>--output_directory<span class="w"> </span>output_directory<span class="w"> </span>--dilate<span class="w"> </span><span class="m">2</span>
 </pre></div>
 </div>
@@ -406,6 +424,18 @@ lit-inpainting<span class="w"> </span>--input_image<span class="w"> </span>T1w.n
 <li class="toctree-l2"><a class="reference internal" href="usage.html#best-practices">Best Practices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="usage.html#postprocessing">Postprocessing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="usage.html#common-issues">Common Issues</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="downstream_analysis.html">Downstream Analysis with Lesion Exclusion</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#surface-based-analysis">Surface-Based Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#step-1-obtain-lesion-surface-labels">Step 1 — Obtain Lesion Surface Labels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#step-2-extract-regional-statistics-optional">Step 2 — Extract Regional Statistics (Optional)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#step-3-project-to-common-surface-template">Step 3 — Project to Common Surface Template</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#step-4-mask-lesion-vertices">Step 4 — Mask Lesion Vertices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#step-5-run-your-statistical-analysis">Step 5 — Run Your Statistical Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#step-6-visualize-on-the-cortical-surface-optional">Step 6 — Visualize on the Cortical Surface (Optional)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#volumetric-analysis">Volumetric Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downstream_analysis.html#dependencies">Dependencies</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="training.html">Training</a><ul>

@@ -96,6 +96,23 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../downstream_analysis.html">Downstream Analysis with Lesion Exclusion</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../downstream_analysis.html#surface-based-analysis">Surface-Based Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../downstream_analysis.html#step-1-obtain-lesion-surface-labels">Step 1 — Obtain Lesion Surface Labels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../downstream_analysis.html#step-2-extract-regional-statistics-optional">Step 2 — Extract Regional Statistics (Optional)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../downstream_analysis.html#step-3-project-to-common-surface-template">Step 3 — Project to Common Surface Template</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../downstream_analysis.html#step-4-mask-lesion-vertices">Step 4 — Mask Lesion Vertices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../downstream_analysis.html#step-5-run-your-statistical-analysis">Step 5 — Run Your Statistical Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../downstream_analysis.html#step-6-visualize-on-the-cortical-surface-optional">Step 6 — Visualize on the Cortical Surface (Optional)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../downstream_analysis.html#volumetric-analysis">Volumetric Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../downstream_analysis.html#anatomy-reports">Anatomy Reports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../downstream_analysis.html#excluding-affected-regions">Excluding Affected Regions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../downstream_analysis.html#choosing-which-categories-to-exclude">Choosing Which Categories to Exclude</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../downstream_analysis.html#dependencies">Dependencies</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../../training.html">Training</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../training.html#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../training.html#data-preparation">Data Preparation</a><ul>
@@ -199,6 +216,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.resolve_inference_device"><code class="docutils literal notranslate"><span class="pre">resolve_inference_device()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">get_slice_from_volume()</span></code></a></li>
@@ -391,11 +409,11 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="c1"># use Agg backend on server</span>
-<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DISPLAY&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
-    <span class="c1">#os.environ[&#39;KMP_DUPLICATE_LIB_OK&#39;] = &#39;TRUE&#39;</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s1">&#39;/tmp/&#39;</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;MPLCONFIGDIR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;/tmp&#39;</span>
-    <span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;Agg&#39;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DISPLAY&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+    <span class="c1"># os.environ[&#39;KMP_DUPLICATE_LIB_OK&#39;] = &#39;TRUE&#39;</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s2">&quot;/tmp/&quot;</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;MPLCONFIGDIR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;/tmp&quot;</span>
+    <span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s2">&quot;Agg&quot;</span><span class="p">)</span>
 
 
 <span class="c1"># Custom types</span>
@@ -404,6 +422,34 @@
 <span class="n">ModelDict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span>
 <span class="n">VolumeSlice</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">slice</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
 <span class="n">AffineMatrix</span> <span class="o">=</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="resolve_inference_device">
+<a class="viewcode-back" href="../../api/inpainting.html#neurolit.inpaint_image.resolve_inference_device">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resolve_inference_device</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve the requested inference device.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    device : str</span>
+<span class="sd">        Requested device name: ``&quot;auto&quot;``, ``&quot;cpu&quot;``, or ``&quot;cuda&quot;``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    torch.device</span>
+<span class="sd">        Resolved torch device.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">normalized_device</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">normalized_device</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">normalized_device</span> <span class="o">==</span> <span class="s2">&quot;cuda&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;CUDA was requested for inference, but no CUDA device is available.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">normalized_device</span> <span class="o">==</span> <span class="s2">&quot;cpu&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported device &#39;</span><span class="si">{</span><span class="n">device</span><span class="si">}</span><span class="s2">&#39;. Expected one of: auto, cpu, cuda.&quot;</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="dilate_mask">
@@ -440,20 +486,13 @@
     <span class="n">dilated</span> <span class="o">=</span> <span class="n">mask</span>
     <span class="n">padding</span> <span class="o">=</span> <span class="n">kernel_size</span> <span class="o">//</span> <span class="mi">2</span>
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_iterations</span><span class="p">):</span>
-        <span class="n">dilated</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">max_pool3d</span><span class="p">(</span>
-            <span class="n">dilated</span><span class="p">,</span>
-            <span class="n">kernel_size</span><span class="o">=</span><span class="n">kernel_size</span><span class="p">,</span>
-            <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">padding</span><span class="o">=</span><span class="n">padding</span>
-        <span class="p">)</span>
+        <span class="n">dilated</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">max_pool3d</span><span class="p">(</span><span class="n">dilated</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">)</span>
 
     <span class="c1"># Restore original shape</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">orig_shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
         <span class="n">dilated</span> <span class="o">=</span> <span class="n">dilated</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">dilated</span></div>
-
-
 
 
 
@@ -484,14 +523,10 @@
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
 
 
+
 <div class="viewcode-block" id="get_slice_from_volume">
 <a class="viewcode-back" href="../../api/inpainting.html#neurolit.inpaint_image.get_slice_from_volume">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_slice_from_volume</span><span class="p">(</span>
-    <span class="n">volume</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">slice_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">slice_cut</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">thickness</span><span class="p">:</span> <span class="nb">int</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_slice_from_volume</span><span class="p">(</span><span class="n">volume</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">slice_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">slice_cut</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">thickness</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract a slice from a volume with a specified thickness.</span>
 
 <span class="sd">    Parameters</span>
@@ -511,8 +546,9 @@
 <span class="sd">        Extracted slice tensor.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">threed_to_twod_slice</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">slice</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)]</span> <span class="o">*</span> <span class="mi">3</span>
-    <span class="n">threed_to_twod_slice</span><span class="p">[</span><span class="n">slice_dim</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">slice_cut</span> <span class="o">-</span> <span class="n">thickness</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">slice_cut</span> <span class="o">+</span> <span class="n">thickness</span><span class="o">//</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">threed_to_twod_slice</span><span class="p">[</span><span class="n">slice_dim</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">slice_cut</span> <span class="o">-</span> <span class="n">thickness</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">slice_cut</span> <span class="o">+</span> <span class="n">thickness</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">volume</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">threed_to_twod_slice</span><span class="p">)]</span></div>
+
 
 
 <div class="viewcode-block" id="inpaint_volume">
@@ -528,9 +564,10 @@
     <span class="n">slice_input</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">SAVE_VOLUMES</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">SAVE_IMAGES</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
     <span class="n">DDIM</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">val_image_nib</span><span class="p">:</span> <span class="n">NiftiImage</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">val_image_nib</span><span class="p">:</span> <span class="n">NiftiImage</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Inpaint a volume using the trained diffusion models.</span>
 
@@ -568,6 +605,9 @@
 <span class="sd">    torch.Tensor</span>
 <span class="sd">        Inpainted volume with the same shape as the input.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
     <span class="c1"># Input validation with type checking</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;models must be a dictionary&quot;</span><span class="p">)</span>
@@ -592,7 +632,6 @@
 
     <span class="n">slice_dim</span> <span class="o">=</span> <span class="n">slice_dim</span> <span class="ow">or</span> <span class="mi">0</span>  <span class="c1"># Default to first dimension</span>
 
-
     <span class="c1"># Current mean calculation could fail with empty mask</span>
     <span class="n">mask_indices</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="p">[</span><span class="n">volume_only_slice</span><span class="p">]</span><span class="o">.</span><span class="n">bool</span><span class="p">())</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">mask_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numel</span><span class="p">():</span>
@@ -604,26 +643,26 @@
         <span class="n">affine_header</span> <span class="o">=</span> <span class="p">(</span><span class="n">val_image_nib</span><span class="o">.</span><span class="n">affine</span><span class="p">,</span> <span class="n">val_image_nib</span><span class="o">.</span><span class="n">header</span><span class="p">)</span> <span class="k">if</span> <span class="n">val_image_nib</span> <span class="k">else</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">SAVE_VOLUMES</span><span class="p">:</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="s1">&#39;inpainting_volumes&#39;</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">&#39;original_image&#39;</span><span class="p">,</span> <span class="n">val_image</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;mask&#39;</span><span class="p">,</span> <span class="n">mask</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;masked_image&#39;</span><span class="p">,</span> <span class="n">val_image_masked</span><span class="p">)]:</span>
-                <span class="n">nib</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">nib</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">volume_only_slice</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="o">*</span><span class="n">affine_header</span><span class="p">),</span>
-                        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;inpainting_volumes/inpainting_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">.nii.gz&#39;</span><span class="p">))</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="s2">&quot;inpainting_volumes&quot;</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;original_image&quot;</span><span class="p">,</span> <span class="n">val_image</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;mask&quot;</span><span class="p">,</span> <span class="n">mask</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;masked_image&quot;</span><span class="p">,</span> <span class="n">val_image_masked</span><span class="p">)]:</span>
+                <span class="n">nib</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+                    <span class="n">nib</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">volume_only_slice</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="o">*</span><span class="n">affine_header</span><span class="p">),</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;inpainting_volumes/inpainting_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.nii.gz&quot;</span><span class="p">),</span>
+                <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">SAVE_IMAGES</span><span class="p">:</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="s1">&#39;inpainting_images&#39;</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">&#39;original_image&#39;</span><span class="p">,</span> <span class="n">val_image</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;mask&#39;</span><span class="p">,</span> <span class="n">mask</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;masked_image&#39;</span><span class="p">,</span> <span class="n">val_image_masked</span><span class="p">)]:</span>
-                <span class="n">plot_batch</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;inpainting_images/inpainting_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">.png&#39;</span><span class="p">),</span> 
-                          <span class="n">slice_cut</span><span class="o">=</span><span class="n">SLICE_CUT</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="s2">&quot;inpainting_images&quot;</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;original_image&quot;</span><span class="p">,</span> <span class="n">val_image</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;mask&quot;</span><span class="p">,</span> <span class="n">mask</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;masked_image&quot;</span><span class="p">,</span> <span class="n">val_image_masked</span><span class="p">)]:</span>
+                <span class="n">plot_batch</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;inpainting_images/inpainting_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.png&quot;</span><span class="p">),</span> <span class="n">slice_cut</span><span class="o">=</span><span class="n">SLICE_CUT</span><span class="p">)</span>
 
     <span class="c1"># Setup models and scheduler</span>
     <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
         <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-    
 
     <span class="k">if</span> <span class="n">DDIM</span><span class="p">:</span>
         <span class="n">steps</span> <span class="o">=</span> <span class="mi">10</span>
         <span class="n">scheduler</span> <span class="o">=</span> <span class="n">DDIMScheduler</span><span class="p">(</span><span class="n">num_train_timesteps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">schedule</span><span class="o">=</span><span class="s2">&quot;scaled_linear_beta&quot;</span><span class="p">,</span> <span class="n">beta_start</span><span class="o">=</span><span class="mf">0.0005</span><span class="p">,</span> <span class="n">beta_end</span><span class="o">=</span><span class="mf">0.0195</span><span class="p">,</span> <span class="n">clip_sample</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Using DDIM scheduler with </span><span class="si">{</span><span class="n">steps</span><span class="si">}</span><span class="s1"> steps&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using DDIM scheduler with </span><span class="si">{</span><span class="n">steps</span><span class="si">}</span><span class="s2"> steps&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">steps</span> <span class="o">=</span> <span class="mi">1000</span>
         <span class="n">scheduler</span> <span class="o">=</span> <span class="n">DDPMScheduler</span><span class="p">(</span><span class="n">num_train_timesteps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">schedule</span><span class="o">=</span><span class="s2">&quot;scaled_linear_beta&quot;</span><span class="p">,</span> <span class="n">beta_start</span><span class="o">=</span><span class="mf">0.0005</span><span class="p">,</span> <span class="n">beta_end</span><span class="o">=</span><span class="mf">0.0195</span><span class="p">)</span>
@@ -635,32 +674,32 @@
     <span class="n">val_image_masked</span> <span class="o">=</span> <span class="n">val_image_masked</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
     <span class="c1"># Run inpainting</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Using 2.5D inpainting with view aggregation&#39;</span><span class="p">)</span>
-    <span class="n">Inpainter</span> <span class="o">=</span> <span class="n">OffsetTwoAndHalfDInpaintingInferer</span><span class="p">(</span>
-        <span class="n">inference_steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span>
-        <span class="n">scheduler</span><span class="o">=</span><span class="n">scheduler</span><span class="p">,</span>
-        <span class="n">diffusion_model_dict</span><span class="o">=</span><span class="n">models</span>
-    <span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Using 2.5D inpainting with view aggregation&quot;</span><span class="p">)</span>
+    <span class="n">Inpainter</span> <span class="o">=</span> <span class="n">OffsetTwoAndHalfDInpaintingInferer</span><span class="p">(</span><span class="n">inference_steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">scheduler</span><span class="o">=</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">diffusion_model_dict</span><span class="o">=</span><span class="n">models</span><span class="p">)</span>
 
-    <span class="c1">#import pdb; pdb.set_trace()</span>
-    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">(),</span> <span class="n">autocast</span><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">device_type</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">):</span>
+    <span class="c1"># import pdb; pdb.set_trace()</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">(),</span> <span class="n">autocast</span><span class="p">(</span><span class="n">device_type</span><span class="o">=</span><span class="n">device</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="n">device</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;cuda&quot;</span><span class="p">):</span>
         <span class="n">val_image_inpainted</span> <span class="o">=</span> <span class="n">Inpainter</span><span class="p">(</span>
             <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
             <span class="n">image_masked</span><span class="o">=</span><span class="n">val_image_masked</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
             <span class="n">num_resample_steps</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
             <span class="n">num_resample_jumps</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
-            <span class="n">batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
             <span class="n">get_intermediates</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span>
+            <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="n">val_image_inpainted</span> <span class="o">=</span> <span class="n">val_image_inpainted</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
     <span class="c1"># Save results</span>
     <span class="k">if</span> <span class="n">SAVE_IMAGES</span><span class="p">:</span>
-        <span class="n">plot_inpainting</span><span class="p">(</span><span class="n">val_image</span><span class="p">,</span> <span class="n">val_image_masked</span><span class="p">,</span> <span class="n">val_image_inpainted</span><span class="p">,</span>
-                       <span class="n">out_file</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="s1">&#39;inpainting_images/inpainting_result.png&#39;</span><span class="p">),</span>
-                       <span class="n">SLICE_CUT</span><span class="o">=</span><span class="n">SLICE_CUT</span><span class="p">,</span> <span class="n">cut_dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-
+        <span class="n">plot_inpainting</span><span class="p">(</span>
+            <span class="n">val_image</span><span class="p">,</span>
+            <span class="n">val_image_masked</span><span class="p">,</span>
+            <span class="n">val_image_inpainted</span><span class="p">,</span>
+            <span class="n">out_file</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="s2">&quot;inpainting_images/inpainting_result.png&quot;</span><span class="p">),</span>
+            <span class="n">SLICE_CUT</span><span class="o">=</span><span class="n">SLICE_CUT</span><span class="p">,</span>
+            <span class="n">cut_dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="c1"># ##### plotting of intermediates</span>
         <span class="c1"># if len(models) == 3: # view agg gives 3d intermediates</span>
@@ -671,15 +710,17 @@
         <span class="c1">#     slice_c = SLICE_CUT[[0,2]]</span>
         <span class="c1"># elif slice_dim == 2:</span>
         <span class="c1">#     slice_c = SLICE_CUT[[0,1]]</span>
-        <span class="c1"># plot_batch(intermediates, os.path.join(out_dir,&#39;inpainting_images/inpainting_intermediates.png&#39;), </span>
+        <span class="c1"># plot_batch(intermediates, os.path.join(out_dir,&#39;inpainting_images/inpainting_intermediates.png&#39;),</span>
         <span class="c1">#            slice_cut=slice_c)</span>
 
     <span class="k">if</span> <span class="n">SAVE_VOLUMES</span><span class="p">:</span>
-        <span class="n">nib</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">nib</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">val_image_inpainted</span><span class="p">[</span><span class="n">volume_only_slice</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">*</span> <span class="mi">255</span><span class="p">,</span> <span class="o">*</span><span class="n">affine_header</span><span class="p">),</span>
-                 <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="s1">&#39;inpainting_volumes/inpainting_result.nii.gz&#39;</span><span class="p">))</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Saved inpainting result as inpainting_volumes/inpainting_result.nii.gz&#39;</span><span class="p">)</span>
+        <span class="n">nib</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+            <span class="n">nib</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">val_image_inpainted</span><span class="p">[</span><span class="n">volume_only_slice</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">*</span> <span class="mi">255</span><span class="p">,</span> <span class="o">*</span><span class="n">affine_header</span><span class="p">),</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="s2">&quot;inpainting_volumes/inpainting_result.nii.gz&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Saved inpainting result as inpainting_volumes/inpainting_result.nii.gz&quot;</span><span class="p">)</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Finished inpainting&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Finished inpainting&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">val_image_inpainted</span></div>
 
 
@@ -694,61 +735,69 @@
     <span class="n">SAVE_VOLUMES</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">SAVE_IMAGES</span> <span class="o">=</span> <span class="kc">True</span>
 
-    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;Train a 3D DDPM model&#39;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-o&#39;</span><span class="p">,</span><span class="s1">&#39;--out_dir&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;debug_run&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;experiment output directory&#39;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-i&#39;</span><span class="p">,</span> <span class="s1">&#39;--input_image&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;input image&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-m&#39;</span><span class="p">,</span> <span class="s1">&#39;--mask_image&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;input mask&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--dilate&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;number of pixels to dilate the mask by&#39;</span><span class="p">,</span>
-                        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-c_coronal&#39;</span><span class="p">,</span> <span class="s1">&#39;--checkpoint_coronal&#39;</span><span class="p">,</span>
-                        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;checkpoint to load for inference in coronal plane&#39;</span><span class="p">,</span>
-                        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-c_axial&#39;</span><span class="p">,</span> <span class="s1">&#39;--checkpoint_axial&#39;</span><span class="p">,</span> 
-                        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;checkpoint to load for inference in axial plane&#39;</span><span class="p">,</span> 
-                        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-c_sagittal&#39;</span><span class="p">,</span> <span class="s1">&#39;--checkpoint_sagittal&#39;</span><span class="p">,</span>
-                        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;checkpoint to load for inference in sagittal plane&#39;</span><span class="p">,</span>
-                        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Run 3D image inpainting using a pretrained DDPM model&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;--out_dir&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;debug_run&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;experiment output directory&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="s2">&quot;--input_image&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;input image&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="s2">&quot;--mask_image&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;input mask&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--dilate&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;number of pixels to dilate the mask by&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-c_coronal&quot;</span><span class="p">,</span> <span class="s2">&quot;--checkpoint_coronal&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;checkpoint to load for inference in coronal plane&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-c_axial&quot;</span><span class="p">,</span> <span class="s2">&quot;--checkpoint_axial&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;checkpoint to load for inference in axial plane&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-c_sagittal&quot;</span><span class="p">,</span> <span class="s2">&quot;--checkpoint_sagittal&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;checkpoint to load for inference in sagittal plane&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--batch_size&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;number of slices to process per GPU batch (default: 8); reduce to lower GPU memory usage&quot;</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--device&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s2">&quot;cuda&quot;</span><span class="p">],</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Inference device to use (default: auto)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
 
-
     <span class="c1"># load models</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">resolve_inference_device</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using inference device: </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
     <span class="n">model_state_dicts</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">checkpoint_coronal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">model_state_dicts</span><span class="p">[</span><span class="s1">&#39;coronal&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">checkpoint_coronal</span><span class="p">,</span> <span class="n">weights_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">model_state_dicts</span><span class="p">[</span><span class="s2">&quot;coronal&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">checkpoint_coronal</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">weights_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">checkpoint_axial</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">model_state_dicts</span><span class="p">[</span><span class="s1">&#39;axial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">checkpoint_axial</span><span class="p">,</span> <span class="n">weights_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">model_state_dicts</span><span class="p">[</span><span class="s2">&quot;axial&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">checkpoint_axial</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">weights_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">checkpoint_sagittal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">model_state_dicts</span><span class="p">[</span><span class="s1">&#39;sagittal&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">checkpoint_sagittal</span><span class="p">,</span> <span class="n">weights_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
+        <span class="n">model_state_dicts</span><span class="p">[</span><span class="s2">&quot;sagittal&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">checkpoint_sagittal</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">weights_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="c1"># setup model</span>
-    <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span>
     <span class="n">SLICE_THICKNESS</span> <span class="o">=</span> <span class="mi">7</span>
     <span class="c1"># make model out of weights only</span>
     <span class="n">model_dict</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">model_state_dict</span> <span class="ow">in</span> <span class="n">model_state_dicts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">model_dict</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">DiffusionModelUNetVINN</span><span class="p">(</span>
             <span class="n">spatial_dims</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-            <span class="n">internal_size</span><span class="o">=</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span><span class="mi">128</span><span class="p">),</span>
+            <span class="n">internal_size</span><span class="o">=</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span>
             <span class="n">in_channels</span><span class="o">=</span><span class="n">SLICE_THICKNESS</span><span class="p">,</span>
             <span class="n">out_channels</span><span class="o">=</span><span class="n">SLICE_THICKNESS</span><span class="p">,</span>
-            <span class="n">num_channels</span><span class="o">=</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span><span class="c1">#[256, 256, 512],</span>
+            <span class="n">num_channels</span><span class="o">=</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span>  <span class="c1"># [256, 256, 512],</span>
             <span class="n">attention_levels</span><span class="o">=</span><span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">],</span>
             <span class="n">num_head_channels</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span>
             <span class="n">num_res_blocks</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
             <span class="n">norm_num_groups</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
             <span class="n">use_fp16_VINN</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">is_vinn</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">interpolation_mode</span><span class="o">=</span><span class="s1">&#39;bilinear&#39;</span><span class="p">,</span>
+            <span class="n">interpolation_mode</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">model_dict</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">model_state_dict</span><span class="p">)</span>
         <span class="n">model_dict</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
-
     <span class="c1"># Add compilation for PyTorch 2.0+</span>
-    <span class="c1">#print(f&#39;Torch version: {torch.__version__}&#39;)</span>
+    <span class="c1"># print(f&#39;Torch version: {torch.__version__}&#39;)</span>
     <span class="c1"># if torch.__version__ &gt;= &quot;2.0.0&quot; and (isinstance(device, torch.device) and device.type == &#39;cuda&#39;):</span>
     <span class="c1">#     print(&quot;Compiling models with torch.compile()...&quot;)</span>
     <span class="c1">#     try:</span>
@@ -772,18 +821,17 @@
     <span class="c1">#         print(&quot;Continuing with uncompiled models...&quot;)</span>
 
     <span class="c1"># setup parameters (i.e. whether to use view aggregation, 2d or 3d model)</span>
-    <span class="n">model_to_dim</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;coronal&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;axial&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;sagittal&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">model_dict</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>    
+    <span class="n">model_to_dim</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;coronal&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;axial&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;sagittal&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">model_dict</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;ERROR: At least one checkpoint must be specified&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">model_dict</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">DIM</span> <span class="o">=</span> <span class="n">model_to_dim</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">model_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]]</span>
     <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">model_dict</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
         <span class="n">DIM</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ERROR: One or three checkpoints must be specified, but got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">model_dict</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-                 <span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ERROR: One or three checkpoints must be specified, but got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">model_dict</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
 
-    <span class="k">assert</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">model_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">is_vinn</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">model_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">is_vinn</span>
 
     <span class="n">val_image_nib</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input_image</span><span class="p">)</span>
     <span class="n">val_image_nib</span> <span class="o">=</span> <span class="n">conform_nifti</span><span class="p">(</span><span class="n">val_image_nib</span><span class="p">)</span>
@@ -792,50 +840,60 @@
 
     <span class="n">mask_nib</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">mask_image</span><span class="p">)</span>
     <span class="c1"># resample mask to image affine</span>
-    <span class="n">mask_nib</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">processing</span><span class="o">.</span><span class="n">resample_from_to</span><span class="p">(</span><span class="n">mask_nib</span><span class="p">,</span> <span class="n">val_image_nib</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="n">cval</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">mask_nib</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">processing</span><span class="o">.</span><span class="n">resample_from_to</span><span class="p">(</span><span class="n">mask_nib</span><span class="p">,</span> <span class="n">val_image_nib</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span> <span class="n">cval</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
     <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">mask_nib</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">())</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">dilate</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="n">dilate_mask</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">dilate</span><span class="p">)</span>
 
-
     <span class="n">INTERNAL_SHAPE</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">model_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">internal_size</span>
     <span class="n">zooms</span> <span class="o">=</span> <span class="n">val_image_nib</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">get_zooms</span><span class="p">()</span>
     <span class="n">internal_res_mm</span> <span class="o">=</span> <span class="mi">256</span> <span class="o">/</span> <span class="n">INTERNAL_SHAPE</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">internal_res_mm</span> <span class="o">/</span> <span class="n">zooms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="n">val_sample</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="n">val_image</span><span class="p">,</span> <span class="s1">&#39;mask&#39;</span><span class="p">:</span> <span class="n">mask</span><span class="p">}</span>
+    <span class="n">val_sample</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">val_image</span><span class="p">,</span> <span class="s2">&quot;mask&quot;</span><span class="p">:</span> <span class="n">mask</span><span class="p">}</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">out_dir</span><span class="p">,</span><span class="s1">&#39;inpainting_images&#39;</span><span class="p">))</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">out_dir</span><span class="p">,</span><span class="s1">&#39;inpainting_volumes&#39;</span><span class="p">)):</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">out_dir</span><span class="p">,</span><span class="s1">&#39;inpainting_images&#39;</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">out_dir</span><span class="p">,</span><span class="s1">&#39;inpainting_volumes&#39;</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Created output directory: </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">out_dir</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">out_dir</span><span class="p">,</span> <span class="s2">&quot;inpainting_images&quot;</span><span class="p">))</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">out_dir</span><span class="p">,</span> <span class="s2">&quot;inpainting_volumes&quot;</span><span class="p">)):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">out_dir</span><span class="p">,</span> <span class="s2">&quot;inpainting_images&quot;</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">out_dir</span><span class="p">,</span> <span class="s2">&quot;inpainting_volumes&quot;</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Created output directory: </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">out_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Output directory already exists: </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">out_dir</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Output directory already exists: </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">out_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="n">tr</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="c1">#transforms.AddChanneld(keys=[&#39;image&#39;, &#39;mask&#39;]),</span>
-        <span class="n">transforms</span><span class="o">.</span><span class="n">EnsureChannelFirstd</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="s1">&#39;mask&#39;</span><span class="p">],</span> <span class="n">channel_dim</span><span class="o">=</span><span class="s1">&#39;no_channel&#39;</span><span class="p">),</span>
-        <span class="n">transforms</span><span class="o">.</span><span class="n">ScaleIntensityd</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]),</span>
+        <span class="c1"># transforms.AddChanneld(keys=[&#39;image&#39;, &#39;mask&#39;]),</span>
+        <span class="n">transforms</span><span class="o">.</span><span class="n">EnsureChannelFirstd</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">,</span> <span class="s2">&quot;mask&quot;</span><span class="p">],</span> <span class="n">channel_dim</span><span class="o">=</span><span class="s2">&quot;no_channel&quot;</span><span class="p">),</span>
+        <span class="n">transforms</span><span class="o">.</span><span class="n">ScaleIntensityd</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]),</span>
     <span class="p">]</span>
 
     <span class="n">data_transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span>
     <span class="n">val_sample_preproc</span> <span class="o">=</span> <span class="n">data_transform</span><span class="p">(</span><span class="n">val_sample</span><span class="p">)</span>
 
-
-
-    <span class="k">assert</span><span class="p">(</span><span class="n">val_sample_preproc</span><span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">val_sample_preproc</span><span class="p">[</span><span class="s1">&#39;mask&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> \
+    <span class="k">assert</span> <span class="n">val_sample_preproc</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">val_sample_preproc</span><span class="p">[</span><span class="s2">&quot;mask&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="p">(</span>
         <span class="sa">f</span><span class="s2">&quot;Image and mask must have the same shape, but got </span><span class="si">{</span><span class="n">val_sample_preproc</span><span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">val_sample_preproc</span><span class="p">[</span><span class="s1">&#39;mask&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="n">val_image</span> <span class="o">=</span> <span class="n">val_sample_preproc</span><span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span>
-    <span class="n">mask</span> <span class="o">=</span> <span class="n">val_sample_preproc</span><span class="p">[</span><span class="s1">&#39;mask&#39;</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">val_image</span> <span class="o">=</span> <span class="n">val_sample_preproc</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">val_sample_preproc</span><span class="p">[</span><span class="s2">&quot;mask&quot;</span><span class="p">]</span>
 
     <span class="n">val_image_masked</span> <span class="o">=</span> <span class="n">val_image</span> <span class="o">*</span> <span class="p">(</span><span class="o">~</span><span class="p">(</span><span class="n">mask</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
 
-    <span class="n">inpaint_volume</span><span class="p">(</span><span class="n">models</span><span class="o">=</span><span class="n">model_dict</span><span class="p">,</span> <span class="n">val_image</span><span class="o">=</span><span class="n">val_image</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">val_image_masked</span><span class="o">=</span><span class="n">val_image_masked</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
-                   <span class="n">out_dir</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">out_dir</span><span class="p">,</span> <span class="n">SAVE_VOLUMES</span><span class="o">=</span><span class="n">SAVE_VOLUMES</span><span class="p">,</span> <span class="n">SAVE_IMAGES</span><span class="o">=</span><span class="n">SAVE_IMAGES</span><span class="p">,</span>
-                   <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">slice_input</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">slice_dim</span><span class="o">=</span><span class="n">DIM</span><span class="p">,</span> <span class="n">val_image_nib</span><span class="o">=</span><span class="n">val_image_nib</span><span class="p">,</span> <span class="n">DDIM</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+    <span class="n">inpaint_volume</span><span class="p">(</span>
+        <span class="n">models</span><span class="o">=</span><span class="n">model_dict</span><span class="p">,</span>
+        <span class="n">val_image</span><span class="o">=</span><span class="n">val_image</span><span class="p">,</span>
+        <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+        <span class="n">val_image_masked</span><span class="o">=</span><span class="n">val_image_masked</span><span class="p">,</span>
+        <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+        <span class="n">out_dir</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">out_dir</span><span class="p">,</span>
+        <span class="n">SAVE_VOLUMES</span><span class="o">=</span><span class="n">SAVE_VOLUMES</span><span class="p">,</span>
+        <span class="n">SAVE_IMAGES</span><span class="o">=</span><span class="n">SAVE_IMAGES</span><span class="p">,</span>
+        <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+        <span class="n">slice_input</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">slice_dim</span><span class="o">=</span><span class="n">DIM</span><span class="p">,</span>
+        <span class="n">val_image_nib</span><span class="o">=</span><span class="n">val_image_nib</span><span class="p">,</span>
+        <span class="n">DDIM</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
 
 
