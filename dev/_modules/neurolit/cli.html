@@ -393,6 +393,7 @@
 
     <span class="c1"># Optional arguments</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--dilate&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Number of times to dilate the lesion mask (default: 0)&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--keepgeom&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Preserve native output geometry&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;--device&quot;</span><span class="p">,</span>
         <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s2">&quot;cuda&quot;</span><span class="p">],</span>
@@ -405,7 +406,6 @@
         <span class="n">default</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Slices per GPU batch (default: 8); reduce to lower GPU memory usage&quot;</span><span class="p">,</span>
     <span class="p">)</span>
-
     <span class="c1"># Other arguments</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-h&quot;</span><span class="p">,</span> <span class="s2">&quot;--help&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Show help message and exit&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-v&quot;</span><span class="p">,</span> <span class="s2">&quot;--version&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">get_version_with_hash</span><span class="p">(),</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Print version number and exit&quot;</span><span class="p">)</span>
@@ -420,6 +420,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  -o, --sd, --out_dir, --output_directory : Output directory&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optional arguments:&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  --dilate              : Number of times to dilate the lesion mask (default: 0)&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  --keepgeom            : Preserve native output geometry&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  --device              : Inference device: auto, cpu, or cuda (default: auto)&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  --batch_size          : Slices per GPU batch (default: 8); reduce to lower GPU memory usage&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Other arguments:&quot;</span><span class="p">)</span>
@@ -433,8 +434,8 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  https://doi.org/10.1162/imag_a_00446&quot;</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">input_image</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">sd</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: Input image and output directory are required&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">input_image</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">sd</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">lesion_mask</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: Input image, lesion mask, and output directory are required&quot;</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="c1"># Validate input files</span>
@@ -470,38 +471,40 @@
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="c1"># Run inpainting</span>
-    <span class="k">if</span> <span class="n">mask_image</span><span class="p">:</span>
-        <span class="n">inpainted_img</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">&quot;inpainting_volumes&quot;</span> <span class="o">/</span> <span class="s2">&quot;inpainting_result.nii.gz&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">inpainted_img</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running inpainting...&quot;</span><span class="p">)</span>
+    <span class="n">inpainted_img</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">&quot;inpainting_volumes&quot;</span> <span class="o">/</span> <span class="s2">&quot;inpainting_result.nii.gz&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">inpainted_img</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running inpainting...&quot;</span><span class="p">)</span>
 
-            <span class="n">inpaint_argv</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="s2">&quot;--input_image&quot;</span><span class="p">,</span>
-                <span class="nb">str</span><span class="p">(</span><span class="n">input_image</span><span class="p">),</span>
-                <span class="s2">&quot;--mask_image&quot;</span><span class="p">,</span>
-                <span class="nb">str</span><span class="p">(</span><span class="n">mask_image</span><span class="p">),</span>
-                <span class="s2">&quot;--out_dir&quot;</span><span class="p">,</span>
-                <span class="nb">str</span><span class="p">(</span><span class="n">out_dir</span><span class="p">),</span>
-                <span class="s2">&quot;--checkpoint_axial&quot;</span><span class="p">,</span>
-                <span class="nb">str</span><span class="p">(</span><span class="n">ckpt_axial</span><span class="p">),</span>
-                <span class="s2">&quot;--checkpoint_sagittal&quot;</span><span class="p">,</span>
-                <span class="nb">str</span><span class="p">(</span><span class="n">ckpt_sagittal</span><span class="p">),</span>
-                <span class="s2">&quot;--checkpoint_coronal&quot;</span><span class="p">,</span>
-                <span class="nb">str</span><span class="p">(</span><span class="n">ckpt_coronal</span><span class="p">),</span>
-                <span class="s2">&quot;--dilate&quot;</span><span class="p">,</span>
-                <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">dilate</span><span class="p">),</span>
-                <span class="s2">&quot;--device&quot;</span><span class="p">,</span>
-                <span class="n">args</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
-                <span class="s2">&quot;--batch_size&quot;</span><span class="p">,</span>
-                <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">batch_size</span><span class="p">),</span>
-            <span class="p">]</span>
+        <span class="n">inpaint_argv</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;--input_image&quot;</span><span class="p">,</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">input_image</span><span class="p">),</span>
+            <span class="s2">&quot;--mask_image&quot;</span><span class="p">,</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">mask_image</span><span class="p">),</span>
+            <span class="s2">&quot;--out_dir&quot;</span><span class="p">,</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">out_dir</span><span class="p">),</span>
+            <span class="s2">&quot;--checkpoint_axial&quot;</span><span class="p">,</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">ckpt_axial</span><span class="p">),</span>
+            <span class="s2">&quot;--checkpoint_sagittal&quot;</span><span class="p">,</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">ckpt_sagittal</span><span class="p">),</span>
+            <span class="s2">&quot;--checkpoint_coronal&quot;</span><span class="p">,</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">ckpt_coronal</span><span class="p">),</span>
+            <span class="s2">&quot;--dilate&quot;</span><span class="p">,</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">dilate</span><span class="p">),</span>
+            <span class="s2">&quot;--device&quot;</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+            <span class="s2">&quot;--batch_size&quot;</span><span class="p">,</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">batch_size</span><span class="p">),</span>
+        <span class="p">]</span>
 
-            <span class="c1"># Forward any unknown arguments</span>
-            <span class="n">inpaint_argv</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">unknown</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">keepgeom</span><span class="p">:</span>
+            <span class="n">inpaint_argv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;--keepgeom&quot;</span><span class="p">)</span>
 
-            <span class="n">inpaint_main</span><span class="p">(</span><span class="n">inpaint_argv</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inpainted image already exists: </span><span class="si">{</span><span class="n">inpainted_img</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># Forward any unknown arguments</span>
+        <span class="n">inpaint_argv</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">unknown</span><span class="p">)</span>
+
+        <span class="n">inpaint_main</span><span class="p">(</span><span class="n">inpaint_argv</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inpainted image already exists: </span><span class="si">{</span><span class="n">inpainted_img</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Finished inpainting&quot;</span><span class="p">)</span></div>
 
