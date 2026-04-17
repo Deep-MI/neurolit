@@ -156,7 +156,8 @@ Default download location:
 If you use neuroLIT for research publications, please cite:
 
 Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpainting Tool for Whole
-  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Accepted for Imaging Neuroscience.
+  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Imaging Neuroscience 2025.
+  https://doi.org/10.1162/imag_a_00446
 """
     )
     parser.add_argument("-h", "--help", action="help", help="Show this help message and exit")

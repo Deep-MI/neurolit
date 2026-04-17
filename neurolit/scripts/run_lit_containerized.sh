@@ -18,16 +18,23 @@ FLAGS:
       Print the version number and exit
   --gpus <gpus>
       GPUs to use. Default: all
+  --device <auto|cpu|cuda>
+      Inference device inside the container. Default: auto
+  --cpu
+      Shorthand for --device cpu
   -i, --input_image <input_image>
       Path to the input T1w volume
-  -m, --mask_image <mask_image>
+  -m, --mask_image, --lesion_mask <mask_image>
       Path to the lesion mask volume (same dimensions as input_image, >0 for lesion, 0 for background)
   -o, --output_directory <output_directory>
       Path to the output directory
   --singularity
-      Use singularity instead of docker
+      Use singularity/apptainer instead of docker. The image is pulled from Docker Hub
+      on first use (no root required) and cached in containerization/deepmi_lit_<version>.sif.
+  --singularity_image <path>
+      Path to an existing Singularity/Apptainer image (.sif or .simg). Implies --singularity.
   --tag <tag>
-      Docker tag to use (e.g., 'latest' or '0.6dev'). If a full image name is 
+      Docker tag to use (e.g., 'latest' or '0.6dev'). If a full image name is
       provided (containing '/' or ':'), it overrides the default repository.
 
 Examples:
@@ -38,7 +45,8 @@ REFERENCES:
 If you use LIT for research publications, please cite:
 
 Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpainting Tool for Whole
-  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Accepted for Imaging Neuroscience.
+  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Imaging Neuroscience 2025.
+  https://doi.org/10.1162/imag_a_00446
 EOF
 }
 
@@ -58,7 +66,9 @@ DOCKER_REPO="deepmi/lit"
 
 # Initialize variables
 USE_SINGULARITY=false
+SINGULARITY_IMAGE=""
 VERSION=""
+DEVICE="auto"
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -71,6 +81,24 @@ while [[ $# -gt 0 ]]; do
       GPUS="$2"
       shift 2
       ;;
+    --device)
+      if [[ -z "$2" || "$2" == -* ]]; then
+        echo "Error: --device requires a value"
+        usage
+        exit 1
+      fi
+      if [[ "$2" != "auto" && "$2" != "cpu" && "$2" != "cuda" ]]; then
+        echo "Error: --device must be one of: auto, cpu, cuda"
+        usage
+        exit 1
+      fi
+      DEVICE="$2"
+      shift 2
+      ;;
+    --cpu)
+      DEVICE="cpu"
+      shift
+      ;;
     -i|--input_image)
       if [[ -z "$2" || "$2" == -* ]]; then
         echo "Error: --input_image requires a value"
@@ -80,9 +108,9 @@ while [[ $# -gt 0 ]]; do
       INPUT_IMAGE="$2"
       shift 2
       ;;
-    -m|--mask_image)
+    -m|--mask_image|--lesion_mask)
       if [[ -z "$2" || "$2" == -* ]]; then
-        echo "Error: --mask_image requires a value"
+        echo "Error: --mask_image/--lesion_mask requires a value"
         usage
         exit 1
       fi
@@ -112,7 +140,7 @@ while [[ $# -gt 0 ]]; do
                     grep -oP '"name":\s*"\K[0-9]+\.[0-9]+\.[0-9]+' | \
                     sort -V | tail -n 1)
         fi
-        [[ -z "$VERSION" ]] && VERSION="0.5.0"
+        [[ -z "$VERSION" ]] && VERSION="0.6.0"
       fi
       hash_file="$PROJ_DIR/git.hash"
       if [[ -n "$(which git)" ]] && (git -C "$PROJ_DIR" rev-parse 2>/dev/null ) ; then
@@ -127,7 +155,17 @@ while [[ $# -gt 0 ]]; do
       ;;
     --singularity)
       USE_SINGULARITY=true
-      shift # past argument
+      shift
+      ;;
+    --singularity_image)
+      if [[ -z "$2" || "$2" == -* ]]; then
+        echo "Error: --singularity_image requires a value"
+        usage
+        exit 1
+      fi
+      SINGULARITY_IMAGE="$2"
+      USE_SINGULARITY=true
+      shift 2
       ;;
     --tag)
       if [[ -z "$2" || "$2" == -* ]]; then
@@ -154,7 +192,7 @@ if [[ -z "$VERSION" ]]; then
               sort -V | tail -n 1)
   fi
   if [[ -z "$VERSION" ]]; then
-    VERSION="0.5.0"
+    VERSION="0.6.0"
   fi
 fi
 
@@ -196,30 +234,66 @@ if [ -z "$GPUS" ]; then
   GPUS="all"
 fi
 
+if [[ "$DEVICE" == "auto" ]]; then
+  if command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi >/dev/null 2>&1; then
+    RESOLVED_DEVICE="cuda"
+  else
+    RESOLVED_DEVICE="cpu"
+  fi
+else
+  RESOLVED_DEVICE="$DEVICE"
+fi
+
 # Run command based on the containerization tool
 if [ "$USE_SINGULARITY" = true ]; then
-  if [ ! -f "$PROJ_DIR/containerization/deepmi_lit.simg" ]; then
-    echo "=============== Pulling Singularity image from Docker Hub... ==============="
-    singularity pull "$PROJ_DIR/containerization/deepmi_lit.simg" docker://${IMAGE}
-  fi
-
-  if [ ! -f "$PROJ_DIR/containerization/deepmi_lit.simg" ]; then
-    echo "Error: Singularity image not found: $PROJ_DIR/containerization/deepmi_lit.simg"
+  # Resolve singularity/apptainer binary
+  if command -v singularity >/dev/null 2>&1; then
+    SINGULARITY_CMD="singularity"
+  elif command -v apptainer >/dev/null 2>&1; then
+    SINGULARITY_CMD="apptainer"
+  else
+    echo "Error: neither 'singularity' nor 'apptainer' found in PATH"
     exit 1
   fi
 
-  singularity exec --nv \
+  # Determine image path (versioned filename avoids stale cached images)
+  if [ -z "$SINGULARITY_IMAGE" ]; then
+    SINGULARITY_IMAGE="$PROJ_DIR/containerization/deepmi_lit_${VERSION}.sif"
+  fi
+
+  if [ ! -f "$SINGULARITY_IMAGE" ]; then
+    echo "=============== Pulling Singularity image from Docker Hub (no root required)... ==============="
+    $SINGULARITY_CMD pull "$SINGULARITY_IMAGE" docker://${IMAGE}
+  fi
+
+  if [ ! -f "$SINGULARITY_IMAGE" ]; then
+    echo "Error: Singularity image not found: $SINGULARITY_IMAGE"
+    exit 1
+  fi
+
+  SINGULARITY_ARGS=()
+  if [[ "$RESOLVED_DEVICE" == "cuda" ]]; then
+    SINGULARITY_ARGS+=(--nv)
+  fi
+
+  $SINGULARITY_CMD exec "${SINGULARITY_ARGS[@]}" \
     -B "${INPUT_IMAGE}":"${INPUT_IMAGE}":ro \
     -B "${MASK_IMAGE}":"${MASK_IMAGE}":ro \
     -B "${OUT_DIR}":"${OUT_DIR}" \
-    $PROJ_DIR/containerization/deepmi_lit.simg \
-    lit-inpainting -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" "${POSITIONAL_ARGS[@]}"
+    "$SINGULARITY_IMAGE" \
+    lit-inpainting -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" --device "${RESOLVED_DEVICE}" "${POSITIONAL_ARGS[@]}"
 else
-  docker run --gpus "device=$GPUS" --ipc=host \
-    --ulimit memlock=-1 --ulimit stack=67108864 --rm \
-    -v "${INPUT_IMAGE}":"${INPUT_IMAGE}":ro \
-    -v "${MASK_IMAGE}":"${MASK_IMAGE}":ro \
-    -v "${OUT_DIR}":"${OUT_DIR}" \
-    -u "$(id -u):$(id -g)" \
-    ${IMAGE} -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" "${POSITIONAL_ARGS[@]}"
+  DOCKER_ARGS=(run --ipc=host
+    --ulimit memlock=-1 --ulimit stack=67108864 --rm
+    -v "${INPUT_IMAGE}":"${INPUT_IMAGE}":ro
+    -v "${MASK_IMAGE}":"${MASK_IMAGE}":ro
+    -v "${OUT_DIR}":"${OUT_DIR}"
+    -u "$(id -u):$(id -g)")
+
+  if [[ "$RESOLVED_DEVICE" == "cuda" ]]; then
+    DOCKER_ARGS+=(--gpus "device=$GPUS")
+  fi
+
+  docker "${DOCKER_ARGS[@]}" \
+    ${IMAGE} -i "${INPUT_IMAGE}" -m "${MASK_IMAGE}" -o "${OUT_DIR}" --device "${RESOLVED_DEVICE}" "${POSITIONAL_ARGS[@]}"
 fi

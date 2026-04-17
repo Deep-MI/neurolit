@@ -68,6 +68,31 @@ VolumeSlice = tuple[int | slice, ...]
 AffineMatrix = NDArray[np.float64]
 
 
+def resolve_inference_device(device: str) -> torch.device:
+    """Resolve the requested inference device.
+
+    Parameters
+    ----------
+    device : str
+        Requested device name: ``"auto"``, ``"cpu"``, or ``"cuda"``.
+
+    Returns
+    -------
+    torch.device
+        Resolved torch device.
+    """
+    normalized_device = device.lower()
+    if normalized_device == "auto":
+        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if normalized_device == "cuda":
+        if not torch.cuda.is_available():
+            raise RuntimeError("CUDA was requested for inference, but no CUDA device is available.")
+        return torch.device("cuda")
+    if normalized_device == "cpu":
+        return torch.device("cpu")
+    raise ValueError(f"Unsupported device '{device}'. Expected one of: auto, cpu, cuda.")
+
+
 def dilate_mask(mask: torch.Tensor, num_iterations: int, kernel_size: int = 3) -> torch.Tensor:
     """Dilate a binary mask using repeated max pooling.
 
@@ -185,12 +210,13 @@ def inpaint_volume(
     slice_input: bool = True,
     SAVE_VOLUMES: bool = True,
     SAVE_IMAGES: bool = True,
-    device: str = "cuda",
+    device: torch.device | str = "cuda",
     DDIM: bool = False,
     val_image_nib: NiftiImage | None = None,
     reference_image_nib: NiftiImage | None = None,
     pad_multiple: int = 16,
     num_inference_steps: int = 1000,
+    batch_size: int = 8,
 ) -> torch.Tensor:
     """Inpaint a volume using the trained diffusion models.
 
@@ -228,6 +254,9 @@ def inpaint_volume(
     torch.Tensor
         Inpainted volume with the same shape as the input.
     """
+    if isinstance(device, str):
+        device = torch.device(device)
+
     # Input validation with type checking
     if not isinstance(models, dict):
         raise TypeError("models must be a dictionary")
@@ -316,14 +345,13 @@ def inpaint_volume(
     Inpainter = OffsetTwoAndHalfDInpaintingInferer(inference_steps=steps, scheduler=scheduler, diffusion_model_dict=models)
 
     # import pdb; pdb.set_trace()
-    device_type = torch.device(device).type
-    with torch.inference_mode(), autocast(enabled=True, device_type=device_type):
+    with torch.inference_mode(), autocast(device_type=device.type, enabled=device.type == "cuda"):
         val_image_inpainted = Inpainter(
             mask=mask[0],
             image_masked=val_image_masked[0],
             num_resample_steps=10,
             num_resample_jumps=15,
-            batch_size=8,
+            batch_size=batch_size,
             get_intermediates=False,
             scale_factor=scale_factor,
         )
@@ -376,7 +404,7 @@ def main(argv=None):
     SAVE_VOLUMES = True
     SAVE_IMAGES = True
 
-    parser = argparse.ArgumentParser(description="Train a 3D DDPM model")
+    parser = argparse.ArgumentParser(description="Run 3D image inpainting using a pretrained DDPM model")
     parser.add_argument("-o", "--out_dir", type=str, default="debug_run", help="experiment output directory")
     parser.add_argument("-i", "--input_image", type=str, help="input image", required=True)
     parser.add_argument("-m", "--mask_image", type=str, help="input mask", default=None, required=False)
@@ -392,20 +420,32 @@ def main(argv=None):
     parser.add_argument(
         "-c_sagittal", "--checkpoint_sagittal", type=str, help="checkpoint to load for inference in sagittal plane", default=None, required=False
     )
+    parser.add_argument(
+        "--batch_size", type=int, default=8, help="number of slices to process per GPU batch (default: 8); reduce to lower GPU memory usage"
+    )
+    parser.add_argument(
+        "--device",
+        type=str,
+        choices=["auto", "cpu", "cuda"],
+        default="auto",
+        help="Inference device to use (default: auto)",
+    )
 
     args = parser.parse_args(argv)
 
     # load models
+    device = resolve_inference_device(args.device)
+    logger.info(f"Using inference device: {device.type}")
+
     model_state_dicts = {}
     if args.checkpoint_coronal is not None:
-        model_state_dicts["coronal"] = torch.load(args.checkpoint_coronal, weights_only=True)
+        model_state_dicts["coronal"] = torch.load(args.checkpoint_coronal, map_location=device, weights_only=True)
     if args.checkpoint_axial is not None:
-        model_state_dicts["axial"] = torch.load(args.checkpoint_axial, weights_only=True)
+        model_state_dicts["axial"] = torch.load(args.checkpoint_axial, map_location=device, weights_only=True)
     if args.checkpoint_sagittal is not None:
-        model_state_dicts["sagittal"] = torch.load(args.checkpoint_sagittal, weights_only=True)
+        model_state_dicts["sagittal"] = torch.load(args.checkpoint_sagittal, map_location=device, weights_only=True)
 
     # setup model
-    device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
     SLICE_THICKNESS = 7
     # make model out of weights only
     model_dict = {}
@@ -526,6 +566,7 @@ def main(argv=None):
         DDIM=False,
         reference_image_nib=val_image_native_nib if args.keepgeom else None,
         num_inference_steps=args.num_inference_steps,
+        batch_size=args.batch_size,
     )
 
 

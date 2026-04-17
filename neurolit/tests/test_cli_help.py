@@ -1,6 +1,10 @@
 import subprocess
 import sys
 
+import pytest
+
+from neurolit.inpaint_image import resolve_inference_device
+
 
 def run_help_test(module_path):
     """Helper to run --help on a module and check exit code."""
@@ -19,6 +23,8 @@ def test_lit_inpainting_help():
     # Testing the module directly:
     result = run_help_test("neurolit.cli")
     assert "--keepgeom" in result.stdout
+    assert "--device" in result.stdout
+    assert "auto, cpu, or cuda" in result.stdout
 
 
 def test_inpaint_image_help():
@@ -33,3 +39,22 @@ def test_lesion_to_segmentation_help():
 def test_lesion_to_surface_help():
     """Test lit-lesion-to-surface help."""
     run_help_test("neurolit.postprocessing.lesion_to_surface")
+
+
+def test_resolve_inference_device_auto_prefers_cuda(monkeypatch):
+    """Auto should resolve to CUDA when available."""
+    monkeypatch.setattr("torch.cuda.is_available", lambda: True)
+    assert resolve_inference_device("auto").type == "cuda"
+
+
+def test_resolve_inference_device_auto_falls_back_to_cpu(monkeypatch):
+    """Auto should resolve to CPU when CUDA is unavailable."""
+    monkeypatch.setattr("torch.cuda.is_available", lambda: False)
+    assert resolve_inference_device("auto").type == "cpu"
+
+
+def test_resolve_inference_device_rejects_unavailable_cuda(monkeypatch):
+    """Explicit CUDA should fail when no CUDA device is available."""
+    monkeypatch.setattr("torch.cuda.is_available", lambda: False)
+    with pytest.raises(RuntimeError, match="CUDA was requested"):
+        resolve_inference_device("cuda")
