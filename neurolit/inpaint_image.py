@@ -151,16 +151,17 @@ def conform_nifti(image: NiftiImage) -> NiftiImage:
         raise ValueError(f"Multiple input frames ({image.shape[3]}) not supported!")
 
     conform_kwargs = default_conform_kwargs()
+    is_conform_kwargs = {
+        "vox_size": conform_kwargs["vox_size"],
+        "img_size": conform_kwargs["img_size"],
+        "orientation": conform_kwargs["orientation"],
+        "verbose": False,
+    }
+    if conform_kwargs["dtype"] is not None:
+        is_conform_kwargs["dtype"] = conform_kwargs["dtype"]
 
     try:
-        if conform.is_conform(
-            image,
-            vox_size=conform_kwargs["vox_size"],
-            img_size=conform_kwargs["img_size"],
-            orientation=conform_kwargs["orientation"],
-            dtype=conform_kwargs["dtype"],
-            verbose=False,
-        ):
+        if conform.is_conform(image, **is_conform_kwargs):
             return image
         return conform.conform(
             image,
