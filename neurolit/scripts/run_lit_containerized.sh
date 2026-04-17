@@ -24,7 +24,7 @@ FLAGS:
       Shorthand for --device cpu
   -i, --input_image <input_image>
       Path to the input T1w volume
-  -m, --mask_image <mask_image>
+  -m, --mask_image, --lesion_mask <mask_image>
       Path to the lesion mask volume (same dimensions as input_image, >0 for lesion, 0 for background)
   -o, --output_directory <output_directory>
       Path to the output directory
@@ -45,7 +45,8 @@ REFERENCES:
 If you use LIT for research publications, please cite:
 
 Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpainting Tool for Whole
-  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Accepted for Imaging Neuroscience.
+  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Imaging Neuroscience 2025.
+  https://doi.org/10.1162/imag_a_00446
 EOF
 }
 
@@ -107,9 +108,9 @@ while [[ $# -gt 0 ]]; do
       INPUT_IMAGE="$2"
       shift 2
       ;;
-    -m|--mask_image)
+    -m|--mask_image|--lesion_mask)
       if [[ -z "$2" || "$2" == -* ]]; then
-        echo "Error: --mask_image requires a value"
+        echo "Error: --mask_image/--lesion_mask requires a value"
         usage
         exit 1
       fi
@@ -139,7 +140,7 @@ while [[ $# -gt 0 ]]; do
                     grep -oP '"name":\s*"\K[0-9]+\.[0-9]+\.[0-9]+' | \
                     sort -V | tail -n 1)
         fi
-        [[ -z "$VERSION" ]] && VERSION="0.5.0"
+        [[ -z "$VERSION" ]] && VERSION="0.6.0"
       fi
       hash_file="$PROJ_DIR/git.hash"
       if [[ -n "$(which git)" ]] && (git -C "$PROJ_DIR" rev-parse 2>/dev/null ) ; then
@@ -191,7 +192,7 @@ if [[ -z "$VERSION" ]]; then
               sort -V | tail -n 1)
   fi
   if [[ -z "$VERSION" ]]; then
-    VERSION="0.5.0"
+    VERSION="0.6.0"
   fi
 fi
 

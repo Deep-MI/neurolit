@@ -20,7 +20,7 @@ def run_lit():
 
     # Required/Common arguments (as used in run_lit.sh)
     parser.add_argument("-i", "--input_image", "--t1", help="Input T1w image")
-    parser.add_argument("-m", "--lesion_mask", help="Lesion mask")
+    parser.add_argument("-m", "--lesion_mask", "--mask_image", help="Lesion mask")
     parser.add_argument("-o", "--sd", "--out_dir", "--output_dir", "--output_directory", help="Output directory")
 
     # Optional arguments
@@ -48,7 +48,7 @@ def run_lit():
         print("Usage: lit-inpainting -i <input_t1w> -m <lesion_mask> -o <output_dir>")
         print("Required arguments:")
         print("  -i, --input_image     : Input T1w image")
-        print("  -m, --lesion_mask     : Lesion mask")
+        print("  -m, --lesion_mask, --mask_image : Lesion mask")
         print("  -o, --sd, --out_dir, --output_directory : Output directory")
         print("Optional arguments:")
         print("  --dilate              : Number of times to dilate the lesion mask (default: 0)")
@@ -61,7 +61,8 @@ def run_lit():
         print("If you use neuroLIT for research publications, please cite:")
         print("")
         print("Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpainting Tool for Whole")
-        print("  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Accepted for Imaging Neuroscience.")
+        print("  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Imaging Neuroscience 2025.")
+        print("  https://doi.org/10.1162/imag_a_00446")
         sys.exit(0)
 
     if not args.input_image or not args.sd:

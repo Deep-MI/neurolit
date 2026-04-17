@@ -35,7 +35,7 @@ If you installed via pip:
 
    lit-inpainting \\
        --input_image T1w.nii.gz \\
-       --mask_image lesion_mask.nii.gz \\
+       --lesion_mask lesion_mask.nii.gz \\
        --output_directory output_directory \\
        --dilate 2
 
@@ -283,4 +283,3 @@ Out of Memory Errors
 * Reduce batch size: ``--batch_size 4`` or ``--batch_size 2``
 * Switch to CPU mode: ``--device cpu`` (slower but avoids GPU memory limits)
 * Process on a machine with more GPU memory
-
