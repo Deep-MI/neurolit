@@ -21,9 +21,9 @@ ENV XDG_DATA_HOME=/usr/local/share \
     XDG_CACHE_HOME=/tmp/xdg-cache
 RUN mkdir -p /tmp/xdg-cache/fontconfig && chmod -R 1777 /tmp/xdg-cache && \
     lit-download-models && \
-    test -f /usr/local/share/LIT/weights/model_coronal.pt && \
-    test -f /usr/local/share/LIT/weights/model_axial.pt && \
-    test -f /usr/local/share/LIT/weights/model_sagittal.pt && \
+    test -s /usr/local/share/LIT/weights/model_coronal.pt && \
+    test -s /usr/local/share/LIT/weights/model_axial.pt && \
+    test -s /usr/local/share/LIT/weights/model_sagittal.pt && \
     chmod -R a+rX /usr/local/share/LIT
 
 # Update FastSurfer integration to use the new entrypoint.

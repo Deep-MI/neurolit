@@ -32,7 +32,9 @@ def download_checkpoint(
     """
     Download a checkpoint file with progress bar.
 
-    Raises an HTTPError if the file is not found or the server is not reachable.
+    Raises a ``RequestException`` if the remote file cannot be fetched or the
+    download is incomplete. Propagates ``OSError`` if the checkpoint cannot be
+    written to disk.
 
     Parameters
     ----------
@@ -49,7 +51,7 @@ def download_checkpoint(
     """
     checkpoint_path = Path(checkpoint_path)
     partial_path = checkpoint_path.with_name(f"{checkpoint_path.name}.part")
-    last_error: Exception | None = None
+    last_error: requests.exceptions.RequestException | None = None
     for url in urls:
         try:
             if verbose:
@@ -66,6 +68,7 @@ def download_checkpoint(
                 # Get total file size from headers
                 total_size = int(response.headers.get('content-length', 0))
                 block_size = 8192  # 8 KB chunks
+                bytes_written = 0
 
                 # Write file with progress bar to a temporary path first.
                 with open(partial_path, "wb") as f:
@@ -81,29 +84,41 @@ def download_checkpoint(
                             for chunk in response.iter_content(chunk_size=block_size):
                                 if chunk:  # filter out keep-alive chunks
                                     f.write(chunk)
+                                    bytes_written += len(chunk)
                                     pbar.update(len(chunk))
                     else:
                         # Fallback without progress bar
                         for chunk in response.iter_content(chunk_size=block_size):
                             if chunk:
                                 f.write(chunk)
+                                bytes_written += len(chunk)
+
+                if total_size > 0 and bytes_written != total_size:
+                    raise requests.exceptions.RequestException(
+                        f"Incomplete download for {checkpoint_name}: expected {total_size} bytes, received {bytes_written}."
+                    )
 
             partial_path.replace(checkpoint_path)
             return
 
-        except (requests.exceptions.RequestException, OSError) as e:
+        except requests.exceptions.RequestException as e:
             last_error = e
             partial_path.unlink(missing_ok=True)
             if verbose:
-                print(f"Server {url} not reachable ({type(e).__name__}): {e}")
-            if isinstance(e, requests.exceptions.HTTPError):
-                if verbose:
+                print(f"Failed downloading checkpoint {checkpoint_name} from {url} ({type(e).__name__}): {e}")
+                if isinstance(e, requests.exceptions.HTTPError) and e.response is not None:
                     print(f"Response code: {e.response.status_code}")
+        except OSError:
+            partial_path.unlink(missing_ok=True)
+            raise
+
+    if last_error is not None:
+        raise last_error
 
     links = ', '.join(u.removeprefix('https://')[:22] + "..." for u in urls)
     raise requests.exceptions.RequestException(
         f"Failed downloading the checkpoint {checkpoint_name} from {links}."
-    ) from last_error
+    )
 
 
 def check_and_download_ckpts(checkpoint_path: Path | str, urls: list[str], verbose: bool = False, show_progress: bool = True) -> None:
@@ -132,15 +147,15 @@ def check_and_download_ckpts(checkpoint_path: Path | str, urls: list[str], verbo
         download_checkpoint(checkpoint_path.name, checkpoint_path, urls, verbose, show_progress)
 
 
-def fallback_multiple_urls(checkpoint_name: str, urls: list[str], verbose: bool = False, show_progress: bool = True) -> None:
+def fallback_multiple_urls(checkpoint_path: Path | str, urls: list[str], verbose: bool = False, show_progress: bool = True) -> None:
     last_error: Exception | None = None
     for url in urls:
         try:
-            check_and_download_ckpts(checkpoint_name, [url], verbose, show_progress)
+            check_and_download_ckpts(checkpoint_path, [url], verbose, show_progress)
             return
         except Exception as e:
             last_error = e
-            print(f"Tried downloading {checkpoint_name} from {url} but failed")
+            print(f"Tried downloading {checkpoint_path} from {url} but failed")
             print(e)
     if last_error is not None:
         raise last_error

@@ -25,12 +25,69 @@ class BrokenStreamResponse:
         raise OSError("simulated write failure")
 
 
+class MissingResponse:
+    """Fake response that raises HTTPError before streaming starts."""
+
+    headers = {}
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        return False
+
+    def raise_for_status(self):
+        raise requests.exceptions.HTTPError("404 not found")
+
+    def iter_content(self, chunk_size):
+        yield from ()
+
+
+class TruncatedResponse:
+    """Fake response that terminates cleanly before content-length is satisfied."""
+
+    headers = {"content-length": "2"}
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        return False
+
+    def raise_for_status(self):
+        return None
+
+    def iter_content(self, chunk_size):
+        yield b"x"
+
+
 def test_download_checkpoint_cleans_partial_file_on_failure(monkeypatch, tmp_path):
     model_path = tmp_path / "model.pt"
 
     monkeypatch.setattr(dc.requests, "get", lambda *args, **kwargs: BrokenStreamResponse())
 
-    with pytest.raises(requests.exceptions.RequestException, match="Failed downloading the checkpoint model.pt"):
+    with pytest.raises(OSError, match="simulated write failure"):
+        dc.download_checkpoint("model.pt", model_path, ["https://example.test/model.pt"], show_progress=False)
+
+    assert not model_path.exists()
+    assert not Path(f"{model_path}.part").exists()
+
+
+def test_download_checkpoint_preserves_http_error(monkeypatch, tmp_path):
+    model_path = tmp_path / "model.pt"
+
+    monkeypatch.setattr(dc.requests, "get", lambda *args, **kwargs: MissingResponse())
+
+    with pytest.raises(requests.exceptions.HTTPError, match="404 not found"):
+        dc.download_checkpoint("model.pt", model_path, ["https://example.test/model.pt"], show_progress=False)
+
+
+def test_download_checkpoint_rejects_truncated_response(monkeypatch, tmp_path):
+    model_path = tmp_path / "model.pt"
+
+    monkeypatch.setattr(dc.requests, "get", lambda *args, **kwargs: TruncatedResponse())
+
+    with pytest.raises(requests.exceptions.RequestException, match="Incomplete download for model.pt"):
         dc.download_checkpoint("model.pt", model_path, ["https://example.test/model.pt"], show_progress=False)
 
     assert not model_path.exists()
