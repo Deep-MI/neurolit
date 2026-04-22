@@ -32,7 +32,9 @@ def download_checkpoint(
     """
     Download a checkpoint file with progress bar.
 
-    Raises an HTTPError if the file is not found or the server is not reachable.
+    Raises a ``RequestException`` if the remote file cannot be fetched or the
+    download is incomplete. Propagates ``OSError`` if the checkpoint cannot be
+    written to disk.
 
     Parameters
     ----------
@@ -47,60 +49,76 @@ def download_checkpoint(
     show_progress : bool
         Whether to show download progress bar.
     """
-    response = None
+    checkpoint_path = Path(checkpoint_path)
+    partial_path = checkpoint_path.with_name(f"{checkpoint_path.name}.part")
+    last_error: requests.exceptions.RequestException | None = None
     for url in urls:
         try:
             if verbose:
                 print(f"Downloading checkpoint {checkpoint_name} from {url}")
-            response = requests.get(
+            with requests.get(
                 url,
                 verify=True,
                 timeout=(5, None),  # (connect timeout: 5 sec, read timeout: None)
                 stream=True,  # Stream the download for progress tracking
-            )
-            # Raise error if file does not exist:
-            response.raise_for_status()
-            break
+            ) as response:
+                # Raise error if file does not exist:
+                response.raise_for_status()
+
+                # Get total file size from headers
+                total_size = int(response.headers.get('content-length', 0))
+                block_size = 8192  # 8 KB chunks
+                bytes_written = 0
+
+                # Write file with progress bar to a temporary path first.
+                with open(partial_path, "wb") as f:
+                    if show_progress and total_size > 0:
+                        with tqdm(
+                            total=total_size,
+                            unit='B',
+                            unit_scale=True,
+                            unit_divisor=1024,
+                            desc=checkpoint_name,
+                            ncols=80,
+                        ) as pbar:
+                            for chunk in response.iter_content(chunk_size=block_size):
+                                if chunk:  # filter out keep-alive chunks
+                                    f.write(chunk)
+                                    bytes_written += len(chunk)
+                                    pbar.update(len(chunk))
+                    else:
+                        # Fallback without progress bar
+                        for chunk in response.iter_content(chunk_size=block_size):
+                            if chunk:
+                                f.write(chunk)
+                                bytes_written += len(chunk)
+
+                if total_size > 0 and bytes_written != total_size:
+                    raise requests.exceptions.RequestException(
+                        f"Incomplete download for {checkpoint_name}: expected {total_size} bytes, received {bytes_written}."
+                    )
+
+            partial_path.replace(checkpoint_path)
+            return
 
         except requests.exceptions.RequestException as e:
+            last_error = e
+            partial_path.unlink(missing_ok=True)
             if verbose:
-                print(f"Server {url} not reachable ({type(e).__name__}): {e}")
-            if isinstance(e, requests.exceptions.HTTPError):
-                if verbose:
+                print(f"Failed downloading checkpoint {checkpoint_name} from {url} ({type(e).__name__}): {e}")
+                if isinstance(e, requests.exceptions.HTTPError) and e.response is not None:
                     print(f"Response code: {e.response.status_code}")
+        except OSError:
+            partial_path.unlink(missing_ok=True)
+            raise
 
-    if response is None:
-        links = ', '.join(u.removeprefix('https://')[:22] + "..." for u in urls)
-        raise requests.exceptions.RequestException(
-            f"Failed downloading the checkpoint {checkpoint_name} from {links}."
-        )
-    else:
-        response.raise_for_status()  # Raise error if no server is reachable
+    if last_error is not None:
+        raise last_error
 
-    # Get total file size from headers
-    total_size = int(response.headers.get('content-length', 0))
-    block_size = 8192  # 8 KB chunks
-    
-    # Write file with progress bar
-    with open(checkpoint_path, "wb") as f:
-        if show_progress and total_size > 0:
-            with tqdm(
-                total=total_size,
-                unit='B',
-                unit_scale=True,
-                unit_divisor=1024,
-                desc=checkpoint_name,
-                ncols=80,
-            ) as pbar:
-                for chunk in response.iter_content(chunk_size=block_size):
-                    if chunk:  # filter out keep-alive chunks
-                        f.write(chunk)
-                        pbar.update(len(chunk))
-        else:
-            # Fallback without progress bar
-            for chunk in response.iter_content(chunk_size=block_size):
-                if chunk:
-                    f.write(chunk)
+    links = ', '.join(u.removeprefix('https://')[:22] + "..." for u in urls)
+    raise requests.exceptions.RequestException(
+        f"Failed downloading the checkpoint {checkpoint_name} from {links}."
+    )
 
 
 def check_and_download_ckpts(checkpoint_path: Path | str, urls: list[str], verbose: bool = False, show_progress: bool = True) -> None:
@@ -129,13 +147,18 @@ def check_and_download_ckpts(checkpoint_path: Path | str, urls: list[str], verbo
         download_checkpoint(checkpoint_path.name, checkpoint_path, urls, verbose, show_progress)
 
 
-def fallback_multiple_urls(checkpoint_name: str, urls: list[str], verbose: bool = False, show_progress: bool = True) -> None:
+def fallback_multiple_urls(checkpoint_path: Path | str, urls: list[str], verbose: bool = False, show_progress: bool = True) -> None:
+    last_error: Exception | None = None
     for url in urls:
         try:
-            check_and_download_ckpts(checkpoint_name, [url], verbose, show_progress)
+            check_and_download_ckpts(checkpoint_path, [url], verbose, show_progress)
+            return
         except Exception as e:
-            print(f"Tried downloading {checkpoint_name} from {url} but failed")
+            last_error = e
+            print(f"Tried downloading {checkpoint_path} from {url} but failed")
             print(e)
+    if last_error is not None:
+        raise last_error
 
 
 def main(argv=None):
@@ -179,13 +202,10 @@ Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpaint
     }
     
     # Check which models already exist
-    existing_models = []
     missing_models = []
     for model_name in models.keys():
         model_path = weights_dir / model_name
-        if model_path.exists():
-            existing_models.append(model_name)
-        else:
+        if not model_path.exists():
             missing_models.append(model_name)
     
     
@@ -212,7 +232,14 @@ Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpaint
         except Exception as e:
             print(f"\nDownload failed for {model_name}: {e}")
             success = False
-    
+
+    missing_models = [model_name for model_name in models if not (weights_dir / model_name).exists()]
+    if missing_models:
+        print("\nMissing model files after download:")
+        for model_name in missing_models:
+            print(model_name)
+        success = False
+
     if not success:
         print("=" * 30 + " exiting with errors" + "=" * 30)
         sys.exit(1)

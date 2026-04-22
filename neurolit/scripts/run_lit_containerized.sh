@@ -34,8 +34,10 @@ FLAGS:
   --singularity_image <path>
       Path to an existing Singularity/Apptainer image (.sif or .simg). Implies --singularity.
   --tag <tag>
-      Docker tag to use (e.g., 'latest' or '0.6dev'). If a full image name is
-      provided (containing '/' or ':'), it overrides the default repository.
+      Docker tag to use (e.g., '0.6.0' or 'latest'). If omitted, the wrapper
+      selects the newest numeric release tag available on Docker Hub. If a full
+      image name is provided (containing '/' or ':'), it overrides the default
+      repository.
 
 Examples:
   ./run_lit_containerized.sh -i t1w.nii.gz -m lesion.nii.gz -o ./output 
@@ -271,11 +273,13 @@ if [ "$USE_SINGULARITY" = true ]; then
     exit 1
   fi
 
-  SINGULARITY_ARGS=()
+  # Keep the container isolated from host Python packages and the repo checkout.
+  SINGULARITY_ARGS=(--cleanenv --pwd /tmp)
   if [[ "$RESOLVED_DEVICE" == "cuda" ]]; then
     SINGULARITY_ARGS+=(--nv)
   fi
 
+  SINGULARITYENV_PYTHONNOUSERSITE=1 APPTAINERENV_PYTHONNOUSERSITE=1 \
   $SINGULARITY_CMD exec "${SINGULARITY_ARGS[@]}" \
     -B "${INPUT_IMAGE}":"${INPUT_IMAGE}":ro \
     -B "${MASK_IMAGE}":"${MASK_IMAGE}":ro \
