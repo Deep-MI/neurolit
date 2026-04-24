@@ -39,9 +39,10 @@ If you installed via pip:
        --output_directory output_directory \\
        --dilate 2
 
-If the output directory is a FastSurfer subject directory, add ``--fastsurfer_dir`` to keep the
-internal LIT files under ``inpainting/`` while also creating public FastSurfer-style outputs such
-as ``mri/inpainted.lit.nii.gz`` and ``mri/orig/mask.lit.nii.gz``.
+If the output directory is a FastSurfer subject directory, add ``--fastsurfer_dir`` to integrate
+the outputs directly into the FastSurfer subject structure. In this mode, the inpainted image is
+written to ``mri/inpainted.lit.nii.gz``, the processed mask to ``mri/mask.lit.nii.gz``, and the
+original input mask to ``mri/orig/mask.lit.nii.gz``.
 
 Mask Dilation
 ~~~~~~~~~~~~~
@@ -77,9 +78,21 @@ File Structure
        ├── inpainting_mask.nii.gz
        └── inpainting_original_image.nii.gz
 
-With ``--fastsurfer_dir``, the same working files are written under ``inpainting/inpainting_volumes/``
-inside the subject directory and convenience copies are also created at
-``mri/inpainted.lit.nii.gz`` and ``mri/orig/mask.lit.nii.gz``.
+With ``--fastsurfer_dir``, these outputs are instead integrated into the FastSurfer subject
+directory, for example:
+
+.. code-block:: text
+
+   subject_directory/
+   ├── mri/
+   │   ├── inpainted.lit.nii.gz
+   │   ├── mask.lit.nii.gz
+   │   └── orig/
+   │       ├── mask.lit.nii.gz
+   │       ├── inpainting_original_image.lit.nii.gz
+   │       └── inpainting_masked_image.lit.nii.gz
+   └── scripts/
+       └── inpainting_*.lit.png
 
 .. note::
    If the source image was isotropic, the output images will have the same resolution as the input image. The area outside of the lesion mask is preserved, except for robust rescaling of intensity values.

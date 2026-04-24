@@ -86,13 +86,31 @@ def test_lit_inpainting_fastsurfer_dir_materializes_outputs(tmp_path, monkeypatc
 
     def fake_inpaint_main(argv: list[str]) -> None:
         out_dir = Path(argv[argv.index("--out_dir") + 1])
-        assert out_dir == subject_dir / "inpainting"
+        assert out_dir != subject_dir
         volumes_dir = out_dir / "inpainting_volumes"
+        images_dir = out_dir / "inpainting_images"
         volumes_dir.mkdir(parents=True, exist_ok=True)
+        images_dir.mkdir(parents=True, exist_ok=True)
         nib.save(
             nib.Nifti1Image(np.full((4, 4, 4), 7, dtype=np.float32), np.eye(4)),
             volumes_dir / "inpainting_result.nii.gz",
         )
+        nib.save(
+            nib.Nifti1Image(mask_data, np.eye(4)),
+            volumes_dir / "inpainting_mask.nii.gz",
+        )
+        nib.save(
+            nib.Nifti1Image(np.ones((4, 4, 4), dtype=np.float32), np.eye(4)),
+            volumes_dir / "inpainting_original_image.nii.gz",
+        )
+        nib.save(
+            nib.Nifti1Image(np.zeros((4, 4, 4), dtype=np.float32), np.eye(4)),
+            volumes_dir / "inpainting_masked_image.nii.gz",
+        )
+        (images_dir / "inpainting_result.png").write_bytes(b"png")
+        (images_dir / "inpainting_mask.png").write_bytes(b"png")
+        (images_dir / "inpainting_original_image.png").write_bytes(b"png")
+        (images_dir / "inpainting_masked_image.png").write_bytes(b"png")
 
     monkeypatch.setattr(cli, "inpaint_main", fake_inpaint_main)
     monkeypatch.setattr(
@@ -113,10 +131,23 @@ def test_lit_inpainting_fastsurfer_dir_materializes_outputs(tmp_path, monkeypatc
     cli.run_lit()
 
     public_result = subject_dir / "mri" / "inpainted.lit.nii.gz"
+    processed_mask = subject_dir / "mri" / "mask.lit.nii.gz"
     public_mask = subject_dir / "mri" / "orig" / "mask.lit.nii.gz"
+    original_image = subject_dir / "mri" / "orig" / "inpainting_original_image.lit.nii.gz"
+    masked_image = subject_dir / "mri" / "orig" / "inpainting_masked_image.lit.nii.gz"
+    result_png = subject_dir / "scripts" / "inpainting_result.lit.png"
     assert public_result.exists()
+    assert processed_mask.exists()
     assert public_mask.exists()
+    assert original_image.exists()
+    assert masked_image.exists()
+    assert result_png.exists()
+    assert not (subject_dir / "inpainting").exists()
     np.testing.assert_allclose(nib.load(str(public_result)).get_fdata(), 7.0)
+    np.testing.assert_allclose(
+        nib.load(str(processed_mask)).get_fdata(),
+        mask_data,
+    )
     np.testing.assert_allclose(
         nib.load(str(public_mask)).get_fdata(),
         nib.load(str(mask_image)).get_fdata(),
