@@ -271,11 +271,13 @@ if [ "$USE_SINGULARITY" = true ]; then
     exit 1
   fi
 
-  SINGULARITY_ARGS=()
+  # Keep the container isolated from host Python packages and the repo checkout.
+  SINGULARITY_ARGS=(--cleanenv --pwd /tmp)
   if [[ "$RESOLVED_DEVICE" == "cuda" ]]; then
     SINGULARITY_ARGS+=(--nv)
   fi
 
+  SINGULARITYENV_PYTHONNOUSERSITE=1 APPTAINERENV_PYTHONNOUSERSITE=1 \
   $SINGULARITY_CMD exec "${SINGULARITY_ARGS[@]}" \
     -B "${INPUT_IMAGE}":"${INPUT_IMAGE}":ro \
     -B "${MASK_IMAGE}":"${MASK_IMAGE}":ro \
