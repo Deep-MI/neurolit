@@ -288,6 +288,20 @@ def validate_segstats_installation() -> tuple[Path | None, bool]:
     sys.exit(1)
 
 
+def resolve_inpainting_mask_path(subjects_dir: Path, subject_id: str) -> Path:
+    """Resolve the lesion mask written by ``lit-inpainting`` for a subject."""
+    subject_path = subjects_dir / subject_id
+    candidates = [
+        subject_path / "inpainting" / "inpainting_volumes" / "inpainting_mask.nii.gz",
+        # Legacy location used by older FastSurfer integration revisions.
+        subject_path / "inpainting" / "inpainting_mask.nii.gz",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return candidates[0]
+
+
 def check_required_files(subjects_dir: Path, subject_id: str, config: dict[str, Any]) -> None:
     """Verify that the essential files exist for a subject before processing.
 
@@ -302,9 +316,7 @@ def check_required_files(subjects_dir: Path, subject_id: str, config: dict[str, 
     """
     logger.info("Checking for required input files...")
     
-    required_files = [
-        subjects_dir / subject_id / "inpainting" / "inpainting_mask.nii.gz",
-    ]
+    required_files = [resolve_inpainting_mask_path(subjects_dir, subject_id)]
     optional_segstats_inputs = [
         subjects_dir / subject_id / "mri" / "orig_nu.mgz",
         subjects_dir / subject_id / "mri" / "norm.mgz",
@@ -488,7 +500,7 @@ def map_lesion_to_segmentation(subjects_dir: Path, subject_id: str,
     """
     input_path = subjects_dir / subject_id / input_file
     output_path = subjects_dir / subject_id / output_file
-    mask_path = subjects_dir / subject_id / "inpainting" / "inpainting_mask.nii.gz"
+    mask_path = resolve_inpainting_mask_path(subjects_dir, subject_id)
     
     if not input_path.exists():
         logger.warning(f"  Skipping: {input_file} not found at {input_path}")
@@ -807,7 +819,7 @@ def surface_masking(lit_path: Path, subjects_dir: Path, subject_id: str,
         Always ``True`` (kept for backwards compatibility).
     """
     insurf = str(subjects_dir / subject_id / "surf" / f"{hemisphere}.pial")
-    inseg = str(subjects_dir / subject_id / "inpainting" / "inpainting_mask.nii.gz")
+    inseg = str(resolve_inpainting_mask_path(subjects_dir, subject_id))
     incort = str(subjects_dir / subject_id / "label" / f"{hemisphere}.cortex.label")
     surflut = str(lit_path / "postprocessing" / "DKTatlaslookup_lesion.txt")
     seglut = str(lit_path / "postprocessing" / "hemi.DKTatlaslookup_lesion.txt")

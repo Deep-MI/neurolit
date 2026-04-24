@@ -35,6 +35,7 @@ Entry point for the main ``lit-inpainting`` command. This is the primary interfa
 - ``--mask_image``: Path to lesion mask
 - ``--output_directory``: Output directory path
 - ``--dilate``: Number of dilation iterations (default: 0)
+- ``--fastsurfer_dir``: Treat the output directory as a FastSurfer subject directory
 - ``--device``: Device to use (cuda/cpu)
 
 Examples
@@ -75,4 +76,3 @@ Programmatic Usage
    
    result = subprocess.run(cmd, capture_output=True, text=True)
    print(result.stdout)
-

@@ -1,4 +1,5 @@
 import argparse
+import shutil
 import sys
 from pathlib import Path
 
@@ -7,6 +8,14 @@ from platformdirs import user_data_dir
 from neurolit._version import get_version_with_hash
 from neurolit.inpaint_image import main as inpaint_main
 from neurolit.utils.download_checkpoints import main as download_main
+
+
+def _copy_file(src: Path, dst: Path) -> None:
+    """Copy a file to ``dst``, replacing an existing destination if needed."""
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    if dst.exists():
+        dst.unlink()
+    shutil.copy2(src, dst)
 
 
 def run_lit():
@@ -26,6 +35,11 @@ def run_lit():
     # Optional arguments
     parser.add_argument("--dilate", type=int, default=0, help="Number of times to dilate the lesion mask (default: 0)")
     parser.add_argument("--keepgeom", action="store_true", help="Preserve native output geometry")
+    parser.add_argument(
+        "--fastsurfer_dir",
+        action="store_true",
+        help="Treat the output directory as a FastSurfer subject directory and materialize FastSurfer-style outputs",
+    )
     parser.add_argument(
         "--device",
         choices=["auto", "cpu", "cuda"],
@@ -53,6 +67,7 @@ def run_lit():
         print("Optional arguments:")
         print("  --dilate              : Number of times to dilate the lesion mask (default: 0)")
         print("  --keepgeom            : Preserve native output geometry")
+        print("  --fastsurfer_dir      : Treat output_directory as a FastSurfer subject directory")
         print("  --device              : Inference device: auto, cpu, or cuda (default: auto)")
         print("  --batch_size          : Slices per GPU batch (default: 8); reduce to lower GPU memory usage")
         print("Other arguments:")
@@ -85,6 +100,7 @@ def run_lit():
 
     out_dir = Path(args.sd).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
+    work_dir = out_dir / "inpainting" if args.fastsurfer_dir else out_dir
 
     # Download checkpoints
     print("Checking/Downloading checkpoints...")
@@ -103,7 +119,7 @@ def run_lit():
             sys.exit(1)
 
     # Run inpainting
-    inpainted_img = out_dir / "inpainting_volumes" / "inpainting_result.nii.gz"
+    inpainted_img = work_dir / "inpainting_volumes" / "inpainting_result.nii.gz"
     if not inpainted_img.exists():
         print("Running inpainting...")
 
@@ -113,7 +129,7 @@ def run_lit():
             "--mask_image",
             str(mask_image),
             "--out_dir",
-            str(out_dir),
+            str(work_dir),
             "--checkpoint_axial",
             str(ckpt_axial),
             "--checkpoint_sagittal",
@@ -137,6 +153,13 @@ def run_lit():
         inpaint_main(inpaint_argv)
     else:
         print(f"Inpainted image already exists: {inpainted_img}")
+
+    if args.fastsurfer_dir:
+        public_inpainted_img = out_dir / "mri" / "inpainted.lit.nii.gz"
+        public_mask_img = out_dir / "mri" / "orig" / "mask.lit.nii.gz"
+        _copy_file(inpainted_img, public_inpainted_img)
+        _copy_file(mask_image, public_mask_img)
+        print(f"Materialized FastSurfer-compatible outputs in {out_dir / 'mri'}")
 
     print("Finished inpainting")
 

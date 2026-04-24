@@ -25,6 +25,10 @@ pip install neurolit
 lit-inpainting --input_image T1w.nii.gz --lesion_mask lesion_mask.nii.gz --output_directory output_directory
 ```
 
+When preparing a FastSurfer subject directory directly, add `--fastsurfer_dir`. This keeps the
+internal LIT work files under `inpainting/` and also writes FastSurfer-style convenience outputs
+such as `mri/inpainted.lit.nii.gz` and `mri/orig/mask.lit.nii.gz`.
+
 ## How to run neuroLIT
 
 We recommend using containerization in combination with the [neurolit/scripts/run_lit_containerized.sh](neurolit/scripts/run_lit_containerized.sh) wrapper script.
@@ -65,6 +69,10 @@ The outputs will be placed in the output directory in the folder inpainting_volu
 - The inpainted T1w image (`inpainting_result.nii.gz`)
 - The (dilated) mask used for inpainting in the same space as the input image (`inpainting_mask.nii.gz`)
 - The conformed original image (`inpainting_original_image.nii.gz`)
+
+With `--fastsurfer_dir`, these same working files are written under `inpainting/inpainting_volumes/`
+inside the FastSurfer subject directory, and public convenience copies are also created at
+`mri/inpainted.lit.nii.gz` and `mri/orig/mask.lit.nii.gz`.
 
 We recommend performing dilation, since undersegmentation can negatively impact the performance of the inpainting, while oversegmentation should not have significant impact.
 

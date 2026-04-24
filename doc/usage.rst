@@ -39,6 +39,10 @@ If you installed via pip:
        --output_directory output_directory \\
        --dilate 2
 
+If the output directory is a FastSurfer subject directory, add ``--fastsurfer_dir`` to keep the
+internal LIT files under ``inpainting/`` while also creating public FastSurfer-style outputs such
+as ``mri/inpainted.lit.nii.gz`` and ``mri/orig/mask.lit.nii.gz``.
+
 Mask Dilation
 ~~~~~~~~~~~~~
 
@@ -72,6 +76,10 @@ File Structure
        ├── inpainting_result.nii.gz
        ├── inpainting_mask.nii.gz
        └── inpainting_original_image.nii.gz
+
+With ``--fastsurfer_dir``, the same working files are written under ``inpainting/inpainting_volumes/``
+inside the subject directory and convenience copies are also created at
+``mri/inpainted.lit.nii.gz`` and ``mri/orig/mask.lit.nii.gz``.
 
 .. note::
    If the source image was isotropic, the output images will have the same resolution as the input image. The area outside of the lesion mask is preserved, except for robust rescaling of intensity values.
@@ -154,6 +162,7 @@ Main command to run the neuroLIT inpainting.
      -m, --lesion_mask PATH                          Path to lesion mask [required]
      -o, --sd / --out_dir / --output_directory PATH  Output directory [required]
      --dilate INTEGER                                Number of dilation iterations [default: 0]
+     --fastsurfer_dir                                Treat output_directory as a FastSurfer subject directory
      --device [auto|cpu|cuda]                        Inference device [default: auto]
      --batch_size INTEGER                            Slices per GPU batch [default: 8]; reduce to lower GPU memory usage
      -h, --help                                      Show this message and exit
