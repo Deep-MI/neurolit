@@ -4,6 +4,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+import nibabel as nib
+import nibabel.processing
 from platformdirs import user_data_dir
 
 from neurolit._version import get_version_with_hash
@@ -23,6 +25,15 @@ def _copy_if_exists(src: Path, dst: Path) -> None:
     """Copy ``src`` to ``dst`` when the source exists."""
     if src.exists():
         _copy_file(src, dst)
+
+
+def _resample_mask_to_reference(src: Path, reference: Path, dst: Path) -> None:
+    """Resample a mask to ``reference`` geometry using nearest-neighbor interpolation."""
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    mask_img = nib.load(str(src))
+    reference_img = nib.load(str(reference))
+    resampled = nibabel.processing.resample_from_to(mask_img, reference_img, order=0, mode="constant", cval=0)
+    nib.save(nib.Nifti1Image(resampled.get_fdata().astype(mask_img.get_data_dtype()), reference_img.affine, reference_img.header), str(dst))
 
 
 def run_lit():
@@ -174,7 +185,10 @@ def run_lit():
                 inpaint_main(inpaint_argv)
 
                 _copy_file(inpainted_img, public_inpainted_img)
-                _copy_file(work_dir / "inpainting_volumes" / "inpainting_mask.nii.gz", processed_mask_img)
+                if args.keepgeom:
+                    _resample_mask_to_reference(work_dir / "inpainting_volumes" / "inpainting_mask.nii.gz", public_inpainted_img, processed_mask_img)
+                else:
+                    _copy_file(work_dir / "inpainting_volumes" / "inpainting_mask.nii.gz", processed_mask_img)
                 _copy_file(mask_image, public_mask_img)
                 _copy_if_exists(work_dir / "inpainting_volumes" / "inpainting_original_image.nii.gz", public_original_img)
                 _copy_if_exists(work_dir / "inpainting_volumes" / "inpainting_masked_image.nii.gz", public_masked_img)

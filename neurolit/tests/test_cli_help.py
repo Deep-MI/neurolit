@@ -8,6 +8,7 @@ import pytest
 
 import neurolit.cli as cli
 from neurolit.inpaint_image import resolve_inference_device
+from neurolit.scripts.lesion_postprocessing import resolve_inpainting_mask_path
 
 
 def run_help_test(module_path):
@@ -63,6 +64,20 @@ def test_resolve_inference_device_rejects_unavailable_cuda(monkeypatch):
     monkeypatch.setattr("torch.cuda.is_available", lambda: False)
     with pytest.raises(RuntimeError, match="CUDA was requested"):
         resolve_inference_device("cuda")
+
+
+def test_postprocessing_resolves_fastsurfer_mask_path_only(tmp_path):
+    """Postprocessing should require the FastSurfer-mode public mask path."""
+    subject_id = "subject"
+    subject_dir = tmp_path / subject_id
+    legacy_mask = subject_dir / "inpainting" / "inpainting_volumes" / "inpainting_mask.nii.gz"
+    legacy_mask.parent.mkdir(parents=True)
+    legacy_mask.write_bytes(b"legacy")
+
+    resolved = resolve_inpainting_mask_path(tmp_path, subject_id)
+
+    assert resolved == subject_dir / "mri" / "mask.lit.nii.gz"
+    assert resolved != legacy_mask
 
 
 def test_lit_inpainting_fastsurfer_dir_materializes_outputs(tmp_path, monkeypatch):
@@ -152,3 +167,61 @@ def test_lit_inpainting_fastsurfer_dir_materializes_outputs(tmp_path, monkeypatc
         nib.load(str(public_mask)).get_fdata(),
         nib.load(str(mask_image)).get_fdata(),
     )
+
+
+def test_lit_inpainting_fastsurfer_dir_forwards_keepgeom(tmp_path, monkeypatch):
+    """FastSurfer mode should pass keepgeom through to the inpainting backend."""
+    input_image = tmp_path / "input.nii.gz"
+    mask_image = tmp_path / "mask.nii.gz"
+    subject_dir = tmp_path / "subject"
+    native_affine = np.diag([1.0, 1.0, 1.2, 1.0])
+    native_data = np.ones((4, 4, 3), dtype=np.float32)
+    native_mask = np.zeros((4, 4, 3), dtype=np.float32)
+    native_mask[1:3, 1:3, 1:2] = 1
+    nib.save(nib.Nifti1Image(native_data, native_affine), input_image)
+    nib.save(nib.Nifti1Image(native_mask, native_affine), mask_image)
+
+    user_data_root = tmp_path / "user-data"
+    weights_dir = user_data_root / "weights"
+    weights_dir.mkdir(parents=True)
+    for name in ("model_coronal.pt", "model_axial.pt", "model_sagittal.pt"):
+        (weights_dir / name).write_bytes(b"stub")
+
+    monkeypatch.setattr(cli, "download_main", lambda argv=None: None)
+    monkeypatch.setattr(cli, "user_data_dir", lambda *args, **kwargs: str(user_data_root))
+
+    def fake_inpaint_main(argv: list[str]) -> None:
+        assert "--keepgeom" in argv
+        out_dir = Path(argv[argv.index("--out_dir") + 1])
+        volumes_dir = out_dir / "inpainting_volumes"
+        volumes_dir.mkdir(parents=True, exist_ok=True)
+        nib.save(
+            nib.Nifti1Image(np.full(native_data.shape, 7, dtype=np.float32), native_affine),
+            volumes_dir / "inpainting_result.nii.gz",
+        )
+        conformed_mask = np.zeros((5, 5, 5), dtype=np.float32)
+        conformed_mask[2:4, 2:4, 2:4] = 1
+        nib.save(nib.Nifti1Image(conformed_mask, np.eye(4)), volumes_dir / "inpainting_mask.nii.gz")
+
+    monkeypatch.setattr(cli, "inpaint_main", fake_inpaint_main)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "lit-inpainting",
+            "--input_image",
+            str(input_image),
+            "--lesion_mask",
+            str(mask_image),
+            "--sd",
+            str(subject_dir),
+            "--fastsurfer_dir",
+            "--keepgeom",
+        ],
+    )
+
+    cli.run_lit()
+
+    processed_mask = nib.load(str(subject_dir / "mri" / "mask.lit.nii.gz"))
+    assert processed_mask.shape == native_data.shape
+    np.testing.assert_allclose(processed_mask.affine, native_affine)

@@ -289,18 +289,8 @@ def validate_segstats_installation() -> tuple[Path | None, bool]:
 
 
 def resolve_inpainting_mask_path(subjects_dir: Path, subject_id: str) -> Path:
-    """Resolve the lesion mask written by ``lit-inpainting`` for a subject."""
-    subject_path = subjects_dir / subject_id
-    candidates = [
-        subject_path / "mri" / "mask.lit.nii.gz",
-        subject_path / "inpainting" / "inpainting_volumes" / "inpainting_mask.nii.gz",
-        # Legacy location used by older FastSurfer integration revisions.
-        subject_path / "inpainting" / "inpainting_mask.nii.gz",
-    ]
-    for candidate in candidates:
-        if candidate.exists():
-            return candidate
-    return candidates[0]
+    """Resolve the FastSurfer-mode lesion mask written by ``lit-inpainting``."""
+    return subjects_dir / subject_id / "mri" / "mask.lit.nii.gz"
 
 
 def check_required_files(subjects_dir: Path, subject_id: str, config: dict[str, Any]) -> None:

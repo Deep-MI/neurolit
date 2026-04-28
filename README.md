@@ -103,7 +103,7 @@ lit-inpainting --input_image T1w.nii.gz --lesion_mask lesion_mask.nii.gz --outpu
 
 ## Expected Runtimes
 
-Runtimes below are for a typical whole-brain T1w volume (1 mm isotropic), measured with neuroLIT v0.6.0:
+Runtimes below are for a typical whole-brain T1w volume (1 mm isotropic), measured with neuroLIT v0.6.1:
 
 | Hardware | Runtime |
 |---|---|
