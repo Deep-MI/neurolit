@@ -6,6 +6,7 @@ from pathlib import Path
 
 import nibabel as nib
 import nibabel.processing
+import numpy as np
 from platformdirs import user_data_dir
 
 from neurolit._version import get_version_with_hash
@@ -15,6 +16,10 @@ from neurolit.utils.download_checkpoints import main as download_main
 
 def _copy_file(src: Path, dst: Path) -> None:
     """Copy a file to ``dst``, replacing an existing destination if needed."""
+    src = src.resolve()
+    dst = dst.resolve()
+    if src == dst:
+        return
     dst.parent.mkdir(parents=True, exist_ok=True)
     if dst.exists():
         dst.unlink()
@@ -33,7 +38,11 @@ def _resample_mask_to_reference(src: Path, reference: Path, dst: Path) -> None:
     mask_img = nib.load(str(src))
     reference_img = nib.load(str(reference))
     resampled = nibabel.processing.resample_from_to(mask_img, reference_img, order=0, mode="constant", cval=0)
-    nib.save(nib.Nifti1Image(resampled.get_fdata().astype(mask_img.get_data_dtype()), reference_img.affine, reference_img.header), str(dst))
+    mask_dtype = mask_img.get_data_dtype()
+    mask_data = np.asanyarray(resampled.dataobj).astype(mask_dtype, copy=False)
+    header = reference_img.header.copy()
+    header.set_data_dtype(mask_dtype)
+    nib.save(nib.Nifti1Image(mask_data, reference_img.affine, header), str(dst))
 
 
 def run_lit():
@@ -146,7 +155,17 @@ def run_lit():
         public_original_png = out_dir / "scripts" / "inpainting_original_image.lit.png"
         public_masked_png = out_dir / "scripts" / "inpainting_masked_image.lit.png"
 
-        required_outputs = (public_inpainted_img, processed_mask_img, public_mask_img)
+        required_outputs = (
+            public_inpainted_img,
+            processed_mask_img,
+            public_mask_img,
+            public_original_img,
+            public_masked_img,
+            public_result_png,
+            public_mask_png,
+            public_original_png,
+            public_masked_png,
+        )
         if all(path.exists() for path in required_outputs):
             print(f"FastSurfer-compatible outputs already exist in {out_dir}")
         else:
