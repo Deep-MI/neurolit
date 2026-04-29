@@ -1,12 +1,48 @@
 import argparse
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 
+import nibabel as nib
+import nibabel.processing
+import numpy as np
 from platformdirs import user_data_dir
 
 from neurolit._version import get_version_with_hash
 from neurolit.inpaint_image import main as inpaint_main
 from neurolit.utils.download_checkpoints import main as download_main
+
+
+def _copy_file(src: Path, dst: Path) -> None:
+    """Copy a file to ``dst``, replacing an existing destination if needed."""
+    src = src.resolve()
+    dst = dst.resolve()
+    if src == dst:
+        return
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    if dst.exists():
+        dst.unlink()
+    shutil.copy2(src, dst)
+
+
+def _copy_if_exists(src: Path, dst: Path) -> None:
+    """Copy ``src`` to ``dst`` when the source exists."""
+    if src.exists():
+        _copy_file(src, dst)
+
+
+def _resample_mask_to_reference(src: Path, reference: Path, dst: Path) -> None:
+    """Resample a mask to ``reference`` geometry using nearest-neighbor interpolation."""
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    mask_img = nib.load(str(src))
+    reference_img = nib.load(str(reference))
+    resampled = nibabel.processing.resample_from_to(mask_img, reference_img, order=0, mode="constant", cval=0)
+    mask_dtype = mask_img.get_data_dtype()
+    mask_data = np.asanyarray(resampled.dataobj).astype(mask_dtype, copy=False)
+    header = reference_img.header.copy()
+    header.set_data_dtype(mask_dtype)
+    nib.save(nib.Nifti1Image(mask_data, reference_img.affine, header), str(dst))
 
 
 def run_lit():
@@ -26,6 +62,11 @@ def run_lit():
     # Optional arguments
     parser.add_argument("--dilate", type=int, default=0, help="Number of times to dilate the lesion mask (default: 0)")
     parser.add_argument("--keepgeom", action="store_true", help="Preserve native output geometry")
+    parser.add_argument(
+        "--fastsurfer_dir",
+        action="store_true",
+        help="Treat the output directory as a FastSurfer subject directory and materialize FastSurfer-style outputs",
+    )
     parser.add_argument(
         "--device",
         choices=["auto", "cpu", "cuda"],
@@ -53,6 +94,7 @@ def run_lit():
         print("Optional arguments:")
         print("  --dilate              : Number of times to dilate the lesion mask (default: 0)")
         print("  --keepgeom            : Preserve native output geometry")
+        print("  --fastsurfer_dir      : Treat output_directory as a FastSurfer subject directory")
         print("  --device              : Inference device: auto, cpu, or cuda (default: auto)")
         print("  --batch_size          : Slices per GPU batch (default: 8); reduce to lower GPU memory usage")
         print("Other arguments:")
@@ -102,41 +144,118 @@ def run_lit():
             print(f"Error: Required model file not found: {model}")
             sys.exit(1)
 
-    # Run inpainting
-    inpainted_img = out_dir / "inpainting_volumes" / "inpainting_result.nii.gz"
-    if not inpainted_img.exists():
-        print("Running inpainting...")
+    if args.fastsurfer_dir:
+        public_inpainted_img = out_dir / "mri" / "inpainted.lit.nii.gz"
+        processed_mask_img = out_dir / "mri" / "mask.lit.nii.gz"
+        public_mask_img = out_dir / "mri" / "orig" / "mask.lit.nii.gz"
+        public_original_img = out_dir / "mri" / "orig" / "inpainting_original_image.lit.nii.gz"
+        public_masked_img = out_dir / "mri" / "orig" / "inpainting_masked_image.lit.nii.gz"
+        public_result_png = out_dir / "scripts" / "inpainting_result.lit.png"
+        public_mask_png = out_dir / "scripts" / "inpainting_mask.lit.png"
+        public_original_png = out_dir / "scripts" / "inpainting_original_image.lit.png"
+        public_masked_png = out_dir / "scripts" / "inpainting_masked_image.lit.png"
 
-        inpaint_argv = [
-            "--input_image",
-            str(input_image),
-            "--mask_image",
-            str(mask_image),
-            "--out_dir",
-            str(out_dir),
-            "--checkpoint_axial",
-            str(ckpt_axial),
-            "--checkpoint_sagittal",
-            str(ckpt_sagittal),
-            "--checkpoint_coronal",
-            str(ckpt_coronal),
-            "--dilate",
-            str(args.dilate),
-            "--device",
-            args.device,
-            "--batch_size",
-            str(args.batch_size),
-        ]
+        required_outputs = (
+            public_inpainted_img,
+            processed_mask_img,
+            public_mask_img,
+            public_original_img,
+            public_masked_img,
+            public_result_png,
+            public_mask_png,
+            public_original_png,
+            public_masked_png,
+        )
+        if all(path.exists() for path in required_outputs):
+            print(f"FastSurfer-compatible outputs already exist in {out_dir}")
+        else:
+            with tempfile.TemporaryDirectory(prefix="lit-inpainting.") as tmpdir:
+                work_dir = Path(tmpdir)
+                inpainted_img = work_dir / "inpainting_volumes" / "inpainting_result.nii.gz"
+                print("Running inpainting...")
 
-        if args.keepgeom:
-            inpaint_argv.append("--keepgeom")
+                inpaint_argv = [
+                    "--input_image",
+                    str(input_image),
+                    "--mask_image",
+                    str(mask_image),
+                    "--out_dir",
+                    str(work_dir),
+                    "--checkpoint_axial",
+                    str(ckpt_axial),
+                    "--checkpoint_sagittal",
+                    str(ckpt_sagittal),
+                    "--checkpoint_coronal",
+                    str(ckpt_coronal),
+                    "--dilate",
+                    str(args.dilate),
+                    "--device",
+                    args.device,
+                    "--batch_size",
+                    str(args.batch_size),
+                ]
 
-        # Forward any unknown arguments
-        inpaint_argv.extend(unknown)
+                if args.keepgeom:
+                    inpaint_argv.append("--keepgeom")
 
-        inpaint_main(inpaint_argv)
+                # Forward any unknown arguments
+                inpaint_argv.extend(unknown)
+
+                inpaint_main(inpaint_argv)
+
+                _copy_file(inpainted_img, public_inpainted_img)
+                if args.keepgeom:
+                    _resample_mask_to_reference(work_dir / "inpainting_volumes" / "inpainting_mask.nii.gz", public_inpainted_img, processed_mask_img)
+                else:
+                    _copy_file(work_dir / "inpainting_volumes" / "inpainting_mask.nii.gz", processed_mask_img)
+                _copy_file(mask_image, public_mask_img)
+                _copy_if_exists(work_dir / "inpainting_volumes" / "inpainting_original_image.nii.gz", public_original_img)
+                _copy_if_exists(work_dir / "inpainting_volumes" / "inpainting_masked_image.nii.gz", public_masked_img)
+                _copy_if_exists(work_dir / "inpainting_images" / "inpainting_result.png", public_result_png)
+                _copy_if_exists(work_dir / "inpainting_images" / "inpainting_mask.png", public_mask_png)
+                _copy_if_exists(work_dir / "inpainting_images" / "inpainting_original_image.png", public_original_png)
+                _copy_if_exists(work_dir / "inpainting_images" / "inpainting_masked_image.png", public_masked_png)
+
+            print(f"Materialized FastSurfer-compatible outputs in {out_dir}")
     else:
-        print(f"Inpainted image already exists: {inpainted_img}")
+        work_dir = out_dir
+        inpainted_img = work_dir / "inpainting_volumes" / "inpainting_result.nii.gz"
+        if not inpainted_img.exists():
+            print("Running inpainting...")
+
+            inpaint_argv = [
+                "--input_image",
+                str(input_image),
+                "--mask_image",
+                str(mask_image),
+                "--out_dir",
+                str(work_dir),
+                "--checkpoint_axial",
+                str(ckpt_axial),
+                "--checkpoint_sagittal",
+                str(ckpt_sagittal),
+                "--checkpoint_coronal",
+                str(ckpt_coronal),
+                "--dilate",
+                str(args.dilate),
+                "--device",
+                args.device,
+                "--batch_size",
+                str(args.batch_size),
+            ]
+
+            if args.keepgeom:
+                inpaint_argv.append("--keepgeom")
+
+            # Forward any unknown arguments
+            inpaint_argv.extend(unknown)
+
+            inpaint_main(inpaint_argv)
+        else:
+            print(f"Inpainted image already exists: {inpainted_img}")
+
+    if args.fastsurfer_dir:
+        print(f"FastSurfer-compatible outputs available in {out_dir / 'mri'} and {out_dir / 'scripts'}")
 
     print("Finished inpainting")
 

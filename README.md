@@ -25,6 +25,11 @@ pip install neurolit
 lit-inpainting --input_image T1w.nii.gz --lesion_mask lesion_mask.nii.gz --output_directory output_directory
 ```
 
+When preparing a FastSurfer subject directory directly, add `--fastsurfer_dir`. This writes the
+LIT outputs directly into the FastSurfer subject structure, including `mri/inpainted.lit.nii.gz`,
+the processed mask at `mri/mask.lit.nii.gz`, and the original input mask at
+`mri/orig/mask.lit.nii.gz`.
+
 ## How to run neuroLIT
 
 We recommend using containerization in combination with the [neurolit/scripts/run_lit_containerized.sh](neurolit/scripts/run_lit_containerized.sh) wrapper script.
@@ -67,6 +72,15 @@ The outputs will be placed in the output directory in the folder inpainting_volu
 - The (dilated) mask used for inpainting in the same space as the input image (`inpainting_mask.nii.gz`)
 - The conformed original image (`inpainting_original_image.nii.gz`)
 
+With `--fastsurfer_dir`, these outputs are integrated into the FastSurfer subject directory instead:
+
+- `mri/inpainted.lit.nii.gz`
+- `mri/mask.lit.nii.gz`
+- `mri/orig/mask.lit.nii.gz`
+- `mri/orig/inpainting_original_image.lit.nii.gz`
+- `mri/orig/inpainting_masked_image.lit.nii.gz`
+- `scripts/inpainting_*.lit.png`
+
 We recommend performing dilation, since undersegmentation can negatively impact the performance of the inpainting, while oversegmentation should not have significant impact.
 
 If the source image was isotropic, the output images should have the same resolution as the input image and the area outside of the lesion mask should be preserved, except for a robust rescaling of the intensity values.
@@ -90,7 +104,7 @@ lit-inpainting --input_image T1w.nii.gz --lesion_mask lesion_mask.nii.gz --outpu
 
 ## Expected Runtimes
 
-Runtimes below are for a typical whole-brain T1w volume (1 mm isotropic), measured with neuroLIT v0.6.0:
+Runtimes below are for a typical whole-brain T1w volume (1 mm isotropic), measured with neuroLIT v0.6.1:
 
 | Hardware | Runtime |
 |---|---|
