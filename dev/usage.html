@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Usage Guide &mdash; neuroLIT 0.7.0.dev0 documentation</title>
+  <title>Usage Guide &mdash; neuroLIT 0.6.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=47855553"></script>
+      <script src="_static/documentation_options.js?v=2bd037f0"></script>
       <script src="_static/doctools.js?v=9a2dae69"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -399,6 +399,10 @@
 <span class="w">    </span>--dilate<span class="w"> </span><span class="m">2</span>
 </pre></div>
 </div>
+<p>If the output directory is a FastSurfer subject directory, add <code class="docutils literal notranslate"><span class="pre">--fastsurfer_dir</span></code> to integrate
+the outputs directly into the FastSurfer subject structure. In this mode, the inpainted image is
+written to <code class="docutils literal notranslate"><span class="pre">mri/inpainted.lit.nii.gz</span></code>, the processed mask to <code class="docutils literal notranslate"><span class="pre">mri/mask.lit.nii.gz</span></code>, and the
+original input mask to <code class="docutils literal notranslate"><span class="pre">mri/orig/mask.lit.nii.gz</span></code>.</p>
 </section>
 <section id="mask-dilation">
 <h3>Mask Dilation<a class="headerlink" href="#mask-dilation" title="Link to this heading"></a></h3>
@@ -429,6 +433,20 @@ This will increase the size of the lesion mask, potentially removing more region
     ├── inpainting_result.nii.gz
     ├── inpainting_mask.nii.gz
     └── inpainting_original_image.nii.gz
+</pre></div>
+</div>
+<p>With <code class="docutils literal notranslate"><span class="pre">--fastsurfer_dir</span></code>, these outputs are instead integrated into the FastSurfer subject
+directory, for example:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>subject_directory/
+├── mri/
+│   ├── inpainted.lit.nii.gz
+│   ├── mask.lit.nii.gz
+│   └── orig/
+│       ├── mask.lit.nii.gz
+│       ├── inpainting_original_image.lit.nii.gz
+│       └── inpainting_masked_image.lit.nii.gz
+└── scripts/
+    └── inpainting_*.lit.png
 </pre></div>
 </div>
 <div class="admonition note">
@@ -504,6 +522,7 @@ Options:
   -m, --lesion_mask PATH                          Path to lesion mask [required]
   -o, --sd / --out_dir / --output_directory PATH  Output directory [required]
   --dilate INTEGER                                Number of dilation iterations [default: 0]
+  --fastsurfer_dir                                Treat output_directory as a FastSurfer subject directory
   --device [auto|cpu|cuda]                        Inference device [default: auto]
   --batch_size INTEGER                            Slices per GPU batch [default: 8]; reduce to lower GPU memory usage
   -h, --help                                      Show this message and exit
