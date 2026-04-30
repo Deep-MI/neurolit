@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import requests
@@ -21,6 +22,24 @@ from tqdm import tqdm
 
 from neurolit._version import get_version_with_hash
 
+B2SHARE_FILES_URL = "https://b2share.fz-juelich.de/api/files/e649d98a-dada-4b00-98c6-fea142f68b87"
+ZENODO_RECORD_URL = "https://zenodo.org/records/14510136/files"
+
+MODEL_URLS = {
+    "model_coronal.pt": [
+        f"{B2SHARE_FILES_URL}/model_coronal.pt",
+        f"{ZENODO_RECORD_URL}/model_coronal.pt?download=1",
+    ],
+    "model_axial.pt": [
+        f"{B2SHARE_FILES_URL}/model_axial.pt",
+        f"{ZENODO_RECORD_URL}/model_axial.pt?download=1",
+    ],
+    "model_sagittal.pt": [
+        f"{B2SHARE_FILES_URL}/model_sagittal.pt",
+        f"{ZENODO_RECORD_URL}/model_sagittal.pt?download=1",
+    ],
+}
+
 
 def download_checkpoint(
         checkpoint_name: str,
@@ -28,6 +47,7 @@ def download_checkpoint(
         urls: list[str],
         verbose: bool = False,
         show_progress: bool = True,
+        position: int | None = None,
 ) -> None:
     """
     Download a checkpoint file with progress bar.
@@ -46,6 +66,8 @@ def download_checkpoint(
         Whether to print verbose output.
     show_progress : bool
         Whether to show download progress bar.
+    position : int | None
+        Progress bar position for parallel downloads.
     """
     response = None
     for url in urls:
@@ -81,29 +103,41 @@ def download_checkpoint(
     total_size = int(response.headers.get('content-length', 0))
     block_size = 8192  # 8 KB chunks
     
-    # Write file with progress bar
-    with open(checkpoint_path, "wb") as f:
-        if show_progress and total_size > 0:
-            with tqdm(
-                total=total_size,
-                unit='B',
-                unit_scale=True,
-                unit_divisor=1024,
-                desc=checkpoint_name,
-                ncols=80,
-            ) as pbar:
+    try:
+        # Write file with progress bar
+        with open(checkpoint_path, "wb") as f:
+            if show_progress and total_size > 0:
+                with tqdm(
+                    total=total_size,
+                    unit='B',
+                    unit_scale=True,
+                    unit_divisor=1024,
+                    desc=checkpoint_name,
+                    ncols=80,
+                    position=position,
+                    leave=True,
+                ) as pbar:
+                    for chunk in response.iter_content(chunk_size=block_size):
+                        if chunk:  # filter out keep-alive chunks
+                            f.write(chunk)
+                            pbar.update(len(chunk))
+            else:
+                # Fallback without progress bar
                 for chunk in response.iter_content(chunk_size=block_size):
-                    if chunk:  # filter out keep-alive chunks
+                    if chunk:
                         f.write(chunk)
-                        pbar.update(len(chunk))
-        else:
-            # Fallback without progress bar
-            for chunk in response.iter_content(chunk_size=block_size):
-                if chunk:
-                    f.write(chunk)
+    except Exception:
+        Path(checkpoint_path).unlink(missing_ok=True)
+        raise
 
 
-def check_and_download_ckpts(checkpoint_path: Path | str, urls: list[str], verbose: bool = False, show_progress: bool = True) -> None:
+def check_and_download_ckpts(
+        checkpoint_path: Path | str,
+        urls: list[str],
+        verbose: bool = False,
+        show_progress: bool = True,
+        position: int | None = None,
+) -> None:
     """
     Check and download a checkpoint file, if it does not exist.
 
@@ -117,6 +151,8 @@ def check_and_download_ckpts(checkpoint_path: Path | str, urls: list[str], verbo
         Whether to print verbose output.
     show_progress : bool
         Whether to show download progress bar.
+    position : int | None
+        Progress bar position for parallel downloads.
     """
     if not isinstance(checkpoint_path, Path):
         checkpoint_path = Path(checkpoint_path)
@@ -126,16 +162,31 @@ def check_and_download_ckpts(checkpoint_path: Path | str, urls: list[str], verbo
             print(f"Downloading checkpoint {checkpoint_path} from {urls}")
         # create dir if it does not exist
         checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
-        download_checkpoint(checkpoint_path.name, checkpoint_path, urls, verbose, show_progress)
+        download_checkpoint(checkpoint_path.name, checkpoint_path, urls, verbose, show_progress, position)
 
 
-def fallback_multiple_urls(checkpoint_name: str, urls: list[str], verbose: bool = False, show_progress: bool = True) -> None:
+def fallback_multiple_urls(
+        checkpoint_name: str,
+        urls: list[str],
+        verbose: bool = False,
+        show_progress: bool = True,
+        position: int | None = None,
+) -> None:
+    last_error = None
     for url in urls:
         try:
-            check_and_download_ckpts(checkpoint_name, [url], verbose, show_progress)
+            check_and_download_ckpts(checkpoint_name, [url], verbose, show_progress, position)
+            if Path(checkpoint_name).exists():
+                return
         except Exception as e:
-            print(f"Tried downloading {checkpoint_name} from {url} but failed")
-            print(e)
+            tqdm.write(f"Tried downloading {checkpoint_name} from {url} but failed")
+            tqdm.write(str(e))
+            last_error = e
+
+    links = ', '.join(u.removeprefix('https://')[:22] + "..." for u in urls)
+    raise requests.exceptions.RequestException(
+        f"Failed downloading the checkpoint {Path(checkpoint_name).name} from {links}."
+    ) from last_error
 
 
 def main(argv=None):
@@ -171,17 +222,10 @@ Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpaint
     print(f"Download location: {weights_dir}")
     
     
-    # Model URLs
-    models = {
-        "model_coronal.pt": "https://zenodo.org/records/14510136/files/model_coronal.pt?download=1",
-        "model_axial.pt": "https://zenodo.org/records/14510136/files/model_axial.pt?download=1",
-        "model_sagittal.pt": "https://zenodo.org/records/14510136/files/model_sagittal.pt?download=1",
-    }
-    
     # Check which models already exist
     existing_models = []
     missing_models = []
-    for model_name in models.keys():
+    for model_name in MODEL_URLS.keys():
         model_path = weights_dir / model_name
         if model_path.exists():
             existing_models.append(model_name)
@@ -194,24 +238,46 @@ Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpaint
         print("=" * 60)
         return
     
-    print(f"\nModels to download ({len(missing_models)}/{len(models)}):")
+    print(f"\nModels to download ({len(missing_models)}/{len(MODEL_URLS)}):")
     for model in missing_models:
         print(f"{model}")
     
     print("\nDownloading models (this may take several minutes)...")
     print()  # Empty line before progress bars
     
-    # Download missing checkpoints
-    success = True
-    for model_name, url in models.items():
+    def download_model(model_name: str, position: int) -> str:
         model_path = weights_dir / model_name
-        if model_path.exists():
-            continue
-        try:
-            fallback_multiple_urls(str(model_path), urls=[url], verbose=False, show_progress=True)
-        except Exception as e:
-            print(f"\nDownload failed for {model_name}: {e}")
-            success = False
+        fallback_multiple_urls(
+            str(model_path),
+            urls=MODEL_URLS[model_name],
+            verbose=False,
+            show_progress=True,
+            position=position,
+        )
+        return model_name
+
+    # Download missing checkpoints in parallel.
+    success = True
+    max_workers = min(len(missing_models), len(MODEL_URLS))
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {
+            executor.submit(download_model, model_name, position): model_name
+            for position, model_name in enumerate(missing_models)
+        }
+        for future in as_completed(futures):
+            model_name = futures[future]
+            try:
+                future.result()
+            except Exception as e:
+                print(f"\nDownload failed for {model_name}: {e}")
+                success = False
+
+    missing_models = [model_name for model_name in MODEL_URLS if not (weights_dir / model_name).exists()]
+    if missing_models:
+        print("\nMissing model files after download:")
+        for model_name in missing_models:
+            print(model_name)
+        success = False
     
     if not success:
         print("=" * 30 + " exiting with errors" + "=" * 30)
