@@ -910,7 +910,7 @@ def build_stats_overview(subjects_dir: Path, subject_id: str,
 def generate_lesion_impact_summary(subjects_dir: Path, subject_id: str, 
                                    mapping_reports: list[tuple[str, str]], 
                                    surface_reports: list[tuple[str, str]]) -> Path | None:
-    """Generate a machine-parseable YAML report of lesion impact.
+    """Generate a machine-parseable JSON report of lesion impact.
 
     Parameters
     ----------
@@ -928,9 +928,9 @@ def generate_lesion_impact_summary(subjects_dir: Path, subject_id: str,
     Optional[Path]
         Path to the generated summary report, or None if no reports found.
     """
-    logger.info("Generating lesion impact summary (YAML)...")
+    logger.info("Generating lesion impact summary (JSON)...")
     
-    summary_path = subjects_dir / subject_id / "stats" / "lesion_impact_summary.yaml"
+    summary_path = subjects_dir / subject_id / "stats" / "lesion_impact_summary.json"
     
     impact = {
         "lh_cortical": False,
@@ -995,44 +995,25 @@ def generate_lesion_impact_summary(subjects_dir: Path, subject_id: str,
         hemi = "lh" if "lh." in report_file else "rh" if "rh." in report_file else None
         parse_report(subjects_dir / subject_id / report_file, is_surface=True, hemi=hemi)
 
-    # Generate YAML content with professional commenting
-    yaml_lines = [
-        "# Lesion Impact Summary Report",
-        "# " + "=" * 60,
-        f"# Subject: {subject_id}",
-        "# " + "=" * 60,
-        "",
-        "# General involvement status per hemisphere",
-        "hemisphere_impact:",
-        "  # True if any cortical or subcortical structure in the left hemisphere is affected",
-        f"  left_hemisphere_affected: {str(impact['lh_cortical'] or impact['lh_subcortical']).lower()}",
-        "  # True if any cortical or subcortical structure in the right hemisphere is affected",
-        f"  right_hemisphere_affected: {str(impact['rh_cortical'] or impact['rh_subcortical']).lower()}",
-        "",
-        "# Categorized breakdown of affected regions",
-        "detailed_involvement:",
-        "  # Involvement of left hemisphere cortical structures (from surface/volumetric annotations)",
-        f"  left_cortical_affected: {str(impact['lh_cortical']).lower()}",
-        "  # Involvement of right hemisphere cortical structures (from surface/volumetric annotations)",
-        f"  right_cortical_affected: {str(impact['rh_cortical']).lower()}",
-        "  # Involvement of left hemisphere subcortical structures (from volumetric segmentation)",
-        f"  left_subcortical_affected: {str(impact['lh_subcortical']).lower()}",
-        "  # Involvement of right hemisphere subcortical structures (from volumetric segmentation)",
-        f"  right_subcortical_affected: {str(impact['rh_subcortical']).lower()}",
-        "",
-        "# List of structures showing spatial overlap with the lesion mask",
-        "affected_structures:"
-    ]
-    
     unique_labels = sorted(list(set(impact["affected_labels"])))
-    if unique_labels:
-        for label in unique_labels:
-            yaml_lines.append(f"  - {label}")
-    else:
-        yaml_lines.append("  []")
+    summary = {
+        "subject": subject_id,
+        "hemisphere_impact": {
+            "left_hemisphere_affected": impact["lh_cortical"] or impact["lh_subcortical"],
+            "right_hemisphere_affected": impact["rh_cortical"] or impact["rh_subcortical"],
+        },
+        "detailed_involvement": {
+            "left_cortical_affected": impact["lh_cortical"],
+            "right_cortical_affected": impact["rh_cortical"],
+            "left_subcortical_affected": impact["lh_subcortical"],
+            "right_subcortical_affected": impact["rh_subcortical"],
+        },
+        "affected_structures": unique_labels,
+    }
 
     with open(summary_path, 'w') as f:
-        f.write("\n".join(yaml_lines) + "\n")
+        json.dump(summary, f, indent=2)
+        f.write("\n")
 
     return summary_path
 
