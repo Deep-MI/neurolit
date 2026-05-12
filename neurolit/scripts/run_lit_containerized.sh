@@ -34,8 +34,10 @@ FLAGS:
   --singularity_image <path>
       Path to an existing Singularity/Apptainer image (.sif or .simg). Implies --singularity.
   --tag <tag>
-      Docker tag to use (e.g., 'latest' or '0.6dev'). If a full image name is
-      provided (containing '/' or ':'), it overrides the default repository.
+      Docker tag to use (e.g., '0.6.0' or 'latest'). If omitted, the wrapper
+      selects the newest numeric release tag available on Docker Hub. If a full
+      image name is provided (containing '/' or ':'), it overrides the default
+      repository.
 
 Examples:
   ./run_lit_containerized.sh -i t1w.nii.gz -m lesion.nii.gz -o ./output 
