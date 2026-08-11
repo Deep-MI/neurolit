@@ -8,9 +8,11 @@ DEFAULT_CONFORM_IMG_SIZE: str = "auto"
 DEFAULT_CONFORM_ORIENTATION: str = "lia"
 DEFAULT_CONFORM_RESCALE: int = 255
 VINN_REFERENCE_FOV_MM: float = 256.0
+FASTSURFER_CONFORM_TO_1MM_THRESHOLD: float = 0.95
+FASTSURFER_MIN_AUTO_IMG_SIZE: int = 256
 
 
-def default_conform_kwargs() -> dict[str, str | int | None]:
+def default_conform_kwargs(*, min_auto_img_size: int | None = None) -> dict[str, str | int | float | None]:
     """Return default conform parameters used by the inpainting workflow."""
     return {
         "vox_size": DEFAULT_CONFORM_VOX_SIZE,
@@ -18,6 +20,8 @@ def default_conform_kwargs() -> dict[str, str | int | None]:
         "orientation": DEFAULT_CONFORM_ORIENTATION,
         "rescale": DEFAULT_CONFORM_RESCALE,
         "dtype": None,
+        "threshold_1mm": FASTSURFER_CONFORM_TO_1MM_THRESHOLD,
+        "min_auto_img_size": min_auto_img_size,
     }
 
 

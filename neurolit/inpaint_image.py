@@ -134,13 +134,16 @@ def dilate_mask(mask: torch.Tensor, num_iterations: int, kernel_size: int = 3) -
     return dilated
 
 
-def conform_nifti(image: NiftiImage) -> NiftiImage:
+def conform_nifti(image: NiftiImage, *, min_auto_img_size: int | None = None) -> NiftiImage:
     """Conform a NIfTI image to the repository orientation/voxel standard.
 
     Parameters
     ----------
     image : NiftiImage
         Input image that should be conformed.
+    min_auto_img_size : int, optional
+        Minimum side length for automatic conforming. By default, the input
+        field of view determines the target size.
 
     Returns
     -------
@@ -150,11 +153,13 @@ def conform_nifti(image: NiftiImage) -> NiftiImage:
     if len(image.shape) > 3 and image.shape[3] != 1:
         raise ValueError(f"Multiple input frames ({image.shape[3]}) not supported!")
 
-    conform_kwargs = default_conform_kwargs()
+    conform_kwargs = default_conform_kwargs(min_auto_img_size=min_auto_img_size)
     is_conform_kwargs = {
         "vox_size": conform_kwargs["vox_size"],
         "img_size": conform_kwargs["img_size"],
         "orientation": conform_kwargs["orientation"],
+        "threshold_1mm": conform_kwargs["threshold_1mm"],
+        "min_auto_img_size": conform_kwargs["min_auto_img_size"],
         "verbose": False,
     }
     if conform_kwargs["dtype"] is not None:
@@ -171,6 +176,8 @@ def conform_nifti(image: NiftiImage) -> NiftiImage:
             orientation=conform_kwargs["orientation"],
             dtype=conform_kwargs["dtype"],
             rescale=conform_kwargs["rescale"],
+            threshold_1mm=conform_kwargs["threshold_1mm"],
+            min_auto_img_size=conform_kwargs["min_auto_img_size"],
         )
     except ValueError as e:
         raise ValueError(e.args[0]) from e
@@ -411,6 +418,13 @@ def main(argv=None):
     parser.add_argument("-m", "--mask_image", type=str, help="input mask", default=None, required=False)
     parser.add_argument("--dilate", type=int, help="number of pixels to dilate the mask by", required=False, default=0)
     parser.add_argument("--keepgeom", action="store_true", help="Keep native output geometry while running inference in internal space")
+    parser.add_argument(
+        "--min_auto_img_size",
+        "--min-auto-img-size",
+        type=int,
+        default=None,
+        help="Optional minimum side length for automatic conforming",
+    )
     parser.add_argument("--num_inference_steps", type=int, default=1000, help="Number of diffusion inference iterations (default: 1000)")
     parser.add_argument(
         "-c_coronal", "--checkpoint_coronal", type=str, help="checkpoint to load for inference in coronal plane", default=None, required=False
@@ -508,7 +522,7 @@ def main(argv=None):
     assert list(model_dict.values())[0].is_vinn
 
     val_image_native_nib = nib.load(args.input_image)
-    val_image_nib = conform_nifti(val_image_native_nib)
+    val_image_nib = conform_nifti(val_image_native_nib, min_auto_img_size=args.min_auto_img_size)
 
     val_image = torch.from_numpy(val_image_nib.get_fdata()).float()
 

@@ -12,6 +12,7 @@ from platformdirs import user_data_dir
 from neurolit._version import get_version_with_hash
 from neurolit.inpaint_image import main as inpaint_main
 from neurolit.utils.download_checkpoints import main as download_main
+from neurolit.utils.geometry_policy import FASTSURFER_MIN_AUTO_IMG_SIZE
 
 
 def _copy_file(src: Path, dst: Path) -> None:
@@ -63,6 +64,13 @@ def run_lit():
     parser.add_argument("--dilate", type=int, default=0, help="Number of times to dilate the lesion mask (default: 0)")
     parser.add_argument("--keepgeom", action="store_true", help="Preserve native output geometry")
     parser.add_argument(
+        "--min_auto_img_size",
+        "--min-auto-img-size",
+        type=int,
+        default=None,
+        help="Optional minimum side length for automatic conforming",
+    )
+    parser.add_argument(
         "--fastsurfer_dir",
         action="store_true",
         help="Treat the output directory as a FastSurfer subject directory and materialize FastSurfer-style outputs",
@@ -94,6 +102,7 @@ def run_lit():
         print("Optional arguments:")
         print("  --dilate              : Number of times to dilate the lesion mask (default: 0)")
         print("  --keepgeom            : Preserve native output geometry")
+        print("  --min-auto-img-size   : Optional minimum side length for automatic conforming")
         print("  --fastsurfer_dir      : Treat output_directory as a FastSurfer subject directory")
         print("  --device              : Inference device: auto, cpu, or cuda (default: auto)")
         print("  --batch_size          : Slices per GPU batch (default: 8); reduce to lower GPU memory usage")
@@ -111,6 +120,8 @@ def run_lit():
     if not args.input_image or not args.sd or not args.lesion_mask:
         print("Error: Input image, lesion mask, and output directory are required")
         sys.exit(1)
+    if args.min_auto_img_size is not None and args.min_auto_img_size <= 0:
+        parser.error("--min-auto-img-size must be greater than zero")
 
     # Validate input files
     input_image = Path(args.input_image).resolve()
@@ -127,6 +138,10 @@ def run_lit():
 
     out_dir = Path(args.sd).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    min_auto_img_size = args.min_auto_img_size
+    if args.fastsurfer_dir:
+        min_auto_img_size = max(FASTSURFER_MIN_AUTO_IMG_SIZE, min_auto_img_size or 0)
 
     # Download checkpoints
     print("Checking/Downloading checkpoints...")
@@ -197,6 +212,8 @@ def run_lit():
 
                 if args.keepgeom:
                     inpaint_argv.append("--keepgeom")
+                if min_auto_img_size is not None:
+                    inpaint_argv.extend(["--min_auto_img_size", str(min_auto_img_size)])
 
                 # Forward any unknown arguments
                 inpaint_argv.extend(unknown)
@@ -246,6 +263,8 @@ def run_lit():
 
             if args.keepgeom:
                 inpaint_argv.append("--keepgeom")
+            if min_auto_img_size is not None:
+                inpaint_argv.extend(["--min_auto_img_size", str(min_auto_img_size)])
 
             # Forward any unknown arguments
             inpaint_argv.extend(unknown)
