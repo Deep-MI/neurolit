@@ -15,8 +15,10 @@
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+from uuid import uuid4
 
 import requests
+from filelock import FileLock
 from platformdirs import user_data_dir
 from tqdm import tqdm
 
@@ -72,7 +74,7 @@ def download_checkpoint(
         Progress bar position for parallel downloads.
     """
     checkpoint_path = Path(checkpoint_path)
-    partial_path = checkpoint_path.with_name(f"{checkpoint_path.name}.part")
+    partial_path = checkpoint_path.with_name(f"{checkpoint_path.name}.{uuid4().hex}.part")
     last_error: requests.exceptions.RequestException | None = None
     for url in urls:
         try:
@@ -170,12 +172,20 @@ def check_and_download_ckpts(
     """
     if not isinstance(checkpoint_path, Path):
         checkpoint_path = Path(checkpoint_path)
-    # Download checkpoint file from url if it does not exist
-    if not checkpoint_path.exists():
+    if checkpoint_path.exists():
+        return
+
+    checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+    lock_path = checkpoint_path.with_name(f"{checkpoint_path.name}.lock")
+
+    # Serialize downloads of the same checkpoint across threads and processes.
+    # The existence check must happen under the lock because another caller may
+    # have completed the download while this caller was waiting.
+    with FileLock(lock_path):
+        if checkpoint_path.exists():
+            return
         if not show_progress:
             print(f"Downloading checkpoint {checkpoint_path} from {urls}")
-        # create dir if it does not exist
-        checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
         download_checkpoint(checkpoint_path.name, checkpoint_path, urls, verbose, show_progress, position)
 
 

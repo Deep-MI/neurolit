@@ -1,3 +1,5 @@
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pytest
@@ -77,7 +79,7 @@ def test_download_checkpoint_cleans_partial_file_on_failure(monkeypatch, tmp_pat
         dc.download_checkpoint("model.pt", model_path, ["https://example.test/model.pt"], show_progress=False)
 
     assert not model_path.exists()
-    assert not Path(f"{model_path}.part").exists()
+    assert not list(tmp_path.glob("model.pt.*.part"))
 
 
 def test_download_checkpoint_preserves_http_error(monkeypatch, tmp_path):
@@ -98,7 +100,7 @@ def test_download_checkpoint_rejects_truncated_response(monkeypatch, tmp_path):
         dc.download_checkpoint("model.pt", model_path, ["https://example.test/model.pt"], show_progress=False)
 
     assert not model_path.exists()
-    assert not Path(f"{model_path}.part").exists()
+    assert not list(tmp_path.glob("model.pt.*.part"))
 
 
 def test_fallback_multiple_urls_raises_after_all_sources_fail(monkeypatch, tmp_path):
@@ -113,6 +115,40 @@ def test_fallback_multiple_urls_raises_after_all_sources_fail(monkeypatch, tmp_p
 
     with pytest.raises(requests.exceptions.RequestException, match="Failed downloading"):
         dc.fallback_multiple_urls(str(checkpoint_path), ["https://primary", "https://backup"], show_progress=False)
+
+
+def test_fallback_serializes_concurrent_downloads_of_same_checkpoint(monkeypatch, tmp_path):
+    """Concurrent callers should perform only one physical download."""
+    checkpoint_path = tmp_path / "model_axial.pt"
+    download_started = threading.Event()
+    release_download = threading.Event()
+    second_caller_started = threading.Event()
+    calls = []
+
+    def fake_download(checkpoint_name, target, urls, verbose=False, show_progress=True, position=None):
+        calls.append((checkpoint_name, Path(target), tuple(urls)))
+        download_started.set()
+        assert release_download.wait(timeout=5)
+        Path(target).write_bytes(b"checkpoint")
+
+    def download(second=False):
+        if second:
+            second_caller_started.set()
+        dc.fallback_multiple_urls(checkpoint_path, ["https://primary"], show_progress=False)
+
+    monkeypatch.setattr(dc, "download_checkpoint", fake_download)
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        first = executor.submit(download)
+        assert download_started.wait(timeout=5)
+        second = executor.submit(download, True)
+        assert second_caller_started.wait(timeout=5)
+        release_download.set()
+        first.result(timeout=5)
+        second.result(timeout=5)
+
+    assert calls == [("model_axial.pt", checkpoint_path, ("https://primary",))]
+    assert checkpoint_path.read_bytes() == b"checkpoint"
 
 
 def test_main_downloads_missing_models_in_parallel(monkeypatch, tmp_path):
