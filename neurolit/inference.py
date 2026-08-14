@@ -239,6 +239,46 @@ class SliceWiseInpaintingInferer(InpaintingInferer):
         self.dimension = dimensions
         self.slice_thickness = diffusion_model.in_channels
 
+    def get_inference_slice_centers(self, volume_size: int, offset: int = 0) -> list[int]:
+        """Return slab centers that cover the full axis, including padded edges."""
+        half = self.slice_thickness // 2
+        centers = [
+            int(idx)
+            for idx in np.arange(
+                half - offset,
+                volume_size - half + offset,
+                self.slice_thickness,
+            )
+        ]
+
+        if not centers:
+            centers = [max(0, min(half - offset, volume_size - 1))]
+
+        if centers[0] - half > 0:
+            centers.insert(0, 0)
+
+        if centers[-1] + half < volume_size - 1:
+            centers.append(min(centers[-1] + self.slice_thickness, volume_size - 1))
+
+        return centers
+
+    def get_slab_slices(self, slice_cut: int, dimension: int, volume_size: int):
+        """Build matching in-volume and in-slab slices for padded edge slabs."""
+        half = self.slice_thickness // 2
+        start_idx = int(slice_cut) - half
+        end_idx = int(slice_cut) + half + 1
+        valid_start = max(0, start_idx)
+        valid_end = min(volume_size, end_idx)
+        slab_start = valid_start - start_idx
+        slab_end = slab_start + (valid_end - valid_start)
+
+        return (
+            self.slice_selector(valid_start, valid_end, dimension),
+            self.slice_selector(slab_start, slab_end, dimension),
+            valid_start,
+            valid_end,
+        )
+
     def get_slice_from_volume(self, volume, slice_cut, dimension): # TODO: make sure channel dimension is always first
         """Extract a slab centered at `slice_cut`.
 
@@ -256,12 +296,17 @@ class SliceWiseInpaintingInferer(InpaintingInferer):
         torch.Tensor
             Extracted slice tensor with thickness matching the model channels.
         """
-        threed_to_twod_slice = [slice(None), slice(None), slice(None)]
-        threed_to_twod_slice[dimension] = slice(slice_cut-self.slice_thickness//2, slice_cut+self.slice_thickness//2+1)
-        threed_to_twod_slice = tuple(threed_to_twod_slice)
-
-        volume = volume[threed_to_twod_slice]
-        return volume
+        volume_slice, slab_slice, _, _ = self.get_slab_slices(
+            slice_cut, dimension, volume.shape[dimension]
+        )
+        slab = volume.new_zeros(
+            [
+                self.slice_thickness if axis == dimension else size
+                for axis, size in enumerate(volume.shape)
+            ]
+        )
+        slab[slab_slice] = volume[volume_slice]
+        return slab
     
     @staticmethod
     def slice_selector(start_idx, end_idx, dimension):
@@ -307,9 +352,7 @@ class SliceWiseInpaintingInferer(InpaintingInferer):
         tuple[torch.Tensor, torch.Tensor, list[int], torch.Tensor]
             Batched slices, batched masks, the slice centers, and the pre-populated output tensor.
         """
-        chosen_slices = np.arange(self.slice_thickness // 2 - offset, 
-                                  image_masked.shape[dimension]- self.slice_thickness // 2 + offset, 
-                                  self.slice_thickness)
+        chosen_slices = self.get_inference_slice_centers(image_masked.shape[dimension], offset)
         
         image_inpainted = torch.zeros_like(image_masked)
 
@@ -324,8 +367,10 @@ class SliceWiseInpaintingInferer(InpaintingInferer):
 
             if (mask_slice == 0).all():
 
-                sl = self.slice_selector(slice_index-self.slice_thickness//2, slice_index+self.slice_thickness//2+1, dimension)
-                image_inpainted[sl] = image_masked_slice
+                volume_slice, slab_slice, _, _ = self.get_slab_slices(
+                    slice_index, dimension, image_masked.shape[dimension]
+                )
+                image_inpainted[volume_slice] = image_masked_slice[slab_slice]
             else:
                 batched_slices.append(image_masked_slice)
                 batched_masks.append(mask_slice)
@@ -406,9 +451,11 @@ class SliceWiseInpaintingInferer(InpaintingInferer):
                 image_inpainted_slice, interm = image_inpainted_slice
                 intermediates.append(interm)
             
-            image_inpainted_slice = torch.cat([img for img in image_inpainted_slice], dim=0)
-            
-            image_inpainted[start_idx:end_idx] = image_inpainted_slice
+            for j, idx in enumerate(slice_indices_batch):
+                volume_slice, slab_slice, _, _ = self.get_slab_slices(
+                    idx, 0, image_inpainted.shape[0]
+                )
+                image_inpainted[volume_slice] = image_inpainted_slice[j][slab_slice]
 
             # put channel dimension back
             image_inpainted = torch.swapaxes(image_inpainted, 0, self.dimension)
@@ -518,7 +565,7 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
             # select region matching batches from already partially inpainted image
             image_inpainted_slice = []
             for idx in batch_slice_indices:
-                image_inpainted_slice.append(image_inpainted[idx - self.slice_thickness//2:idx + self.slice_thickness//2+1])
+                image_inpainted_slice.append(self.get_slice_from_volume(image_inpainted, idx, 0))
             image_inpainted_slice = torch.stack(image_inpainted_slice, dim=0)
 
             # get checked image area (for logging)
@@ -545,7 +592,10 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
             # unbind to remove batch dimension
             #image_inpainted[start_idx:end_idx] = torch.cat(torch.unbind(image_inpainted_slice_denoised)) 
             for i, idx in enumerate(batch_slice_indices):
-                image_inpainted[idx - self.slice_thickness//2:idx + self.slice_thickness//2+1] = image_inpainted_slice_denoised[i]
+                volume_slice, slab_slice, _, _ = self.get_slab_slices(
+                    idx, 0, image_inpainted.shape[0]
+                )
+                image_inpainted[volume_slice] = image_inpainted_slice_denoised[i][slab_slice]
 
             # put channel dimension back
             image_inpainted = torch.swapaxes(image_inpainted, 0, self.plane_to_dimension[current_plane])
@@ -773,7 +823,7 @@ class OffsetTwoAndHalfDInpaintingInferer(TwoAndHalfDInpaintingInferer):
             # select region matching batches from already partially inpainted image
             image_inpainted_slice = []
             for idx in batch_slice_indices:
-                image_inpainted_slice.append(image_inpainted[idx - self.slice_thickness//2:idx + self.slice_thickness//2+1])
+                image_inpainted_slice.append(self.get_slice_from_volume(image_inpainted, idx, 0))
             image_inpainted_slice = torch.stack(image_inpainted_slice, dim=0)
 
             # get checked image area (for logging)
@@ -800,7 +850,10 @@ class OffsetTwoAndHalfDInpaintingInferer(TwoAndHalfDInpaintingInferer):
             # unbind to remove batch dimension
             #image_inpainted[start_idx:end_idx] = torch.cat(torch.unbind(image_inpainted_slice_denoised)) 
             for i, idx in enumerate(batch_slice_indices):
-                image_inpainted[idx - self.slice_thickness//2:idx + self.slice_thickness//2+1] = image_inpainted_slice_denoised[i]
+                volume_slice, slab_slice, _, _ = self.get_slab_slices(
+                    idx, 0, image_inpainted.shape[0]
+                )
+                image_inpainted[volume_slice] = image_inpainted_slice_denoised[i][slab_slice]
 
             # put channel dimension back
             image_inpainted = torch.swapaxes(image_inpainted, 0, self.plane_to_dimension[current_plane])
@@ -970,7 +1023,7 @@ class AnomalyInferer(TwoAndHalfDInpaintingInferer):
             # select region matching batches from already partially inpainted image
             image_denoised_slice = []
             for idx in batch_slice_indices:
-                image_denoised_slice.append(image_denoised[idx - self.slice_thickness//2:idx + self.slice_thickness//2+1])
+                image_denoised_slice.append(self.get_slice_from_volume(image_denoised, idx, 0))
             image_denoised_slice = torch.stack(image_denoised_slice, dim=0)
 
             # get checked image area
@@ -990,7 +1043,11 @@ class AnomalyInferer(TwoAndHalfDInpaintingInferer):
                 
             image_inpainted_slice_denoised = torch.cat([img for img in batch_outputs], dim=0)
             # unbind to remove batch dimension
-            image_denoised[start_idx:end_idx] = torch.cat(torch.unbind(image_inpainted_slice_denoised)) 
+            for i, idx in enumerate(batch_slice_indices):
+                volume_slice, slab_slice, _, _ = self.get_slab_slices(
+                    idx, 0, image_denoised.shape[0]
+                )
+                image_denoised[volume_slice] = image_inpainted_slice_denoised[i][slab_slice]
 
             # put channel dimension back
             image_denoised = torch.swapaxes(image_denoised, 0, self.plane_to_dimension[current_plane])
