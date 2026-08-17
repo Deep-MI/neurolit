@@ -8,7 +8,7 @@ WORKDIR /inpainting
 COPY . /inpainting/
 RUN pip3 install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cu128 \
         torch==2.10.0+cu128 torchvision==0.25.0+cu128 && \
-    pip3 install --no-cache-dir --no-deps monai==1.5.2 lapy==1.5.0 && \
+    pip3 install --no-cache-dir --no-deps monai==1.6.0 lapy==1.5.0 && \
     if [ -n "${NEUROLIT_WHEEL}" ]; then \
         pip3 install --no-cache-dir --no-deps "/inpainting/${NEUROLIT_WHEEL}"; \
     else \

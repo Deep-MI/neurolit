@@ -52,6 +52,37 @@ from neurolit.utils.plotting import plot_batch, plot_inpainting  # noqa: E402
 
 logger = get_logger(__name__)
 
+SLOW_INFERENCE_DEFAULTS = {
+    "scheduler": "ddpm",
+    "num_inference_steps": 1000,
+    "num_resample_steps": 10,
+    "num_resample_jumps": 15,
+}
+FAST_INFERENCE_DEFAULTS = {
+    "scheduler": "ddim",
+    "num_inference_steps": 50,
+    "num_resample_steps": 10,
+    "num_resample_jumps": 15,
+}
+
+
+def resolve_inference_settings(
+    *,
+    fast: bool,
+    scheduler: str | None,
+    num_inference_steps: int | None,
+    num_resample_steps: int | None,
+    num_resample_jumps: int | None,
+) -> dict[str, str | int]:
+    """Resolve slow or fast preset values while retaining explicit overrides."""
+    preset = FAST_INFERENCE_DEFAULTS if fast else SLOW_INFERENCE_DEFAULTS
+    return {
+        "scheduler": scheduler if scheduler is not None else preset["scheduler"],
+        "num_inference_steps": num_inference_steps if num_inference_steps is not None else preset["num_inference_steps"],
+        "num_resample_steps": num_resample_steps if num_resample_steps is not None else preset["num_resample_steps"],
+        "num_resample_jumps": num_resample_jumps if num_resample_jumps is not None else preset["num_resample_jumps"],
+    }
+
 # use Agg backend on server
 if os.environ.get("DISPLAY", "") == "":
     # os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
@@ -213,10 +244,13 @@ def inpaint_volume(
     SAVE_IMAGES: bool = True,
     device: torch.device | str = "cuda",
     DDIM: bool = False,
+    scheduler_type: str | None = None,
     val_image_nib: NiftiImage | None = None,
     reference_image_nib: NiftiImage | None = None,
     pad_multiple: int = 16,
     num_inference_steps: int = 1000,
+    num_resample_steps: int = 10,
+    num_resample_jumps: int = 15,
     batch_size: int = 8,
 ) -> torch.Tensor:
     """Inpaint a volume using the trained diffusion models.
@@ -247,6 +281,17 @@ def inpaint_volume(
         Device identifier (e.g., ``"cuda"``), by default ``"cuda"``.
     DDIM : bool, optional
         Whether to use DDIM sampling instead of DDPM, by default ``False``.
+        Deprecated in favor of ``scheduler_type``.
+    scheduler_type : {"ddpm", "ddim"}, optional
+        Scheduler name. When omitted, ``DDIM`` selects DDIM and otherwise DDPM.
+    num_inference_steps : int, optional
+        Number of scheduler timesteps, by default ``1000``.
+    num_resample_steps : int, optional
+        Number of RePaint denoise passes at jump timesteps, by default ``10``.
+    num_resample_jumps : int, optional
+        Interval between RePaint resampling events, by default ``15``.
+    batch_size : int, optional
+        Number of slices processed together, by default ``8``.
     val_image_nib : Optional[NiftiImage], optional
         Original NIfTI image used for metadata, by default ``None``.
 
@@ -311,14 +356,21 @@ def inpaint_volume(
 
     if num_inference_steps <= 0:
         raise ValueError("num_inference_steps must be > 0")
+    if num_resample_steps <= 0:
+        raise ValueError("num_resample_steps must be > 0")
+    if num_resample_jumps <= 0:
+        raise ValueError("num_resample_jumps must be > 0")
 
-    if DDIM:
+    scheduler_type = scheduler_type or ("ddim" if DDIM else "ddpm")
+    if scheduler_type == "ddim":
         steps = num_inference_steps
         scheduler = DDIMScheduler(num_train_timesteps=1000, schedule="scaled_linear_beta", beta_start=0.0005, beta_end=0.0195, clip_sample=False)
         logger.info(f"Using DDIM scheduler with {steps} steps")
-    else:
+    elif scheduler_type == "ddpm":
         steps = num_inference_steps
         scheduler = DDPMScheduler(num_train_timesteps=1000, schedule="scaled_linear_beta", beta_start=0.0005, beta_end=0.0195)
+    else:
+        raise ValueError(f"Unsupported scheduler: {scheduler_type}")
     scheduler.set_timesteps(num_inference_steps=steps, device=device)
 
     # Prepare inputs
@@ -350,8 +402,8 @@ def inpaint_volume(
         val_image_inpainted = Inpainter(
             mask=mask[0],
             image_masked=val_image_masked[0],
-            num_resample_steps=10,
-            num_resample_jumps=15,
+            num_resample_steps=num_resample_steps,
+            num_resample_jumps=num_resample_jumps,
             batch_size=batch_size,
             get_intermediates=False,
             scale_factor=scale_factor,
@@ -411,7 +463,35 @@ def main(argv=None):
     parser.add_argument("-m", "--mask_image", type=str, help="input mask", default=None, required=False)
     parser.add_argument("--dilate", type=int, help="number of pixels to dilate the mask by", required=False, default=0)
     parser.add_argument("--keepgeom", action="store_true", help="Keep native output geometry while running inference in internal space")
-    parser.add_argument("--num_inference_steps", type=int, default=1000, help="Number of diffusion inference iterations (default: 1000)")
+    parser.add_argument(
+        "--fast",
+        action="store_true",
+        help="Use the recommended fast preset: DDIM, 50 steps, and RePaint 10/15",
+    )
+    parser.add_argument(
+        "--num_inference_steps",
+        type=int,
+        default=None,
+        help="Number of diffusion inference iterations (default: 1000, or 50 with --fast)",
+    )
+    parser.add_argument(
+        "--scheduler",
+        choices=["ddpm", "ddim"],
+        default=None,
+        help="Diffusion scheduler to use (default: ddpm, or ddim with --fast)",
+    )
+    parser.add_argument(
+        "--num_resample_steps",
+        type=int,
+        default=None,
+        help="RePaint denoise passes at jump timesteps (default: 10; use 1 to disable resampling)",
+    )
+    parser.add_argument(
+        "--num_resample_jumps",
+        type=int,
+        default=None,
+        help="Timesteps between RePaint resampling events (default: 15)",
+    )
     parser.add_argument(
         "-c_coronal", "--checkpoint_coronal", type=str, help="checkpoint to load for inference in coronal plane", default=None, required=False
     )
@@ -431,8 +511,26 @@ def main(argv=None):
         default="auto",
         help="Inference device to use (default: auto)",
     )
-
+    parser.add_argument("--seed", type=int, default=None, help="Random seed for reproducible inference")
     args = parser.parse_args(argv)
+
+    settings = resolve_inference_settings(
+        fast=args.fast,
+        scheduler=args.scheduler,
+        num_inference_steps=args.num_inference_steps,
+        num_resample_steps=args.num_resample_steps,
+        num_resample_jumps=args.num_resample_jumps,
+    )
+    args.scheduler = settings["scheduler"]
+    args.num_inference_steps = settings["num_inference_steps"]
+    args.num_resample_steps = settings["num_resample_steps"]
+    args.num_resample_jumps = settings["num_resample_jumps"]
+
+    if args.seed is not None:
+        np.random.seed(args.seed)
+        torch.manual_seed(args.seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(args.seed)
 
     # load models
     device = resolve_inference_device(args.device)
@@ -467,30 +565,6 @@ def main(argv=None):
         )
         model_dict[model_name].load_state_dict(model_state_dict)
         model_dict[model_name].to(device)
-
-    # Add compilation for PyTorch 2.0+
-    # print(f'Torch version: {torch.__version__}')
-    # if torch.__version__ >= "2.0.0" and (isinstance(device, torch.device) and device.type == 'cuda'):
-    #     print("Compiling models with torch.compile()...")
-    #     try:
-    #         for name, model in model_dict.items():
-    #             print(f"Compiling {name} model...")
-    #             model_dict[name] = torch.compile(
-    #                 model,
-    #                 mode="reduce-overhead",
-    #                 fullgraph=True,
-    #                 dynamic=False
-    #             )
-    #                 # options={
-    #                 #     "triton.unique_kernel_names": True,
-    #                 #     "max_autotune": True,
-    #                 #     "layout_optimization": True
-    #                 # }
-    #             #) # other backend options: 'inductor', 'aot_eager', 'aot_eager_numba'
-    #         print("Model compilation complete!")
-    #     except Exception as e:
-    #         print(f"Warning: Model compilation failed with error: {e}")
-    #         print("Continuing with uncompiled models...")
 
     # setup parameters (i.e. whether to use view aggregation, 2d or 3d model)
     model_to_dim = {"coronal": 2, "axial": 1, "sagittal": 0}
@@ -564,9 +638,12 @@ def main(argv=None):
         slice_input=False,
         slice_dim=DIM,
         val_image_nib=val_image_nib,
-        DDIM=False,
+        DDIM=args.scheduler == "ddim",
+        scheduler_type=args.scheduler,
         reference_image_nib=val_image_native_nib if args.keepgeom else None,
         num_inference_steps=args.num_inference_steps,
+        num_resample_steps=args.num_resample_steps,
+        num_resample_jumps=args.num_resample_jumps,
         batch_size=args.batch_size,
     )
 

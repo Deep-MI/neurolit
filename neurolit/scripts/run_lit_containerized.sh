@@ -28,6 +28,8 @@ FLAGS:
       Path to the lesion mask volume (same dimensions as input_image, >0 for lesion, 0 for background)
   -o, --output_directory <output_directory>
       Path to the output directory
+  --fast
+      Use the recommended DDIM preset with 50 steps and RePaint 10/15
   --singularity
       Use singularity/apptainer instead of docker. The image is pulled from Docker Hub
       on first use (no root required) and cached in containerization/deepmi_lit_<version>.sif.
