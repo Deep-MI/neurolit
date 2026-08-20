@@ -29,6 +29,7 @@ def test_lit_inpainting_help():
     # Testing the module directly:
     result = run_help_test("neurolit.cli")
     assert "--keepgeom" in result.stdout
+    assert "--min-auto-img-size" in result.stdout
     assert "--fastsurfer_dir" in result.stdout
     assert "--device" in result.stdout
     assert "auto, cpu, or cuda" in result.stdout
@@ -38,6 +39,7 @@ def test_inpaint_image_help():
     """Test neurolit.inpaint_image help includes keepgeom."""
     result = run_help_test("neurolit.inpaint_image")
     assert "--keepgeom" in result.stdout
+    assert "--min-auto-img-size" in result.stdout
 
 def test_lesion_to_segmentation_help():
     """Test lit-lesion-to-segmentation help."""
@@ -123,6 +125,43 @@ def test_copy_file_same_path_is_noop(tmp_path):
     assert source.read_text() == "content"
 
 
+def test_lit_inpainting_standalone_does_not_force_minimum_size(tmp_path, monkeypatch):
+    """Standalone inpainting should retain field-of-view-based automatic sizing."""
+    input_image = tmp_path / "input.nii.gz"
+    mask_image = tmp_path / "mask.nii.gz"
+    out_dir = tmp_path / "output"
+    nib.save(nib.Nifti1Image(np.ones((4, 4, 4), dtype=np.float32), np.eye(4)), input_image)
+    nib.save(nib.Nifti1Image(np.ones((4, 4, 4), dtype=np.uint8), np.eye(4)), mask_image)
+
+    user_data_root = tmp_path / "user-data"
+    weights_dir = user_data_root / "weights"
+    weights_dir.mkdir(parents=True)
+    for name in ("model_coronal.pt", "model_axial.pt", "model_sagittal.pt"):
+        (weights_dir / name).write_bytes(b"stub")
+
+    monkeypatch.setattr(cli, "download_main", lambda argv=None: None)
+    monkeypatch.setattr(cli, "user_data_dir", lambda *args, **kwargs: str(user_data_root))
+    calls: list[list[str]] = []
+
+    def fake_inpaint_main(argv: list[str]) -> None:
+        calls.append(argv)
+        volumes_dir = out_dir / "inpainting_volumes"
+        volumes_dir.mkdir(parents=True, exist_ok=True)
+        nib.save(nib.Nifti1Image(np.ones((4, 4, 4), dtype=np.float32), np.eye(4)), volumes_dir / "inpainting_result.nii.gz")
+
+    monkeypatch.setattr(cli, "inpaint_main", fake_inpaint_main)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["lit-inpainting", "--input_image", str(input_image), "--lesion_mask", str(mask_image), "--sd", str(out_dir)],
+    )
+
+    cli.run_lit()
+
+    assert len(calls) == 1
+    assert "--min_auto_img_size" not in calls[0]
+
+
 def test_lit_inpainting_fastsurfer_dir_materializes_outputs(tmp_path, monkeypatch):
     """FastSurfer mode should write public outputs in the subject directory."""
     input_image = tmp_path / "input.nii.gz"
@@ -143,6 +182,7 @@ def test_lit_inpainting_fastsurfer_dir_materializes_outputs(tmp_path, monkeypatc
     monkeypatch.setattr(cli, "user_data_dir", lambda *args, **kwargs: str(user_data_root))
 
     def fake_inpaint_main(argv: list[str]) -> None:
+        assert argv[argv.index("--min_auto_img_size") + 1] == "256"
         out_dir = Path(argv[argv.index("--out_dir") + 1])
         assert out_dir != subject_dir
         volumes_dir = out_dir / "inpainting_volumes"
@@ -235,6 +275,7 @@ def test_lit_inpainting_fastsurfer_dir_forwards_keepgeom(tmp_path, monkeypatch):
 
     def fake_inpaint_main(argv: list[str]) -> None:
         assert "--keepgeom" in argv
+        assert argv[argv.index("--min_auto_img_size") + 1] == "256"
         out_dir = Path(argv[argv.index("--out_dir") + 1])
         volumes_dir = out_dir / "inpainting_volumes"
         volumes_dir.mkdir(parents=True, exist_ok=True)
