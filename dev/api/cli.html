@@ -184,6 +184,8 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="inference.html#neurolit.inference.SliceWiseInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.SliceWiseInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slice_centers"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slice_centers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slab_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slab_slices()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slice_from_volume()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.SliceWiseInpaintingInferer.slice_selector"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.slice_selector()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slices()</span></code></a></li>
@@ -219,6 +221,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="inpainting.html#neurolit.inpaint_image.positive_int"><code class="docutils literal notranslate"><span class="pre">positive_int()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="inpainting.html#neurolit.inpaint_image.resolve_inference_device"><code class="docutils literal notranslate"><span class="pre">resolve_inference_device()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="inpainting.html#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
@@ -414,10 +417,10 @@ and initiates the inpainting process.</p>
 
 <span class="c1"># Simulate command-line arguments</span>
 <span class="n">sys</span><span class="o">.</span><span class="n">argv</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s1">&#39;run_lit&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;--input_image&#39;</span><span class="p">,</span> <span class="s1">&#39;T1w.nii.gz&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;--mask_image&#39;</span><span class="p">,</span> <span class="s1">&#39;mask.nii.gz&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;--output_directory&#39;</span><span class="p">,</span> <span class="s1">&#39;output&#39;</span>
+    <span class="s1">'run_lit'</span><span class="p">,</span>
+    <span class="s1">'--input_image'</span><span class="p">,</span> <span class="s1">'T1w.nii.gz'</span><span class="p">,</span>
+    <span class="s1">'--mask_image'</span><span class="p">,</span> <span class="s1">'mask.nii.gz'</span><span class="p">,</span>
+    <span class="s1">'--output_directory'</span><span class="p">,</span> <span class="s1">'output'</span>
 <span class="p">]</span>
 
 <span class="n">run_lit</span><span class="p">()</span>
@@ -429,11 +432,11 @@ and initiates the inpainting process.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
 
 <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s1">&#39;run_lit&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;--input_image&#39;</span><span class="p">,</span> <span class="s1">&#39;T1w.nii.gz&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;--mask_image&#39;</span><span class="p">,</span> <span class="s1">&#39;mask.nii.gz&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;--output_directory&#39;</span><span class="p">,</span> <span class="s1">&#39;output&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;--dilate&#39;</span><span class="p">,</span> <span class="s1">&#39;2&#39;</span>
+    <span class="s1">'run_lit'</span><span class="p">,</span>
+    <span class="s1">'--input_image'</span><span class="p">,</span> <span class="s1">'T1w.nii.gz'</span><span class="p">,</span>
+    <span class="s1">'--mask_image'</span><span class="p">,</span> <span class="s1">'mask.nii.gz'</span><span class="p">,</span>
+    <span class="s1">'--output_directory'</span><span class="p">,</span> <span class="s1">'output'</span><span class="p">,</span>
+    <span class="s1">'--dilate'</span><span class="p">,</span> <span class="s1">'2'</span>
 <span class="p">]</span>
 
 <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>

@@ -181,6 +181,8 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slice_centers"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slice_centers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slab_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slab_slices()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slice_from_volume()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.slice_selector"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.slice_selector()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slices()</span></code></a></li>
@@ -216,6 +218,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.positive_int"><code class="docutils literal notranslate"><span class="pre">positive_int()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.resolve_inference_device"><code class="docutils literal notranslate"><span class="pre">resolve_inference_device()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
@@ -369,14 +372,14 @@
 
 <span class="c1"># Copyright 2026 DeepMI Lab, German Center for Neurodegenerative Diseases (DZNE), Bonn</span>
 <span class="c1">#</span>
-<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
 <span class="c1"># You may obtain a copy of the License at</span>
 <span class="c1">#</span>
 <span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
 <span class="c1">#</span>
 <span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
-<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># distributed under the License is distributed on an "AS IS" BASIS,</span>
 <span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
@@ -385,12 +388,12 @@
 <span class="c1"># https://github.com/Project-MONAI/GenerativeModels</span>
 <span class="c1"># which has the following license:</span>
 <span class="c1"># Copyright (c) MONAI Consortium</span>
-<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
 <span class="c1"># You may obtain a copy of the License at</span>
 <span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
 <span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
-<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># distributed under the License is distributed on an "AS IS" BASIS,</span>
 <span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
@@ -402,14 +405,14 @@
 <span class="c1">#</span>
 <span class="c1"># Copyright 2022 UC Berkeley Team and The HuggingFace Team. All rights reserved.</span>
 <span class="c1">#</span>
-<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
 <span class="c1"># You may obtain a copy of the License at</span>
 <span class="c1">#</span>
 <span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
 <span class="c1">#</span>
 <span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
-<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># distributed under the License is distributed on an "AS IS" BASIS,</span>
 <span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
@@ -431,7 +434,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.networks</span><span class="w"> </span><span class="kn">import</span> <span class="n">interpolation_layer</span> <span class="k">as</span> <span class="n">il</span>
 
 <span class="c1"># To install xformers, use pip install xformers==0.0.16rc401</span>
-<span class="k">if</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;xformers&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">if</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">"xformers"</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">xformers</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">xformers.ops</span>
 
@@ -440,19 +443,19 @@
     <span class="n">xformers</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">has_xformers</span> <span class="o">=</span> <span class="kc">False</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;DiffusionModelUNetVINN&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"DiffusionModelUNetVINN"</span><span class="p">]</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">zero_module</span><span class="p">(</span><span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Zero out the parameters of a module and return it.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
         <span class="n">p</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">module</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">CrossAttention</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A cross attention layer.</span>
 
 <span class="sd">    Parameters</span>
@@ -464,7 +467,7 @@
 <span class="sd">        dropout: dropout probability to use.</span>
 <span class="sd">        upcast_attention: if True, upcast attention operations to full precision.</span>
 <span class="sd">        use_flash_attention: if True, use flash attention for a memory efficient attention mechanism.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -493,16 +496,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">to_out</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">inner_dim</span><span class="p">,</span> <span class="n">query_dim</span><span class="p">),</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">reshape_heads_to_batch_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Divide hidden state dimension to the multiple attention heads and reshape their input as instances in the batch.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">batch_size</span><span class="p">,</span> <span class="n">seq_len</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">seq_len</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_heads</span><span class="p">,</span> <span class="n">dim</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_heads</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_heads</span><span class="p">,</span> <span class="n">seq_len</span><span class="p">,</span> <span class="n">dim</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_heads</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">x</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">reshape_batch_dim_to_heads</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Combine the output of the attention heads back into the hidden state dimension.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Combine the output of the attention heads back into the hidden state dimension."""</span>
         <span class="n">batch_size</span><span class="p">,</span> <span class="n">seq_len</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_heads</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_heads</span><span class="p">,</span> <span class="n">seq_len</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_heads</span><span class="p">,</span> <span class="n">seq_len</span><span class="p">,</span> <span class="n">dim</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_heads</span><span class="p">)</span>
@@ -559,7 +562,7 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">BasicTransformerBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A basic Transformer block.</span>
 
 <span class="sd">    Parameters</span>
@@ -571,7 +574,7 @@
 <span class="sd">        cross_attention_dim: size of the context vector for cross attention.</span>
 <span class="sd">        upcast_attention: if True, upcast attention operations to full precision.</span>
 <span class="sd">        use_flash_attention: if True, use flash attention for a memory efficient attention mechanism.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -592,7 +595,7 @@
             <span class="n">upcast_attention</span><span class="o">=</span><span class="n">upcast_attention</span><span class="p">,</span>
             <span class="n">use_flash_attention</span><span class="o">=</span><span class="n">use_flash_attention</span><span class="p">,</span>
         <span class="p">)</span>  <span class="c1"># is a self-attention</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ff</span> <span class="o">=</span> <span class="n">MLPBlock</span><span class="p">(</span><span class="n">hidden_size</span><span class="o">=</span><span class="n">num_channels</span><span class="p">,</span> <span class="n">mlp_dim</span><span class="o">=</span><span class="n">num_channels</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="n">act</span><span class="o">=</span><span class="s2">&quot;GEGLU&quot;</span><span class="p">,</span> <span class="n">dropout_rate</span><span class="o">=</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ff</span> <span class="o">=</span> <span class="n">MLPBlock</span><span class="p">(</span><span class="n">hidden_size</span><span class="o">=</span><span class="n">num_channels</span><span class="p">,</span> <span class="n">mlp_dim</span><span class="o">=</span><span class="n">num_channels</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="n">act</span><span class="o">=</span><span class="s2">"GEGLU"</span><span class="p">,</span> <span class="n">dropout_rate</span><span class="o">=</span><span class="n">dropout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">attn2</span> <span class="o">=</span> <span class="n">CrossAttention</span><span class="p">(</span>
             <span class="n">query_dim</span><span class="o">=</span><span class="n">num_channels</span><span class="p">,</span>
             <span class="n">cross_attention_dim</span><span class="o">=</span><span class="n">cross_attention_dim</span><span class="p">,</span>
@@ -619,7 +622,7 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">SpatialTransformer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Transformer block for image-like data. First, project the input (aka embedding) and reshape to b, t, d. Then apply</span>
 <span class="sd">    standard transformer action. Finally, reshape to image.</span>
 
@@ -636,7 +639,7 @@
 <span class="sd">        cross_attention_dim: number of context dimensions to use.</span>
 <span class="sd">        upcast_attention: if True, upcast attention operations to full precision.</span>
 <span class="sd">        use_flash_attention: if True, use flash attention for a memory efficient attention mechanism.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -728,7 +731,7 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">AttentionBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    An attention block that allows spatial positions to attend to each other. Uses three q, k, v linear layers to</span>
 <span class="sd">    compute attention.</span>
 
@@ -741,7 +744,7 @@
 <span class="sd">            channels is divisible by this number.</span>
 <span class="sd">        norm_eps: epsilon value to use for the normalisation.</span>
 <span class="sd">        use_flash_attention: if True, use flash attention for a memory efficient attention mechanism.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -845,18 +848,18 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_timestep_embedding</span><span class="p">(</span><span class="n">timesteps</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">embedding_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">max_period</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Create sinusoidal timestep embeddings following the implementation in Ho et al. &quot;Denoising Diffusion Probabilistic</span>
-<span class="sd">    Models&quot; https://arxiv.org/abs/2006.11239.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Create sinusoidal timestep embeddings following the implementation in Ho et al. "Denoising Diffusion Probabilistic</span>
+<span class="sd">    Models" https://arxiv.org/abs/2006.11239.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">        timesteps: a 1-D Tensor of N indices, one per batch element.</span>
 <span class="sd">        embedding_dim: the dimension of the output.</span>
 <span class="sd">        max_period: controls the minimum frequency of the embeddings.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">timesteps</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Timesteps should be a 1d-array&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Timesteps should be a 1d-array"</span><span class="p">)</span>
 
     <span class="n">half_dim</span> <span class="o">=</span> <span class="n">embedding_dim</span> <span class="o">//</span> <span class="mi">2</span>
     <span class="n">exponent</span> <span class="o">=</span> <span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">max_period</span><span class="p">)</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">half_dim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">timesteps</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
@@ -873,7 +876,7 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">Downsample</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Downsampling layer.</span>
 
 <span class="sd">    Parameters</span>
@@ -885,7 +888,7 @@
 <span class="sd">        out_channels: number of output channels.</span>
 <span class="sd">        padding: controls the amount of implicit zero-paddings on both sides for padding number of points</span>
 <span class="sd">            for each dimension.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">use_conv</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">padding</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
@@ -906,21 +909,21 @@
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_channels</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;num_channels and out_channels must be equal when use_conv=False&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"num_channels and out_channels must be equal when use_conv=False"</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">op</span> <span class="o">=</span> <span class="n">Pool</span><span class="p">[</span><span class="n">Pool</span><span class="o">.</span><span class="n">AVG</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="p">](</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">emb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="k">del</span> <span class="n">emb</span>
         <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_channels</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Input number of channels (</span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">) is not equal to expected number of channels &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_channels</span><span class="si">}</span><span class="s2">)&quot;</span>
+                <span class="sa">f</span><span class="s2">"Input number of channels (</span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">) is not equal to expected number of channels "</span>
+                <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_channels</span><span class="si">}</span><span class="s2">)"</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">op</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">Upsample</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Upsampling layer with an optional convolution.</span>
 
 <span class="sd">    Parameters</span>
@@ -931,7 +934,7 @@
 <span class="sd">        out_channels: number of output channels.</span>
 <span class="sd">        padding: controls the amount of implicit zero-paddings on both sides for padding number of points for each</span>
 <span class="sd">            dimension.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">use_conv</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">padding</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
@@ -956,15 +959,15 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">emb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="k">del</span> <span class="n">emb</span>
         <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_channels</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Input channels should be equal to num_channels&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Input channels should be equal to num_channels"</span><span class="p">)</span>
 
-        <span class="c1"># Cast to float32 to as &#39;upsample_nearest2d_out_frame&#39; op does not support bfloat16</span>
+        <span class="c1"># Cast to float32 to as 'upsample_nearest2d_out_frame' op does not support bfloat16</span>
         <span class="c1"># https://github.com/pytorch/pytorch/issues/86679</span>
         <span class="n">dtype</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">dtype</span>
         <span class="k">if</span> <span class="n">dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">:</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
-        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"nearest"</span><span class="p">)</span>
 
         <span class="c1"># If the input is bfloat16, we cast back to bfloat16</span>
         <span class="k">if</span> <span class="n">dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">:</span>
@@ -976,7 +979,7 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">ResnetBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Residual block with timestep conditioning.</span>
 
 <span class="sd">    Parameters</span>
@@ -989,7 +992,7 @@
 <span class="sd">        down: if True, performs downsampling.</span>
 <span class="sd">        norm_num_groups: number of groups for the group normalization.</span>
 <span class="sd">        norm_eps: epsilon for the group normalization.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1087,8 +1090,8 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">DownBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Unet&#39;s down block containing resnet and downsamplers blocks.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Unet's down block containing resnet and downsamplers blocks.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1102,7 +1105,7 @@
 <span class="sd">        add_downsample: if True add downsample block.</span>
 <span class="sd">        resblock_updown: if True use residual blocks for downsampling.</span>
 <span class="sd">        downsample_padding: padding used in the downsampling block.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1177,8 +1180,8 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">AttnDownBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Unet&#39;s down block containing resnet, downsamplers and self-attention blocks.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Unet's down block containing resnet, downsamplers and self-attention blocks.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1194,7 +1197,7 @@
 <span class="sd">        downsample_padding: padding used in the downsampling block.</span>
 <span class="sd">        num_head_channels: number of channels in each attention head.</span>
 <span class="sd">        use_flash_attention: if True, use flash attention for a memory efficient attention mechanism.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1284,8 +1287,8 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">CrossAttnDownBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Unet&#39;s down block containing resnet, downsamplers and cross-attention blocks.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Unet's down block containing resnet, downsamplers and cross-attention blocks.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1304,7 +1307,7 @@
 <span class="sd">        cross_attention_dim: number of context dimensions to use.</span>
 <span class="sd">        upcast_attention: if True, upcast attention operations to full precision.</span>
 <span class="sd">        use_flash_attention: if True, use flash attention for a memory efficient attention mechanism.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1401,8 +1404,8 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">AttnMidBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Unet&#39;s mid block containing resnet and self-attention blocks.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Unet's mid block containing resnet and self-attention blocks.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1413,7 +1416,7 @@
 <span class="sd">        norm_eps: epsilon for the group normalization.</span>
 <span class="sd">        num_head_channels: number of channels in each attention head.</span>
 <span class="sd">        use_flash_attention: if True, use flash attention for a memory efficient attention mechanism.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1466,8 +1469,8 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">CrossAttnMidBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Unet&#39;s mid block containing resnet and cross-attention blocks.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Unet's mid block containing resnet and cross-attention blocks.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1481,7 +1484,7 @@
 <span class="sd">        cross_attention_dim: number of context dimensions to use.</span>
 <span class="sd">        upcast_attention: if True, upcast attention operations to full precision.</span>
 <span class="sd">        use_flash_attention: if True, use flash attention for a memory efficient attention mechanism.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1539,8 +1542,8 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">UpBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Unet&#39;s up block containing resnet and upsamplers blocks.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Unet's up block containing resnet and upsamplers blocks.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1554,7 +1557,7 @@
 <span class="sd">        norm_eps: epsilon for the group normalization.</span>
 <span class="sd">        add_upsample: if True add downsample block.</span>
 <span class="sd">        resblock_updown: if True use residual blocks for upsampling.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1631,8 +1634,8 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">AttnUpBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Unet&#39;s up block containing resnet, upsamplers, and self-attention blocks.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Unet's up block containing resnet, upsamplers, and self-attention blocks.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1648,7 +1651,7 @@
 <span class="sd">        resblock_updown: if True use residual blocks for upsampling.</span>
 <span class="sd">        num_head_channels: number of channels in each attention head.</span>
 <span class="sd">        use_flash_attention: if True, use flash attention for a memory efficient attention mechanism.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1741,8 +1744,8 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">CrossAttnUpBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Unet&#39;s up block containing resnet, upsamplers, and self-attention blocks.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Unet's up block containing resnet, upsamplers, and self-attention blocks.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1761,7 +1764,7 @@
 <span class="sd">        cross_attention_dim: number of context dimensions to use.</span>
 <span class="sd">        upcast_attention: if True, upcast attention operations to full precision.</span>
 <span class="sd">        use_flash_attention: if True, use flash attention for a memory efficient attention mechanism.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2030,10 +2033,10 @@
 <div class="viewcode-block" id="DiffusionModelUNetVINN">
 <a class="viewcode-back" href="../../../api/networks.html#neurolit.networks.DiffusionUnet.DiffusionModelUNetVINN">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DiffusionModelUNetVINN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Unet network with timestep embedding and attention mechanisms for conditioning based on</span>
-<span class="sd">    Rombach et al. &quot;High-Resolution Image Synthesis with Latent Diffusion Models&quot; https://arxiv.org/abs/2112.10752</span>
-<span class="sd">    and Pinaya et al. &quot;Brain Imaging Generation with Latent Diffusion Models&quot; https://arxiv.org/abs/2209.07162</span>
+<span class="sd">    Rombach et al. "High-Resolution Image Synthesis with Latent Diffusion Models" https://arxiv.org/abs/2112.10752</span>
+<span class="sd">    and Pinaya et al. "Brain Imaging Generation with Latent Diffusion Models" https://arxiv.org/abs/2209.07162</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2055,7 +2058,7 @@
 <span class="sd">        upcast_attention: if True, upcast attention operations to full precision.</span>
 <span class="sd">        use_flash_attention: if True, use flash attention for a memory efficient attention mechanism.</span>
 <span class="sd">    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
 <div class="viewcode-block" id="DiffusionModelUNetVINN.__init__">
 <a class="viewcode-back" href="../../../api/networks.html#neurolit.networks.DiffusionUnet.DiffusionModelUNetVINN.__init__">[docs]</a>
@@ -2079,35 +2082,35 @@
         <span class="n">num_class_embeds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">upcast_attention</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">use_flash_attention</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">interpolation_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;trilinear&quot;</span><span class="p">,</span>
+        <span class="n">interpolation_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"trilinear"</span><span class="p">,</span>
         <span class="n">use_fp16_VINN</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">is_vinn</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">with_conditioning</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">cross_attention_dim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;DiffusionModelUNet expects dimension of the cross-attention conditioning (cross_attention_dim) &quot;</span>
-                <span class="s2">&quot;when using with_conditioning.&quot;</span>
+                <span class="s2">"DiffusionModelUNet expects dimension of the cross-attention conditioning (cross_attention_dim) "</span>
+                <span class="s2">"when using with_conditioning."</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="n">cross_attention_dim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">with_conditioning</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;DiffusionModelUNet expects with_conditioning=True when specifying the cross_attention_dim.&quot;</span>
+                <span class="s2">"DiffusionModelUNet expects with_conditioning=True when specifying the cross_attention_dim."</span>
             <span class="p">)</span>
 
         <span class="c1"># All number of channels should be multiple of num_groups</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">((</span><span class="n">out_channel</span> <span class="o">%</span> <span class="n">norm_num_groups</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">out_channel</span> <span class="ow">in</span> <span class="n">num_channels</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;DiffusionModelUNet expects all num_channels being multiple of norm_num_groups&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"DiffusionModelUNet expects all num_channels being multiple of norm_num_groups"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">num_channels</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">attention_levels</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;DiffusionModelUNet expects num_channels being same size of attention_levels&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"DiffusionModelUNet expects num_channels being same size of attention_levels"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">num_head_channels</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="n">num_head_channels</span> <span class="o">=</span> <span class="n">ensure_tuple_rep</span><span class="p">(</span><span class="n">num_head_channels</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">attention_levels</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">num_head_channels</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">attention_levels</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;num_head_channels should have the same length as attention_levels. For the i levels without attention,&quot;</span>
-                <span class="s2">&quot; i.e. `attention_level[i]=False`, the num_head_channels[i] will be ignored.&quot;</span>
+                <span class="s2">"num_head_channels should have the same length as attention_levels. For the i levels without attention,"</span>
+                <span class="s2">" i.e. `attention_level[i]=False`, the num_head_channels[i] will be ignored."</span>
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">num_res_blocks</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
@@ -2115,16 +2118,16 @@
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">num_res_blocks</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">num_channels</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;`num_res_blocks` should be a single integer or a tuple of integers with the same length as &quot;</span>
-                <span class="s2">&quot;`num_channels`.&quot;</span>
+                <span class="s2">"`num_res_blocks` should be a single integer or a tuple of integers with the same length as "</span>
+                <span class="s2">"`num_channels`."</span>
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">use_flash_attention</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">has_xformers</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;use_flash_attention is True but xformers is not installed.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"use_flash_attention is True but xformers is not installed."</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">use_flash_attention</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;torch.cuda.is_available() should be True but is False. Flash attention is only available for GPU.&quot;</span>
+                <span class="s2">"torch.cuda.is_available() should be True but is False. Flash attention is only available for GPU."</span>
             <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">=</span> <span class="n">in_channels</span>
@@ -2139,7 +2142,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">use_fp16_VINN</span> <span class="o">=</span> <span class="n">use_fp16_VINN</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">is_vinn</span> <span class="o">=</span> <span class="n">is_vinn</span>
 
-        <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">internal_size</span><span class="p">)</span> <span class="o">==</span> <span class="n">spatial_dims</span><span class="p">),</span> <span class="s2">&quot;internal_size should have the same length as spatial_dims&quot;</span>
+        <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">internal_size</span><span class="p">)</span> <span class="o">==</span> <span class="n">spatial_dims</span><span class="p">),</span> <span class="s2">"internal_size should have the same length as spatial_dims"</span>
 
      
 
@@ -2174,20 +2177,20 @@
         <span class="k">if</span> <span class="n">spatial_dims</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span> 
             <span class="bp">self</span><span class="o">.</span><span class="n">interpol1</span> <span class="o">=</span> <span class="n">il</span><span class="o">.</span><span class="n">Zoom3d</span><span class="p">(</span>
                 <span class="n">interpolation_mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">interpolation_mode</span><span class="p">,</span>
-                <span class="n">crop_position</span><span class="o">=</span><span class="s2">&quot;front_top_left&quot;</span><span class="p">,</span>
+                <span class="n">crop_position</span><span class="o">=</span><span class="s2">"front_top_left"</span><span class="p">,</span>
             <span class="p">)</span> 
             <span class="bp">self</span><span class="o">.</span><span class="n">interpol2</span> <span class="o">=</span> <span class="n">il</span><span class="o">.</span><span class="n">Zoom3d</span><span class="p">(</span>
                 <span class="n">interpolation_mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">interpolation_mode</span><span class="p">,</span>
-                <span class="n">crop_position</span><span class="o">=</span><span class="s2">&quot;front_top_left&quot;</span><span class="p">,</span>
+                <span class="n">crop_position</span><span class="o">=</span><span class="s2">"front_top_left"</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">interpol1</span> <span class="o">=</span> <span class="n">il</span><span class="o">.</span><span class="n">Zoom2d</span><span class="p">(</span>
                 <span class="n">interpolation_mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">interpolation_mode</span><span class="p">,</span>
-                <span class="n">crop_position</span><span class="o">=</span><span class="s2">&quot;top_left&quot;</span><span class="p">,</span>
+                <span class="n">crop_position</span><span class="o">=</span><span class="s2">"top_left"</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">interpol2</span> <span class="o">=</span> <span class="n">il</span><span class="o">.</span><span class="n">Zoom2d</span><span class="p">(</span>
                 <span class="n">interpolation_mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">interpolation_mode</span><span class="p">,</span>
-                <span class="n">crop_position</span><span class="o">=</span><span class="s2">&quot;top_left&quot;</span><span class="p">,</span>
+                <span class="n">crop_position</span><span class="o">=</span><span class="s2">"top_left"</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="c1"># down</span>
@@ -2305,7 +2308,7 @@
         <span class="n">down_block_additional_residuals</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">mid_block_additional_residual</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        x : torch.Tensor</span>
@@ -2320,7 +2323,7 @@
 <span class="sd">            Additional residual tensors for down blocks (N, C, FeatureMapsDims).</span>
 <span class="sd">        mid_block_additional_residual : torch.Tensor, optional</span>
 <span class="sd">            Additional residual tensor for mid block (N, C, FeatureMapsDims).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1">#self.interpol2.target_shape = x.shape[2:] # remember original shape</span>
         <span class="n">output_shape</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
         
@@ -2338,7 +2341,7 @@
         <span class="c1"># 2. class</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_class_embeds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">class_labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;class_labels should be provided when num_class_embeds &gt; 0&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"class_labels should be provided when num_class_embeds &gt; 0"</span><span class="p">)</span>
             <span class="n">class_emb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">class_embedding</span><span class="p">(</span><span class="n">class_labels</span><span class="p">)</span>
             <span class="n">class_emb</span> <span class="o">=</span> <span class="n">class_emb</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
             <span class="n">emb</span> <span class="o">=</span> <span class="n">emb</span> <span class="o">+</span> <span class="n">class_emb</span>
@@ -2350,7 +2353,7 @@
 
         <span class="c1"># 4. down</span>
         <span class="k">if</span> <span class="n">context</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_conditioning</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;model should have with_conditioning = True if context is provided&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"model should have with_conditioning = True if context is provided"</span><span class="p">)</span>
         
 
         <span class="n">down_block_res_samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">h</span><span class="p">]</span>
@@ -2366,7 +2369,7 @@
             
             <span class="k">if</span> <span class="n">is_first_block</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_vinn</span><span class="p">:</span> <span class="c1"># instead of downsampling do VINN  </span>
                 <span class="k">assert</span><span class="p">(</span><span class="n">downsample_block</span><span class="o">.</span><span class="n">downsampler</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
-                <span class="k">assert</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">internal_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s2">&quot;internal_size should be smaller than input size // 2&quot;</span>
+                <span class="k">assert</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">internal_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s2">"internal_size should be smaller than input size // 2"</span>
                 <span class="n">h</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpol1</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">scale_factors</span><span class="o">=</span><span class="n">scale_factors</span><span class="p">,</span> <span class="n">target_shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">internal_size</span><span class="p">)</span>
                 <span class="n">down_block_res_samples</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
         
@@ -2399,7 +2402,7 @@
 
             <span class="k">if</span> <span class="n">is_second_to_last</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_vinn</span><span class="p">:</span> <span class="c1"># instead of downsampling do VINN  </span>
                 <span class="k">assert</span><span class="p">(</span><span class="n">upsample_block</span><span class="o">.</span><span class="n">upsampler</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
-                <span class="k">assert</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">output_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s2">&quot;output_shape should be larger than internal size&quot;</span>
+                <span class="k">assert</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">output_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s2">"output_shape should be larger than internal size"</span>
                 <span class="n">h</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpol1</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">scale_factors</span><span class="o">=</span><span class="mi">1</span><span class="o">/</span><span class="n">scale_factors</span><span class="p">,</span> <span class="n">target_shape</span><span class="o">=</span><span class="n">output_shape</span><span class="p">)</span>
 
         <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
@@ -2411,9 +2414,9 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">DiffusionModelEncoder</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Classification Network based on the Encoder of the Diffusion Model, followed by fully connected layers. This network is based on</span>
-<span class="sd">    Wolleb et al. &quot;Diffusion Models for Medical Anomaly Detection&quot; (https://arxiv.org/abs/2203.04306).</span>
+<span class="sd">    Wolleb et al. "Diffusion Models for Medical Anomaly Detection" (https://arxiv.org/abs/2203.04306).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2432,7 +2435,7 @@
 <span class="sd">        cross_attention_dim: number of context dimensions to use.</span>
 <span class="sd">        num_class_embeds: if specified (as an int), then this model will be class-conditional with `num_class_embeds` classes.</span>
 <span class="sd">        upcast_attention: if True, upcast attention operations to full precision.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2455,27 +2458,27 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">with_conditioning</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">cross_attention_dim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;DiffusionModelEncoder expects dimension of the cross-attention conditioning (cross_attention_dim) &quot;</span>
-                <span class="s2">&quot;when using with_conditioning.&quot;</span>
+                <span class="s2">"DiffusionModelEncoder expects dimension of the cross-attention conditioning (cross_attention_dim) "</span>
+                <span class="s2">"when using with_conditioning."</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="n">cross_attention_dim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">with_conditioning</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;DiffusionModelEncoder expects with_conditioning=True when specifying the cross_attention_dim.&quot;</span>
+                <span class="s2">"DiffusionModelEncoder expects with_conditioning=True when specifying the cross_attention_dim."</span>
             <span class="p">)</span>
 
         <span class="c1"># All number of channels should be multiple of num_groups</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">((</span><span class="n">out_channel</span> <span class="o">%</span> <span class="n">norm_num_groups</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">out_channel</span> <span class="ow">in</span> <span class="n">num_channels</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;DiffusionModelEncoder expects all num_channels being multiple of norm_num_groups&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"DiffusionModelEncoder expects all num_channels being multiple of norm_num_groups"</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">num_channels</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">attention_levels</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;DiffusionModelEncoder expects num_channels being same size of attention_levels&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"DiffusionModelEncoder expects num_channels being same size of attention_levels"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">num_head_channels</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="n">num_head_channels</span> <span class="o">=</span> <span class="n">ensure_tuple_rep</span><span class="p">(</span><span class="n">num_head_channels</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">attention_levels</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">num_head_channels</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">attention_levels</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;num_head_channels should have the same length as attention_levels. For the i levels without attention,&quot;</span>
-                <span class="s2">&quot; i.e. `attention_level[i]=False`, the num_head_channels[i] will be ignored.&quot;</span>
+                <span class="s2">"num_head_channels should have the same length as attention_levels. For the i levels without attention,"</span>
+                <span class="s2">" i.e. `attention_level[i]=False`, the num_head_channels[i] will be ignored."</span>
             <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">=</span> <span class="n">in_channels</span>
@@ -2545,7 +2548,7 @@
         <span class="n">context</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">class_labels</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        x : torch.Tensor</span>
@@ -2556,7 +2559,7 @@
 <span class="sd">            Context tensor (N, 1, ContextDim).</span>
 <span class="sd">        class_labels : torch.Tensor, optional</span>
 <span class="sd">            Class labels tensor (N, ).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># 1. time</span>
         <span class="n">t_emb</span> <span class="o">=</span> <span class="n">get_timestep_embedding</span><span class="p">(</span><span class="n">timesteps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_out_channels</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
@@ -2569,7 +2572,7 @@
         <span class="c1"># 2. class</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_class_embeds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">class_labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;class_labels should be provided when num_class_embeds &gt; 0&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"class_labels should be provided when num_class_embeds &gt; 0"</span><span class="p">)</span>
             <span class="n">class_emb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">class_embedding</span><span class="p">(</span><span class="n">class_labels</span><span class="p">)</span>
             <span class="n">class_emb</span> <span class="o">=</span> <span class="n">class_emb</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
             <span class="n">emb</span> <span class="o">=</span> <span class="n">emb</span> <span class="o">+</span> <span class="n">class_emb</span>
@@ -2579,7 +2582,7 @@
 
         <span class="c1"># 4. down</span>
         <span class="k">if</span> <span class="n">context</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_conditioning</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;model should have with_conditioning = True if context is provided&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"model should have with_conditioning = True if context is provided"</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">downsample_block</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">down_blocks</span><span class="p">:</span>
             <span class="n">h</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">downsample_block</span><span class="p">(</span><span class="n">hidden_states</span><span class="o">=</span><span class="n">h</span><span class="p">,</span> <span class="n">temb</span><span class="o">=</span><span class="n">emb</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
 

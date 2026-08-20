@@ -181,6 +181,8 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slice_centers"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slice_centers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slab_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slab_slices()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slice_from_volume()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.slice_selector"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.slice_selector()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slices()</span></code></a></li>
@@ -216,6 +218,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.positive_int"><code class="docutils literal notranslate"><span class="pre">positive_int()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.resolve_inference_device"><code class="docutils literal notranslate"><span class="pre">resolve_inference_device()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
@@ -366,14 +369,14 @@
   <h1>Source code for neurolit.data.conform</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright 2019 Image Analysis Lab, German Center for Neurodegenerative Diseases (DZNE), Bonn</span>
 <span class="c1">#</span>
-<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
 <span class="c1"># You may obtain a copy of the License at</span>
 <span class="c1">#</span>
 <span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
 <span class="c1">#</span>
 <span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
-<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># distributed under the License is distributed on an "AS IS" BASIS,</span>
 <span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
@@ -392,7 +395,7 @@
 
 <span class="n">_UNSET</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>  <span class="c1"># sentinel for unset optional parameters</span>
 
-<span class="n">HELPTEXT</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="n">HELPTEXT</span> <span class="o">=</span> <span class="s2">"""</span>
 <span class="s2">Script to conform an MRI brain image to UCHAR, RAS orientation, and 1mm or minimal isotropic voxels</span>
 <span class="s2">USAGE:</span>
 <span class="s2">conform.py  -i &lt;input&gt; -o &lt;output&gt; &lt;options&gt;</span>
@@ -406,93 +409,93 @@
 <span class="s2">    http://nipy.org/nibabel/</span>
 <span class="s2">Original Author: Martin Reuter</span>
 <span class="s2">Date: Jul-09-2019</span>
-<span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">"""</span>
 
-<span class="n">h_input</span> <span class="o">=</span> <span class="s2">&quot;path to input image&quot;</span>
-<span class="n">h_output</span> <span class="o">=</span> <span class="s2">&quot;path to output image&quot;</span>
-<span class="n">h_order</span> <span class="o">=</span> <span class="s2">&quot;order of interpolation (0=nearest,1=linear(default),2=quadratic,3=cubic)&quot;</span>
+<span class="n">h_input</span> <span class="o">=</span> <span class="s2">"path to input image"</span>
+<span class="n">h_output</span> <span class="o">=</span> <span class="s2">"path to output image"</span>
+<span class="n">h_order</span> <span class="o">=</span> <span class="s2">"order of interpolation (0=nearest,1=linear(default),2=quadratic,3=cubic)"</span>
 
 
 <div class="viewcode-block" id="options_parse">
 <a class="viewcode-back" href="../../../api/data.html#neurolit.data.conform.options_parse">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">options_parse</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Command line option parser.</span>
+<span class="w">    </span><span class="sd">"""Command line option parser.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    options</span>
 <span class="sd">        object holding options</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">usage</span><span class="o">=</span><span class="n">HELPTEXT</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--version&quot;</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;version&quot;</span><span class="p">,</span>
-        <span class="n">version</span><span class="o">=</span><span class="s2">&quot;$Id: conform.py,v 1.0 2019/07/19 10:52:08 mreuter Exp $&quot;</span><span class="p">,</span>
+        <span class="s2">"--version"</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"version"</span><span class="p">,</span>
+        <span class="n">version</span><span class="o">=</span><span class="s2">"$Id: conform.py,v 1.0 2019/07/19 10:52:08 mreuter Exp $"</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--input&quot;</span><span class="p">,</span> <span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;input&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">h_input</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--output&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;output&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">h_output</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--order&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;order&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">h_order</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--input"</span><span class="p">,</span> <span class="s2">"-i"</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">"input"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">h_input</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--output"</span><span class="p">,</span> <span class="s2">"-o"</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">"output"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">h_output</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--order"</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">"order"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">h_order</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--check_only&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;check_only&quot;</span><span class="p">,</span>
+        <span class="s2">"--check_only"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"check_only"</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;If True, only checks if the input image is conformed, and does not return an output.&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"If True, only checks if the input image is conformed, and does not return an output."</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--seg_input&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;seg_input&quot;</span><span class="p">,</span>
+        <span class="s2">"--seg_input"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"seg_input"</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Specifies whether the input is a seg image. If true, the check for conformance &quot;</span>
-        <span class="s2">&quot;disregards the uint8 dtype criteria. Use --dtype any for equivalent results. &quot;</span>
-        <span class="s2">&quot;--seg_input overwrites --dtype arguments.&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Specifies whether the input is a seg image. If true, the check for conformance "</span>
+        <span class="s2">"disregards the uint8 dtype criteria. Use --dtype any for equivalent results. "</span>
+        <span class="s2">"--seg_input overwrites --dtype arguments."</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--vox_size&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;vox_size&quot;</span><span class="p">,</span>
+        <span class="s2">"--vox_size"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"vox_size"</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Specifies the target voxel size to conform to. Also allows &#39;min&#39; for conforming to the &quot;</span>
-        <span class="s2">&quot;minimum voxel size, otherwise similar to mri_convert&#39;s --conform_size &lt;size&gt; &quot;</span>
-        <span class="s2">&quot;(default: 1, conform to 1mm).&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Specifies the target voxel size to conform to. Also allows 'min' for conforming to the "</span>
+        <span class="s2">"minimum voxel size, otherwise similar to mri_convert's --conform_size &lt;size&gt; "</span>
+        <span class="s2">"(default: 1, conform to 1mm)."</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--conform_min&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;conform_min&quot;</span><span class="p">,</span>
+        <span class="s2">"--conform_min"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"conform_min"</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Specifies whether the input is or should be conformed to the &quot;</span>
-        <span class="s2">&quot;minimal voxel size (used for high-res processing) - overwrites --vox_size.&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Specifies whether the input is or should be conformed to the "</span>
+        <span class="s2">"minimal voxel size (used for high-res processing) - overwrites --vox_size."</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">advanced</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s2">&quot;Advanced options&quot;</span><span class="p">)</span>
+    <span class="n">advanced</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s2">"Advanced options"</span><span class="p">)</span>
     <span class="n">advanced</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--conform_to_1mm_threshold&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Advanced option to change the threshold beyond which images are conformed to 1&quot;</span>
-        <span class="s2">&quot;(default: infinity, all images are conformed to their minimum voxel size).&quot;</span><span class="p">,</span>
+        <span class="s2">"--conform_to_1mm_threshold"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Advanced option to change the threshold beyond which images are conformed to 1"</span>
+        <span class="s2">"(default: infinity, all images are conformed to their minimum voxel size)."</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--dtype&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;dtype&quot;</span><span class="p">,</span>
-        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;uint8&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Specifies the target data type of the target image or &#39;any&#39; (default: &#39;uint8&#39;, as in FreeSurfer)&quot;</span><span class="p">,</span>
+        <span class="s2">"--dtype"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"dtype"</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">"uint8"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Specifies the target data type of the target image or 'any' (default: 'uint8', as in FreeSurfer)"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--verbose&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;verbose&quot;</span><span class="p">,</span>
+        <span class="s2">"--verbose"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"verbose"</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;If verbose, more specific messages are printed&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"If verbose, more specific messages are printed"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">input</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;ERROR: Please specify input image&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">"ERROR: Please specify input image"</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">check_only</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">output</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;ERROR: Please specify output image&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">"ERROR: Please specify output image"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">check_only</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">output</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;ERROR: You passed in check_only. Please do not also specify output image&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">seg_input</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;uint8&quot;</span><span class="p">,</span> <span class="s2">&quot;any&quot;</span><span class="p">]:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;--seg_input overwrites the --dtype arguments.&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">"ERROR: You passed in check_only. Please do not also specify output image"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">seg_input</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"uint8"</span><span class="p">,</span> <span class="s2">"any"</span><span class="p">]:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"--seg_input overwrites the --dtype arguments."</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">args</span></div>
 
 
@@ -507,7 +510,7 @@
     <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">dtype</span><span class="p">:</span> <span class="nb">type</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Map image to new voxel space (RAS orientation).</span>
+<span class="w">    </span><span class="sd">"""Map image to new voxel space (RAS orientation).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -529,7 +532,7 @@
 <span class="sd">    np.ndarray</span>
 <span class="sd">        mapped image data array</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">numpy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">inv</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.ndimage</span><span class="w"> </span><span class="kn">import</span> <span class="n">affine_transform</span>
 
@@ -544,7 +547,7 @@
     <span class="c1"># convert frames to single image</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">image_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">s</span> <span class="o">!=</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">image_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">:]):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Multiple input frames </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">image_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> not supported!&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Multiple input frames </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">image_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> not supported!"</span><span class="p">)</span>
         <span class="n">image_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">image_data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">image_data</span><span class="o">.</span><span class="n">shape</span><span class="p">))))</span>
 
     <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -558,7 +561,7 @@
 <div class="viewcode-block" id="getscale">
 <a class="viewcode-back" href="../../../api/data.html#neurolit.data.conform.getscale">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">getscale</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">dst_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dst_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">f_low</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">f_high</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.999</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get offset and scale of image intensities to robustly rescale to range dst_min..dst_max.</span>
+<span class="w">    </span><span class="sd">"""Get offset and scale of image intensities to robustly rescale to range dst_min..dst_max.</span>
 
 <span class="sd">    Equivalent to how mri_convert conforms images.</span>
 
@@ -582,15 +585,15 @@
 <span class="sd">    float</span>
 <span class="sd">        scale factor</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># get min and max from source</span>
     <span class="n">src_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
     <span class="n">src_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">src_min</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Input image has value(s) below 0.0 !&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Input image has value(s) below 0.0 !"</span><span class="p">)</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Input:    min: &quot;</span> <span class="o">+</span> <span class="nb">format</span><span class="p">(</span><span class="n">src_min</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;  max: &quot;</span> <span class="o">+</span> <span class="nb">format</span><span class="p">(</span><span class="n">src_max</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Input:    min: "</span> <span class="o">+</span> <span class="nb">format</span><span class="p">(</span><span class="n">src_min</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"  max: "</span> <span class="o">+</span> <span class="nb">format</span><span class="p">(</span><span class="n">src_max</span><span class="p">))</span>
 
     <span class="k">if</span> <span class="n">f_low</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">f_high</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">src_min</span><span class="p">,</span> <span class="mf">1.0</span>
@@ -627,7 +630,7 @@
         <span class="n">idx</span> <span class="o">=</span> <span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;rescale upper bound not found&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"rescale upper bound not found"</span><span class="p">)</span>
 
     <span class="n">src_max</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">*</span> <span class="n">bin_size</span> <span class="o">+</span> <span class="n">src_min</span>
 
@@ -638,7 +641,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">scale</span> <span class="o">=</span> <span class="p">(</span><span class="n">dst_max</span> <span class="o">-</span> <span class="n">dst_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">src_max</span> <span class="o">-</span> <span class="n">src_min</span><span class="p">)</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;rescale:  min: &quot;</span> <span class="o">+</span> <span class="nb">format</span><span class="p">(</span><span class="n">src_min</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;  max: &quot;</span> <span class="o">+</span> <span class="nb">format</span><span class="p">(</span><span class="n">src_max</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;  scale: &quot;</span> <span class="o">+</span> <span class="nb">format</span><span class="p">(</span><span class="n">scale</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"rescale:  min: "</span> <span class="o">+</span> <span class="nb">format</span><span class="p">(</span><span class="n">src_min</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"  max: "</span> <span class="o">+</span> <span class="nb">format</span><span class="p">(</span><span class="n">src_max</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"  scale: "</span> <span class="o">+</span> <span class="nb">format</span><span class="p">(</span><span class="n">scale</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">src_min</span><span class="p">,</span> <span class="n">scale</span></div>
 
@@ -647,7 +650,7 @@
 <div class="viewcode-block" id="scalecrop">
 <a class="viewcode-back" href="../../../api/data.html#neurolit.data.conform.scalecrop">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">scalecrop</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">dst_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dst_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">src_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Crop the intensity ranges to specific min and max values.</span>
+<span class="w">    </span><span class="sd">"""Crop the intensity ranges to specific min and max values.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -667,12 +670,12 @@
 <span class="sd">    np.ndarray</span>
 <span class="sd">        scaled image data</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">data_new</span> <span class="o">=</span> <span class="n">dst_min</span> <span class="o">+</span> <span class="n">scale</span> <span class="o">*</span> <span class="p">(</span><span class="n">data</span> <span class="o">-</span> <span class="n">src_min</span><span class="p">)</span>
 
     <span class="c1"># clip</span>
     <span class="n">data_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">data_new</span><span class="p">,</span> <span class="n">dst_min</span><span class="p">,</span> <span class="n">dst_max</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Output:   min: &quot;</span> <span class="o">+</span> <span class="nb">format</span><span class="p">(</span><span class="n">data_new</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">+</span> <span class="s2">&quot;  max: &quot;</span> <span class="o">+</span> <span class="nb">format</span><span class="p">(</span><span class="n">data_new</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Output:   min: "</span> <span class="o">+</span> <span class="nb">format</span><span class="p">(</span><span class="n">data_new</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">+</span> <span class="s2">"  max: "</span> <span class="o">+</span> <span class="nb">format</span><span class="p">(</span><span class="n">data_new</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
 
     <span class="k">return</span> <span class="n">data_new</span></div>
 
@@ -681,7 +684,7 @@
 <div class="viewcode-block" id="rescale">
 <a class="viewcode-back" href="../../../api/data.html#neurolit.data.conform.rescale">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">rescale</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">dst_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dst_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">f_low</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">f_high</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.999</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Rescale image intensity values (0-255).</span>
+<span class="w">    </span><span class="sd">"""Rescale image intensity values (0-255).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -701,7 +704,7 @@
 <span class="sd">    np.ndarray</span>
 <span class="sd">        scaled image data</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">src_min</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">getscale</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dst_min</span><span class="p">,</span> <span class="n">dst_max</span><span class="p">,</span> <span class="n">f_low</span><span class="p">,</span> <span class="n">f_high</span><span class="p">)</span>
     <span class="n">data_new</span> <span class="o">=</span> <span class="n">scalecrop</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dst_min</span><span class="p">,</span> <span class="n">dst_max</span><span class="p">,</span> <span class="n">src_min</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">data_new</span></div>
@@ -711,7 +714,7 @@
 <div class="viewcode-block" id="find_min_size">
 <a class="viewcode-back" href="../../../api/data.html#neurolit.data.conform.find_min_size">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">find_min_size</span><span class="p">(</span><span class="n">img</span><span class="p">:</span> <span class="n">nib</span><span class="o">.</span><span class="n">analyze</span><span class="o">.</span><span class="n">SpatialImage</span><span class="p">,</span> <span class="n">max_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find minimal voxel size &lt;= 1mm.</span>
+<span class="w">    </span><span class="sd">"""Find minimal voxel size &lt;= 1mm.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -729,7 +732,7 @@
 <span class="sd">    -----</span>
 <span class="sd">    This function only needs the header (not the data).</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># find minimal voxel side length</span>
     <span class="n">sizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">get_zooms</span><span class="p">()[:</span><span class="mi">3</span><span class="p">])</span>
     <span class="n">min_vox_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">sizes</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10000</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10000</span>
@@ -741,7 +744,7 @@
 <div class="viewcode-block" id="find_img_size_by_fov">
 <a class="viewcode-back" href="../../../api/data.html#neurolit.data.conform.find_img_size_by_fov">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">find_img_size_by_fov</span><span class="p">(</span><span class="n">img</span><span class="p">:</span> <span class="n">nib</span><span class="o">.</span><span class="n">analyze</span><span class="o">.</span><span class="n">SpatialImage</span><span class="p">,</span> <span class="n">vox_size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">min_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">256</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find the cube dimension (&gt;= 256) to cover the field of view of img.</span>
+<span class="w">    </span><span class="sd">"""Find the cube dimension (&gt;= 256) to cover the field of view of img.</span>
 
 <span class="sd">    If vox_size is one, the img_size MUST always be min_dim (the FreeSurfer standard).</span>
 
@@ -763,7 +766,7 @@
 <span class="sd">    -----</span>
 <span class="sd">    This function only needs the header (not the data).</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">vox_size</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">min_dim</span>
     <span class="c1"># else (other voxel sizes may use different sizes)</span>
@@ -780,13 +783,13 @@
 
 <div class="viewcode-block" id="is_orientation">
 <a class="viewcode-back" href="../../../api/data.html#neurolit.data.conform.is_orientation">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">is_orientation</span><span class="p">(</span><span class="n">affine</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">target_orientation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;lia&quot;</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check whether affine follows a target orientation code.&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_orientation</span><span class="p">(</span><span class="n">affine</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">target_orientation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"lia"</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Check whether affine follows a target orientation code."""</span>
     <span class="k">if</span> <span class="n">target_orientation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span>
-    <span class="k">if</span> <span class="n">target_orientation</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;native&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">target_orientation</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"native"</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span>
-    <span class="n">axcodes</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">nib</span><span class="o">.</span><span class="n">orientations</span><span class="o">.</span><span class="n">aff2axcodes</span><span class="p">(</span><span class="n">affine</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">eps</span><span class="p">))</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">axcodes</span> <span class="o">=</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">nib</span><span class="o">.</span><span class="n">orientations</span><span class="o">.</span><span class="n">aff2axcodes</span><span class="p">(</span><span class="n">affine</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">eps</span><span class="p">))</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">axcodes</span> <span class="o">==</span> <span class="n">target_orientation</span><span class="o">.</span><span class="n">lower</span><span class="p">()[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span></div>
 
 
@@ -799,17 +802,20 @@
     <span class="n">img_size</span><span class="p">,</span>
     <span class="n">threshold_1mm</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">vox_eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span>
+    <span class="n">min_auto_img_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract target voxel size and image size with FastSurfer-compatible semantics.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="s2">&quot;conform_to_1mm_threshold&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="n">threshold_1mm</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;conform_to_1mm_threshold&quot;</span><span class="p">]</span>
-    <span class="k">if</span> <span class="s2">&quot;conform_vox_size&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="n">vox_size</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;conform_vox_size&quot;</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">"""Extract target voxel size and image size with FastSurfer-compatible semantics."""</span>
+    <span class="k">if</span> <span class="s2">"conform_to_1mm_threshold"</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">threshold_1mm</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">"conform_to_1mm_threshold"</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s2">"conform_vox_size"</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">vox_size</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">"conform_vox_size"</span><span class="p">]</span>
 
     <span class="n">max_vox_size</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="k">if</span> <span class="n">min_auto_img_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">min_auto_img_size</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"min_auto_img_size must be &gt; 0 when specified."</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vox_size</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">vox_size</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;auto&quot;</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vox_size</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">vox_size</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"min"</span><span class="p">,</span> <span class="s2">"auto"</span><span class="p">]:</span>
         <span class="n">decimals</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">vox_eps</span><span class="p">)))</span>
         <span class="n">min_vox</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">get_zooms</span><span class="p">()[:</span><span class="mi">3</span><span class="p">]),</span> <span class="n">decimals</span><span class="o">=</span><span class="n">decimals</span><span class="p">)</span>
         <span class="n">conformed</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">min_vox</span><span class="p">,</span> <span class="n">max_vox_size</span><span class="p">)</span>
@@ -821,26 +827,28 @@
     <span class="k">elif</span> <span class="n">vox_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">target_vox_size</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid value for vox_size passed.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Invalid value for vox_size passed."</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">img_size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">target_vox_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">img_size</span> <span class="o">=</span> <span class="s2">&quot;fov&quot;</span>
+        <span class="n">img_size</span> <span class="o">=</span> <span class="s2">"fov"</span>
 
     <span class="k">if</span> <span class="n">img_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">target_img_size</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">img_size</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">img_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">target_img_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">3</span><span class="p">,),</span> <span class="n">img_size</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">img_size</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">img_size</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;fov&quot;</span><span class="p">,</span> <span class="s2">&quot;auto&quot;</span><span class="p">]:</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">img_size</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">img_size</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"fov"</span><span class="p">,</span> <span class="s2">"auto"</span><span class="p">]:</span>
         <span class="n">mode</span> <span class="o">=</span> <span class="n">img_size</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="n">target_img_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">3</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">target_vox_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">fov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">get_zooms</span><span class="p">()[:</span><span class="mi">3</span><span class="p">])</span> <span class="o">*</span> <span class="n">target_img_size</span>
             <span class="n">target_img_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">fov</span> <span class="o">/</span> <span class="n">target_vox_size</span> <span class="o">*</span> <span class="mi">10000</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10000</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"auto"</span><span class="p">:</span>
             <span class="n">max_dim</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">target_img_size</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">min_auto_img_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">max_dim</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">min_auto_img_size</span><span class="p">,</span> <span class="n">max_dim</span><span class="p">)</span>
             <span class="n">target_img_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">3</span><span class="p">,),</span> <span class="n">max_dim</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid value for img_size passed.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Invalid value for img_size passed."</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">target_vox_size</span><span class="p">,</span> <span class="n">target_img_size</span></div>
 
@@ -854,13 +862,14 @@
     <span class="n">vox_size</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
     <span class="n">img_size</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
     <span class="n">dtype</span><span class="p">:</span> <span class="nb">type</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">orientation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;lia&quot;</span><span class="p">,</span>
+    <span class="n">orientation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">"lia"</span><span class="p">,</span>
     <span class="n">threshold_1mm</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">rescale</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">255</span><span class="p">,</span>
     <span class="n">conform_vox_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">conform_to_1mm_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">min_auto_img_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nib</span><span class="o">.</span><span class="n">MGHImage</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Python version of mri_convert -c.</span>
+<span class="w">    </span><span class="sd">"""Python version of mri_convert -c.</span>
 
 <span class="sd">    mri_convert -c by default turns image intensity values</span>
 <span class="sd">    into UCHAR, reslices images to standard position, fills up slices to standard</span>
@@ -875,13 +884,15 @@
 <span class="sd">    conform_vox_size : VoxSizeOption</span>
 <span class="sd">        conform image the image to voxel size 1. (default), a</span>
 <span class="sd">        specific smaller voxel size (0-1, for high-res), or automatically</span>
-<span class="sd">        determine the &#39;minimum voxel size&#39; from the image (value &#39;min&#39;).</span>
+<span class="sd">        determine the 'minimum voxel size' from the image (value 'min').</span>
 <span class="sd">        This assumes the smallest of the three voxel sizes.</span>
 <span class="sd">    dtype : Optional[Type]</span>
 <span class="sd">        the dtype to enforce in the image (default: UCHAR, as mri_convert -c)</span>
 <span class="sd">    conform_to_1mm_threshold : Optional[float]</span>
 <span class="sd">        the threshold above which the image is conformed to 1mm</span>
 <span class="sd">        (default: ignore).</span>
+<span class="sd">    min_auto_img_size : Optional[int]</span>
+<span class="sd">        minimum side length when ``img_size='auto'`` (default: no minimum).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -894,7 +905,7 @@
 <span class="sd">    to uchar. mri_convert is doing it the other way around. However, we compute</span>
 <span class="sd">    the scale factor from the input to increase similarity.</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">nibabel.freesurfer.mghformat</span><span class="w"> </span><span class="kn">import</span> <span class="n">MGHHeader</span>
 
     <span class="k">if</span> <span class="n">conform_vox_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -907,6 +918,7 @@
         <span class="n">vox_size</span><span class="p">,</span>
         <span class="n">img_size</span><span class="p">,</span>
         <span class="n">threshold_1mm</span><span class="o">=</span><span class="n">threshold_1mm</span><span class="p">,</span>
+        <span class="n">min_auto_img_size</span><span class="o">=</span><span class="n">min_auto_img_size</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">h1</span> <span class="o">=</span> <span class="n">MGHHeader</span><span class="o">.</span><span class="n">from_header</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">header</span><span class="p">)</span>  <span class="c1"># may copy some parameters if input was MGH format</span>
@@ -919,20 +931,20 @@
     <span class="n">h1</span><span class="o">.</span><span class="n">set_data_shape</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">out_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">out_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">out_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="mi">1</span><span class="p">])</span>
     <span class="n">h1</span><span class="o">.</span><span class="n">set_zooms</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">out_zooms</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">out_zooms</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">out_zooms</span><span class="p">[</span><span class="mi">2</span><span class="p">])])</span>
 
-    <span class="k">if</span> <span class="n">orientation</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">orientation</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;native&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">orientation</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">orientation</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"native"</span><span class="p">:</span>
         <span class="n">source_mdc</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">affine</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">affine</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">h1</span><span class="p">[</span><span class="s2">&quot;Mdc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">source_mdc</span><span class="p">)</span>
+        <span class="n">h1</span><span class="p">[</span><span class="s2">"Mdc"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">source_mdc</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">target_orientation</span> <span class="o">=</span> <span class="n">orientation</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;soft-&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span>
-        <span class="k">if</span> <span class="n">target_orientation</span> <span class="o">!=</span> <span class="s2">&quot;lia&quot;</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Only orientation=&#39;lia&#39; and orientation=&#39;native&#39; are currently supported.&quot;</span><span class="p">)</span>
-        <span class="n">h1</span><span class="p">[</span><span class="s2">&quot;Mdc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
+        <span class="n">target_orientation</span> <span class="o">=</span> <span class="n">orientation</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"soft-"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="n">target_orientation</span> <span class="o">!=</span> <span class="s2">"lia"</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Only orientation='lia' and orientation='native' are currently supported."</span><span class="p">)</span>
+        <span class="n">h1</span><span class="p">[</span><span class="s2">"Mdc"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
 
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">out_shape</span> <span class="o">*</span> <span class="n">out_zooms</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">3</span><span class="p">,),</span> <span class="p">(</span><span class="n">out_shape</span> <span class="o">*</span> <span class="n">out_zooms</span><span class="p">)[</span><span class="mi">0</span><span class="p">])):</span>
-        <span class="n">h1</span><span class="p">[</span><span class="s2">&quot;fov&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="n">out_shape</span> <span class="o">*</span> <span class="n">out_zooms</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">h1</span><span class="p">[</span><span class="s2">&quot;Pxyz_c&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">affine</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">])))[:</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">h1</span><span class="p">[</span><span class="s2">"fov"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="n">out_shape</span> <span class="o">*</span> <span class="n">out_zooms</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">h1</span><span class="p">[</span><span class="s2">"Pxyz_c"</span><span class="p">]</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">affine</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">])))[:</span><span class="mi">3</span><span class="p">]</span>
 
-    <span class="k">if</span> <span class="n">orientation</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">orientation</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;native&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">orientation</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">orientation</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"native"</span><span class="p">:</span>
         <span class="n">affine</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">affines</span><span class="o">.</span><span class="n">rescale_affine</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">affine</span><span class="p">,</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">3</span><span class="p">],</span> <span class="n">out_zooms</span><span class="p">,</span> <span class="n">out_shape</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">affine</span> <span class="o">=</span> <span class="n">h1</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()</span>
@@ -948,7 +960,7 @@
     <span class="k">if</span> <span class="n">rescale</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">src_min</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">getscale</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">dataobj</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">rescale</span><span class="p">))</span>
 
-    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">}</span> <span class="k">if</span> <span class="n">sctype</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint</span> <span class="k">else</span> <span class="p">{}</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"dtype"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">}</span> <span class="k">if</span> <span class="n">sctype</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint</span> <span class="k">else</span> <span class="p">{}</span>
     <span class="n">mapped_data</span> <span class="o">=</span> <span class="n">map_image</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">affine</span><span class="p">,</span> <span class="n">h1</span><span class="o">.</span><span class="n">get_data_shape</span><span class="p">(),</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">rescale</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -966,11 +978,11 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="n">new_img</span><span class="o">.</span><span class="n">set_data_dtype</span><span class="p">(</span><span class="n">target_dtype</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">nib</span><span class="o">.</span><span class="n">freesurfer</span><span class="o">.</span><span class="n">mghformat</span><span class="o">.</span><span class="n">MGHError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">if</span> <span class="s2">&quot;not recognized&quot;</span> <span class="ow">in</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="s2">"not recognized"</span> <span class="ow">in</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
             <span class="n">codes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">nib</span><span class="o">.</span><span class="n">freesurfer</span><span class="o">.</span><span class="n">mghformat</span><span class="o">.</span><span class="n">data_type_codes</span><span class="o">.</span><span class="n">code</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s1">&#39;The data type &quot;</span><span class="si">{</span><span class="n">target_dtype</span><span class="si">}</span><span class="s1">&quot; is not recognized for MGH images, switching &#39;</span>
-                <span class="sa">f</span><span class="s1">&#39;to &quot;</span><span class="si">{</span><span class="n">new_img</span><span class="o">.</span><span class="n">get_data_dtype</span><span class="p">()</span><span class="si">}</span><span class="s1">&quot; (supported: </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">codes</span><span class="p">)</span><span class="si">}</span><span class="s1">).&#39;</span>
+                <span class="sa">f</span><span class="s1">'The data type "</span><span class="si">{</span><span class="n">target_dtype</span><span class="si">}</span><span class="s1">" is not recognized for MGH images, switching '</span>
+                <span class="sa">f</span><span class="s1">'to "</span><span class="si">{</span><span class="n">new_img</span><span class="o">.</span><span class="n">get_data_dtype</span><span class="p">()</span><span class="si">}</span><span class="s1">" (supported: </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">codes</span><span class="p">)</span><span class="si">}</span><span class="s1">).'</span>
             <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">new_img</span></div>
@@ -986,13 +998,14 @@
     <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-06</span><span class="p">,</span>
     <span class="n">check_dtype</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">dtype</span><span class="p">:</span> <span class="nb">type</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_UNSET</span><span class="p">,</span>
-    <span class="n">orientation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;lia&quot;</span><span class="p">,</span>
+    <span class="n">orientation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">"lia"</span><span class="p">,</span>
     <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">threshold_1mm</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">conform_vox_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">conform_to_1mm_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">min_auto_img_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if an image is already conformed or not.</span>
+<span class="w">    </span><span class="sd">"""Check if an image is already conformed or not.</span>
 
 <span class="sd">    Dimensions: 256x256x256, Voxel size: 1x1x1, LIA orientation, and data type UCHAR.</span>
 
@@ -1002,7 +1015,7 @@
 <span class="sd">        Loaded source image</span>
 <span class="sd">    conform_vox_size : VoxSizeOption</span>
 <span class="sd">        which voxel size to conform to. Can either be a float between 0.0 and</span>
-<span class="sd">        1.0 or &#39;min&#39; check, whether the image is conformed to the minimal voxels size, i.e.</span>
+<span class="sd">        1.0 or 'min' check, whether the image is conformed to the minimal voxels size, i.e.</span>
 <span class="sd">        conforming to smaller, but isotropic voxel sizes for high-res (default: 1.0).</span>
 <span class="sd">    eps : float</span>
 <span class="sd">        allowed deviation from zero for LIA orientation check (default: 1e-06).</span>
@@ -1020,6 +1033,8 @@
 <span class="sd">    conform_to_1mm_threshold : Optional[float]</span>
 <span class="sd">        the threshold above which the image is conformed to 1mm</span>
 <span class="sd">        (default: ignore).</span>
+<span class="sd">    min_auto_img_size : Optional[int]</span>
+<span class="sd">        minimum side length when ``img_size='auto'`` (default: no minimum).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1030,7 +1045,7 @@
 <span class="sd">    -----</span>
 <span class="sd">    This function only needs the header (not the data).</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">conform_vox_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">vox_size</span> <span class="o">=</span> <span class="n">conform_vox_size</span>
     <span class="k">if</span> <span class="n">conform_to_1mm_threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1038,59 +1053,60 @@
     <span class="k">if</span> <span class="n">check_dtype</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
         <span class="n">dtype</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">elif</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="n">_UNSET</span><span class="p">:</span>
-        <span class="n">dtype</span> <span class="o">=</span> <span class="s2">&quot;uint8&quot;</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="s2">"uint8"</span>
 
     <span class="n">target_vox_size</span><span class="p">,</span> <span class="n">target_img_size</span> <span class="o">=</span> <span class="n">conformed_vox_img_size</span><span class="p">(</span>
         <span class="n">img</span><span class="p">,</span>
         <span class="n">vox_size</span><span class="p">,</span>
         <span class="n">img_size</span><span class="p">,</span>
         <span class="n">threshold_1mm</span><span class="o">=</span><span class="n">threshold_1mm</span><span class="p">,</span>
+        <span class="n">min_auto_img_size</span><span class="o">=</span><span class="n">min_auto_img_size</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">ishape</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span>
     <span class="c1"># check 3d</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ishape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">ishape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ERROR: Multiple input frames (</span><span class="si">{</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">) not supported!&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"ERROR: Multiple input frames (</span><span class="si">{</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">) not supported!"</span><span class="p">)</span>
 
     <span class="n">criteria</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">if</span> <span class="n">target_img_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">criteria</span><span class="p">[</span><span class="s2">&quot;Dimensions&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">criteria</span><span class="p">[</span><span class="s2">"Dimensions"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">criteria</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Dimensions </span><span class="si">{</span><span class="s1">&#39;x&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="w"> </span><span class="n">target_img_size</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">all</span><span class="p">(</span>
+        <span class="n">criteria</span><span class="p">[</span><span class="sa">f</span><span class="s2">"Dimensions </span><span class="si">{</span><span class="s1">'x'</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="w"> </span><span class="n">target_img_size</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)))</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">all</span><span class="p">(</span>
             <span class="n">s</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="n">target_img_size</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ishape</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span>
         <span class="p">)</span>
 
     <span class="n">izoom</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">get_zooms</span><span class="p">()[:</span><span class="mi">3</span><span class="p">])</span>
     <span class="k">if</span> <span class="n">target_vox_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">is_correct_vox_size</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">criteria</span><span class="p">[</span><span class="s2">&quot;Voxel Size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">criteria</span><span class="p">[</span><span class="s2">"Voxel Size"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">is_correct_vox_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">izoom</span> <span class="o">-</span> <span class="n">target_vox_size</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">eps</span><span class="p">)</span>
-        <span class="n">criteria</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Voxel Size </span><span class="si">{</span><span class="s1">&#39;x&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="w"> </span><span class="n">target_vox_size</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">is_correct_vox_size</span>
+        <span class="n">criteria</span><span class="p">[</span><span class="sa">f</span><span class="s2">"Voxel Size </span><span class="si">{</span><span class="s1">'x'</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="w"> </span><span class="n">target_vox_size</span><span class="p">))</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="o">=</span> <span class="n">is_correct_vox_size</span>
 
     <span class="k">if</span> <span class="n">orientation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">criteria</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Orientation </span><span class="si">{</span><span class="n">orientation</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">is_orientation</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">affine</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">)</span>
+        <span class="n">criteria</span><span class="p">[</span><span class="sa">f</span><span class="s2">"Orientation </span><span class="si">{</span><span class="n">orientation</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="o">=</span> <span class="n">is_orientation</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">affine</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">)</span>
 
     <span class="c1"># check dtype uchar</span>
     <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">dtype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;uchar&quot;</span><span class="p">:</span>
-                <span class="n">dtype</span> <span class="o">=</span> <span class="s2">&quot;uint8&quot;</span>
+            <span class="k">if</span> <span class="n">dtype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"uchar"</span><span class="p">:</span>
+                <span class="n">dtype</span> <span class="o">=</span> <span class="s2">"uint8"</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
-        <span class="n">criteria</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Dtype </span><span class="si">{</span><span class="n">dtype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">get_data_dtype</span><span class="p">()</span> <span class="o">==</span> <span class="n">dtype</span>
+        <span class="n">criteria</span><span class="p">[</span><span class="sa">f</span><span class="s2">"Dtype </span><span class="si">{</span><span class="n">dtype</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">get_data_dtype</span><span class="p">()</span> <span class="o">==</span> <span class="n">dtype</span>
 
     <span class="n">_is_conform</span> <span class="o">=</span> <span class="nb">all</span><span class="p">(</span><span class="n">criteria</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
     <span class="c1"># result = (_is_conform, criteria) if return_criteria else _is_conform</span>
 
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_conform</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;The input image is not conformed.&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"The input image is not conformed."</span><span class="p">)</span>
 
-        <span class="n">conform_str</span> <span class="o">=</span> <span class="s2">&quot;conformed&quot;</span> <span class="k">if</span> <span class="n">vox_size</span> <span class="o">==</span> <span class="mf">1.0</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">vox_size</span><span class="si">}</span><span class="s2">-conformed&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A </span><span class="si">{</span><span class="n">conform_str</span><span class="si">}</span><span class="s2"> image must satisfy the following criteria:&quot;</span><span class="p">)</span>
+        <span class="n">conform_str</span> <span class="o">=</span> <span class="s2">"conformed"</span> <span class="k">if</span> <span class="n">vox_size</span> <span class="o">==</span> <span class="mf">1.0</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">vox_size</span><span class="si">}</span><span class="s2">-conformed"</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"A </span><span class="si">{</span><span class="n">conform_str</span><span class="si">}</span><span class="s2"> image must satisfy the following criteria:"</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">condition</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">criteria</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot; - </span><span class="si">{:&lt;30}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">condition</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">" - </span><span class="si">{:&lt;30}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">condition</span> <span class="o">+</span> <span class="s2">":"</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">_is_conform</span></div>
 
 
@@ -1098,7 +1114,7 @@
 <div class="viewcode-block" id="get_conformed_vox_img_size">
 <a class="viewcode-back" href="../../../api/data.html#neurolit.data.conform.get_conformed_vox_img_size">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_conformed_vox_img_size</span><span class="p">(</span><span class="n">img</span><span class="p">:</span> <span class="n">nib</span><span class="o">.</span><span class="n">analyze</span><span class="o">.</span><span class="n">SpatialImage</span><span class="p">,</span> <span class="n">conform_vox_size</span><span class="p">,</span> <span class="n">conform_to_1mm_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract the voxel size and the image size.</span>
+<span class="w">    </span><span class="sd">"""Extract the voxel size and the image size.</span>
 
 <span class="sd">    This function only needs the header (not the data).</span>
 
@@ -1115,15 +1131,15 @@
 <span class="sd">    -------</span>
 <span class="sd">    [MISSING]</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">vox_size</span><span class="p">,</span> <span class="n">img_size</span> <span class="o">=</span> <span class="n">conformed_vox_img_size</span><span class="p">(</span>
         <span class="n">img</span><span class="p">,</span>
         <span class="n">conform_vox_size</span><span class="p">,</span>
-        <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+        <span class="s2">"auto"</span><span class="p">,</span>
         <span class="n">threshold_1mm</span><span class="o">=</span><span class="n">conform_to_1mm_threshold</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">if</span> <span class="n">vox_size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">img_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid legacy conform_vox_size configuration.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Invalid legacy conform_vox_size configuration."</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">vox_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">img_size</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
 
 
@@ -1133,7 +1149,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">check_affine_in_nifti</span><span class="p">(</span>
     <span class="n">img</span><span class="p">:</span> <span class="n">nib</span><span class="o">.</span><span class="n">Nifti1Image</span> <span class="o">|</span> <span class="n">nib</span><span class="o">.</span><span class="n">Nifti2Image</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check the affine in nifti Image.</span>
+<span class="w">    </span><span class="sd">"""Check the affine in nifti Image.</span>
 
 <span class="sd">    Sets affine with qform, if it exists and differs from sform.</span>
 <span class="sd">    If qform does not exist, voxel sizes between header information and information</span>
@@ -1156,18 +1172,18 @@
 <span class="sd">    False, if</span>
 <span class="sd">        voxel sizes in affine and header differ</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">check</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="s2">""</span>
 
-    <span class="k">if</span> <span class="n">img</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s2">&quot;qform_code&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">get_sform</span><span class="p">()</span> <span class="o">-</span> <span class="n">img</span><span class="o">.</span><span class="n">get_qform</span><span class="p">()))</span> <span class="o">&gt;</span> <span class="mf">0.001</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">img</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s2">"qform_code"</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">get_sform</span><span class="p">()</span> <span class="o">-</span> <span class="n">img</span><span class="o">.</span><span class="n">get_qform</span><span class="p">()))</span> <span class="o">&gt;</span> <span class="mf">0.001</span><span class="p">:</span>
         <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="s2">&quot;#############################################################&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">WARNING: qform and sform transform are not identical!</span><span class="se">\n</span><span class="s2"> sform-transform:</span><span class="se">\n</span><span class="si">{</span><span class="n">img</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">get_sform</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2"> &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;qform-transform:</span><span class="se">\n</span><span class="si">{</span><span class="n">img</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">get_qform</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="s2">&quot;You might want to check your Nifti-header for inconsistencies!&quot;</span>
-            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">!!! Affine from qform transform will now be used !!!</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="s2">&quot;#############################################################&quot;</span>
+            <span class="s2">"#############################################################"</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">WARNING: qform and sform transform are not identical!</span><span class="se">\n</span><span class="s2"> sform-transform:</span><span class="se">\n</span><span class="si">{</span><span class="n">img</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">get_sform</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2"> "</span>
+            <span class="sa">f</span><span class="s2">"qform-transform:</span><span class="se">\n</span><span class="si">{</span><span class="n">img</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">get_qform</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="s2">"You might want to check your Nifti-header for inconsistencies!"</span>
+            <span class="s2">"</span><span class="se">\n</span><span class="s2">!!! Affine from qform transform will now be used !!!</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="s2">"#############################################################"</span>
         <span class="p">)</span>
         <span class="c1"># Set sform with qform affine and update best affine in header</span>
         <span class="n">img</span><span class="o">.</span><span class="n">set_sform</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">get_qform</span><span class="p">())</span>
@@ -1183,12 +1199,12 @@
 
         <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">xsize</span> <span class="o">-</span> <span class="n">vox_size_head</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.001</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">ysize</span> <span class="o">-</span> <span class="n">vox_size_head</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.001</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">zsize</span> <span class="o">-</span> <span class="n">vox_size_head</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.001</span><span class="p">):</span>
             <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;#############################################################</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;ERROR: Invalid Nifti-header! Affine matrix is inconsistent with Voxel sizes. &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Voxel size (from header) vs. Voxel size in affine: &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">vox_size_head</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="p">(</span><span class="n">xsize</span><span class="p">,</span><span class="w"> </span><span class="n">ysize</span><span class="p">,</span><span class="w"> </span><span class="n">zsize</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;Input Affine----------------</span><span class="se">\n</span><span class="si">{</span><span class="n">aff</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;#############################################################&quot;</span>
+                <span class="sa">f</span><span class="s2">"#############################################################</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="sa">f</span><span class="s2">"ERROR: Invalid Nifti-header! Affine matrix is inconsistent with Voxel sizes. "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Voxel size (from header) vs. Voxel size in affine: "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">vox_size_head</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="p">(</span><span class="n">xsize</span><span class="p">,</span><span class="w"> </span><span class="n">ysize</span><span class="p">,</span><span class="w"> </span><span class="n">zsize</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="sa">f</span><span class="s2">"Input Affine----------------</span><span class="se">\n</span><span class="si">{</span><span class="n">aff</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="sa">f</span><span class="s2">"#############################################################"</span>
             <span class="p">)</span>
             <span class="n">check</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -1202,26 +1218,26 @@
 
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
     <span class="c1"># Command Line options are error checking done here</span>
     <span class="n">options</span> <span class="o">=</span> <span class="n">options_parse</span><span class="p">()</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reading input: </span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">input</span><span class="si">}</span><span class="s2"> ...&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Reading input: </span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">input</span><span class="si">}</span><span class="s2"> ..."</span><span class="p">)</span>
     <span class="n">image</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">input</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ERROR: Multiple input frames (</span><span class="si">{</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">) not supported!&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="sa">f</span><span class="s2">"ERROR: Multiple input frames (</span><span class="si">{</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">) not supported!"</span><span class="p">)</span>
 
-    <span class="n">target_dtype</span> <span class="o">=</span> <span class="s2">&quot;uint8&quot;</span> <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">seg_input</span> <span class="k">else</span> <span class="n">options</span><span class="o">.</span><span class="n">dtype</span>
+    <span class="n">target_dtype</span> <span class="o">=</span> <span class="s2">"uint8"</span> <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">seg_input</span> <span class="k">else</span> <span class="n">options</span><span class="o">.</span><span class="n">dtype</span>
     <span class="n">opt_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">check_dtype</span> <span class="o">=</span> <span class="n">target_dtype</span> <span class="o">!=</span> <span class="s2">&quot;any&quot;</span>
+    <span class="n">check_dtype</span> <span class="o">=</span> <span class="n">target_dtype</span> <span class="o">!=</span> <span class="s2">"any"</span>
     <span class="k">if</span> <span class="n">check_dtype</span><span class="p">:</span>
-        <span class="n">opt_kwargs</span><span class="p">[</span><span class="s2">&quot;dtype&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">target_dtype</span>
+        <span class="n">opt_kwargs</span><span class="p">[</span><span class="s2">"dtype"</span><span class="p">]</span> <span class="o">=</span> <span class="n">target_dtype</span>
 
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s2">&quot;conform_to_1mm_threshold&quot;</span><span class="p">):</span>
-        <span class="n">opt_kwargs</span><span class="p">[</span><span class="s2">&quot;conform_to_1mm_threshold&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">conform_to_1mm_threshold</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s2">"conform_to_1mm_threshold"</span><span class="p">):</span>
+        <span class="n">opt_kwargs</span><span class="p">[</span><span class="s2">"conform_to_1mm_threshold"</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">conform_to_1mm_threshold</span>
 
-    <span class="n">_vox_size</span> <span class="o">=</span> <span class="s2">&quot;min&quot;</span> <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">conform_min</span> <span class="k">else</span> <span class="n">options</span><span class="o">.</span><span class="n">vox_size</span>
+    <span class="n">_vox_size</span> <span class="o">=</span> <span class="s2">"min"</span> <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">conform_min</span> <span class="k">else</span> <span class="n">options</span><span class="o">.</span><span class="n">vox_size</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">image_is_conformed</span> <span class="o">=</span> <span class="n">is_conform</span><span class="p">(</span>
             <span class="n">image</span><span class="p">,</span>
@@ -1234,24 +1250,24 @@
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="n">image_is_conformed</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input </span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">input</span><span class="si">}</span><span class="s2"> is already conformed! Exiting.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Input </span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">input</span><span class="si">}</span><span class="s2"> is already conformed! Exiting.</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># Note: if check_only, a non-conforming image leads to an error code, this result is needed in recon_surf.sh</span>
         <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">check_only</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;check_only flag provided. Exiting without conforming input image.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"check_only flag provided. Exiting without conforming input image.</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="c1"># If image is nifti image</span>
-    <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">input</span><span class="p">[</span><span class="o">-</span><span class="mi">7</span><span class="p">:]</span> <span class="o">==</span> <span class="s2">&quot;.nii.gz&quot;</span> <span class="ow">or</span> <span class="n">options</span><span class="o">.</span><span class="n">input</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span> <span class="o">==</span> <span class="s2">&quot;.nii&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">input</span><span class="p">[</span><span class="o">-</span><span class="mi">7</span><span class="p">:]</span> <span class="o">==</span> <span class="s2">".nii.gz"</span> <span class="ow">or</span> <span class="n">options</span><span class="o">.</span><span class="n">input</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span> <span class="o">==</span> <span class="s2">".nii"</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">check_affine_in_nifti</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;ERROR: inconsistency in nifti-header. Exiting now.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">"ERROR: inconsistency in nifti-header. Exiting now.</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="n">new_image</span> <span class="o">=</span> <span class="n">conform</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="n">conform_vox_size</span><span class="o">=</span><span class="n">_vox_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing conformed image: </span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">output</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Writing conformed image: </span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">output</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="n">nib</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">new_image</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
 

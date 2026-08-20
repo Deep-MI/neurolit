@@ -181,6 +181,8 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slice_centers"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slice_centers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slab_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slab_slices()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slice_from_volume()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.slice_selector"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.slice_selector()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slices()</span></code></a></li>
@@ -216,6 +218,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.positive_int"><code class="docutils literal notranslate"><span class="pre">positive_int()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.resolve_inference_device"><code class="docutils literal notranslate"><span class="pre">resolve_inference_device()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
@@ -377,11 +380,13 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">neurolit._version</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_version_with_hash</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.inpaint_image</span><span class="w"> </span><span class="kn">import</span> <span class="n">main</span> <span class="k">as</span> <span class="n">inpaint_main</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.inpaint_image</span><span class="w"> </span><span class="kn">import</span> <span class="n">positive_int</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.utils.download_checkpoints</span><span class="w"> </span><span class="kn">import</span> <span class="n">main</span> <span class="k">as</span> <span class="n">download_main</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.utils.geometry_policy</span><span class="w"> </span><span class="kn">import</span> <span class="n">FASTSURFER_MIN_AUTO_IMG_SIZE</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_copy_file</span><span class="p">(</span><span class="n">src</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">dst</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Copy a file to ``dst``, replacing an existing destination if needed.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Copy a file to ``dst``, replacing an existing destination if needed."""</span>
     <span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
     <span class="n">dst</span> <span class="o">=</span> <span class="n">dst</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">src</span> <span class="o">==</span> <span class="n">dst</span><span class="p">:</span>
@@ -393,17 +398,17 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_copy_if_exists</span><span class="p">(</span><span class="n">src</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">dst</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Copy ``src`` to ``dst`` when the source exists.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Copy ``src`` to ``dst`` when the source exists."""</span>
     <span class="k">if</span> <span class="n">src</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
         <span class="n">_copy_file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_resample_mask_to_reference</span><span class="p">(</span><span class="n">src</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">reference</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">dst</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resample a mask to ``reference`` geometry using nearest-neighbor interpolation.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Resample a mask to ``reference`` geometry using nearest-neighbor interpolation."""</span>
     <span class="n">dst</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">mask_img</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">src</span><span class="p">))</span>
     <span class="n">reference_img</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">reference</span><span class="p">))</span>
-    <span class="n">resampled</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">processing</span><span class="o">.</span><span class="n">resample_from_to</span><span class="p">(</span><span class="n">mask_img</span><span class="p">,</span> <span class="n">reference_img</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span> <span class="n">cval</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">resampled</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">processing</span><span class="o">.</span><span class="n">resample_from_to</span><span class="p">(</span><span class="n">mask_img</span><span class="p">,</span> <span class="n">reference_img</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"constant"</span><span class="p">,</span> <span class="n">cval</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">mask_dtype</span> <span class="o">=</span> <span class="n">mask_img</span><span class="o">.</span><span class="n">get_data_dtype</span><span class="p">()</span>
     <span class="n">mask_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">resampled</span><span class="o">.</span><span class="n">dataobj</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">mask_dtype</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">header</span> <span class="o">=</span> <span class="n">reference_img</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -414,114 +419,125 @@
 <div class="viewcode-block" id="run_lit">
 <a class="viewcode-back" href="../../api/cli.html#neurolit.cli.run_lit">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_lit</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the neuroLIT CLI.</span>
+<span class="w">    </span><span class="sd">"""Run the neuroLIT CLI.</span>
 
 <span class="sd">    This function serves as the main entry point for the Lesion Inpainting Tool</span>
 <span class="sd">    command-line interface. It parses command-line arguments, validates inputs,</span>
 <span class="sd">    and initiates the inpainting process.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;neuroLIT: Neuro Lesion Inpainting Tool&quot;</span><span class="p">,</span> <span class="n">add_help</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"neuroLIT: Neuro Lesion Inpainting Tool"</span><span class="p">,</span> <span class="n">add_help</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="c1"># Required/Common arguments (as used in run_lit.sh)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="s2">&quot;--input_image&quot;</span><span class="p">,</span> <span class="s2">&quot;--t1&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Input T1w image&quot;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="s2">&quot;--lesion_mask&quot;</span><span class="p">,</span> <span class="s2">&quot;--mask_image&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Lesion mask&quot;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;--sd&quot;</span><span class="p">,</span> <span class="s2">&quot;--out_dir&quot;</span><span class="p">,</span> <span class="s2">&quot;--output_dir&quot;</span><span class="p">,</span> <span class="s2">&quot;--output_directory&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Output directory&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"-i"</span><span class="p">,</span> <span class="s2">"--input_image"</span><span class="p">,</span> <span class="s2">"--t1"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"Input T1w image"</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"-m"</span><span class="p">,</span> <span class="s2">"--lesion_mask"</span><span class="p">,</span> <span class="s2">"--mask_image"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"Lesion mask"</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"-o"</span><span class="p">,</span> <span class="s2">"--sd"</span><span class="p">,</span> <span class="s2">"--out_dir"</span><span class="p">,</span> <span class="s2">"--output_dir"</span><span class="p">,</span> <span class="s2">"--output_directory"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"Output directory"</span><span class="p">)</span>
 
     <span class="c1"># Optional arguments</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--dilate&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Number of times to dilate the lesion mask (default: 0)&quot;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--keepgeom&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Preserve native output geometry&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--dilate"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"Number of times to dilate the lesion mask (default: 0)"</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--keepgeom"</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"Preserve native output geometry"</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--fastsurfer_dir&quot;</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Treat the output directory as a FastSurfer subject directory and materialize FastSurfer-style outputs&quot;</span><span class="p">,</span>
+        <span class="s2">"--min_auto_img_size"</span><span class="p">,</span>
+        <span class="s2">"--min-auto-img-size"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">positive_int</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Optional minimum side length for automatic conforming"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--device&quot;</span><span class="p">,</span>
-        <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s2">&quot;cuda&quot;</span><span class="p">],</span>
-        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Inference device to use (default: auto)&quot;</span><span class="p">,</span>
+        <span class="s2">"--fastsurfer_dir"</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Treat the output directory as a FastSurfer subject directory and materialize FastSurfer-style outputs"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--batch_size&quot;</span><span class="p">,</span>
+        <span class="s2">"--device"</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">"auto"</span><span class="p">,</span> <span class="s2">"cpu"</span><span class="p">,</span> <span class="s2">"cuda"</span><span class="p">],</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Inference device to use (default: auto)"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--batch_size"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Slices per GPU batch (default: 8); reduce to lower GPU memory usage&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Slices per GPU batch (default: 8); reduce to lower GPU memory usage"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="c1"># Other arguments</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-h&quot;</span><span class="p">,</span> <span class="s2">&quot;--help&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Show help message and exit&quot;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-v&quot;</span><span class="p">,</span> <span class="s2">&quot;--version&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">get_version_with_hash</span><span class="p">(),</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Print version number and exit&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"-h"</span><span class="p">,</span> <span class="s2">"--help"</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"Show help message and exit"</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"-v"</span><span class="p">,</span> <span class="s2">"--version"</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">"version"</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">get_version_with_hash</span><span class="p">(),</span> <span class="n">help</span><span class="o">=</span><span class="s2">"Print version number and exit"</span><span class="p">)</span>
 
     <span class="n">args</span><span class="p">,</span> <span class="n">unknown</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_known_args</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">help</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">input_image</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">lesion_mask</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">sd</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Usage: lit-inpainting -i &lt;input_t1w&gt; -m &lt;lesion_mask&gt; -o &lt;output_dir&gt;&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Required arguments:&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  -i, --input_image     : Input T1w image&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  -m, --lesion_mask, --mask_image : Lesion mask&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  -o, --sd, --out_dir, --output_directory : Output directory&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optional arguments:&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  --dilate              : Number of times to dilate the lesion mask (default: 0)&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  --keepgeom            : Preserve native output geometry&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  --fastsurfer_dir      : Treat output_directory as a FastSurfer subject directory&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  --device              : Inference device: auto, cpu, or cuda (default: auto)&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  --batch_size          : Slices per GPU batch (default: 8); reduce to lower GPU memory usage&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Other arguments:&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  -v, --version         : Print version number and exit&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  -h, --help            : Show help message and exit&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;If you use neuroLIT for research publications, please cite:&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpainting Tool for Whole&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Imaging Neuroscience 2025.&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  https://doi.org/10.1162/imag_a_00446&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Usage: lit-inpainting -i &lt;input_t1w&gt; -m &lt;lesion_mask&gt; -o &lt;output_dir&gt;"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Required arguments:"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"  -i, --input_image     : Input T1w image"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"  -m, --lesion_mask, --mask_image : Lesion mask"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"  -o, --sd, --out_dir, --output_directory : Output directory"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Optional arguments:"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"  --dilate              : Number of times to dilate the lesion mask (default: 0)"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"  --keepgeom            : Preserve native output geometry"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"  --min-auto-img-size   : Optional minimum side length for automatic conforming"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"  --fastsurfer_dir      : Treat output_directory as a FastSurfer subject directory"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"  --device              : Inference device: auto, cpu, or cuda (default: auto)"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"  --batch_size          : Slices per GPU batch (default: 8); reduce to lower GPU memory usage"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Other arguments:"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"  -v, --version         : Print version number and exit"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"  -h, --help            : Show help message and exit"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"If you use neuroLIT for research publications, please cite:"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpainting Tool for Whole"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"  Brain MRI Segmentation with Tumors, Cavities and Abnormalities, Imaging Neuroscience 2025."</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"  https://doi.org/10.1162/imag_a_00446"</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">input_image</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">sd</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">lesion_mask</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: Input image, lesion mask, and output directory are required&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Error: Input image, lesion mask, and output directory are required"</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-
     <span class="c1"># Validate input files</span>
     <span class="n">input_image</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input_image</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">input_image</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: Input file </span><span class="si">{</span><span class="n">input_image</span><span class="si">}</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error: Input file </span><span class="si">{</span><span class="n">input_image</span><span class="si">}</span><span class="s2"> does not exist"</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="n">mask_image</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">lesion_mask</span><span class="p">:</span>
         <span class="n">mask_image</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">lesion_mask</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">mask_image</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: Mask file </span><span class="si">{</span><span class="n">mask_image</span><span class="si">}</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error: Mask file </span><span class="si">{</span><span class="n">mask_image</span><span class="si">}</span><span class="s2"> does not exist"</span><span class="p">)</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="n">out_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">sd</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
     <span class="n">out_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
+    <span class="n">min_auto_img_size</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">min_auto_img_size</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">fastsurfer_dir</span><span class="p">:</span>
+        <span class="n">min_auto_img_size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">FASTSURFER_MIN_AUTO_IMG_SIZE</span><span class="p">,</span> <span class="n">min_auto_img_size</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
+
     <span class="c1"># Download checkpoints</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Checking/Downloading checkpoints...&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Checking/Downloading checkpoints..."</span><span class="p">)</span>
     <span class="n">download_main</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="p">[])</span>
 
     <span class="c1"># Get checkpoint paths</span>
-    <span class="n">weights_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">user_data_dir</span><span class="p">(</span><span class="s2">&quot;LIT&quot;</span><span class="p">,</span> <span class="s2">&quot;Deep-MI&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;weights&quot;</span>
-    <span class="n">ckpt_coronal</span> <span class="o">=</span> <span class="n">weights_dir</span> <span class="o">/</span> <span class="s2">&quot;model_coronal.pt&quot;</span>
-    <span class="n">ckpt_axial</span> <span class="o">=</span> <span class="n">weights_dir</span> <span class="o">/</span> <span class="s2">&quot;model_axial.pt&quot;</span>
-    <span class="n">ckpt_sagittal</span> <span class="o">=</span> <span class="n">weights_dir</span> <span class="o">/</span> <span class="s2">&quot;model_sagittal.pt&quot;</span>
+    <span class="n">weights_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">user_data_dir</span><span class="p">(</span><span class="s2">"LIT"</span><span class="p">,</span> <span class="s2">"Deep-MI"</span><span class="p">))</span> <span class="o">/</span> <span class="s2">"weights"</span>
+    <span class="n">ckpt_coronal</span> <span class="o">=</span> <span class="n">weights_dir</span> <span class="o">/</span> <span class="s2">"model_coronal.pt"</span>
+    <span class="n">ckpt_axial</span> <span class="o">=</span> <span class="n">weights_dir</span> <span class="o">/</span> <span class="s2">"model_axial.pt"</span>
+    <span class="n">ckpt_sagittal</span> <span class="o">=</span> <span class="n">weights_dir</span> <span class="o">/</span> <span class="s2">"model_sagittal.pt"</span>
 
     <span class="c1"># Check for required model files</span>
     <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="p">[</span><span class="n">ckpt_coronal</span><span class="p">,</span> <span class="n">ckpt_axial</span><span class="p">,</span> <span class="n">ckpt_sagittal</span><span class="p">]:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">model</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: Required model file not found: </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error: Required model file not found: </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">fastsurfer_dir</span><span class="p">:</span>
-        <span class="n">public_inpainted_img</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">&quot;mri&quot;</span> <span class="o">/</span> <span class="s2">&quot;inpainted.lit.nii.gz&quot;</span>
-        <span class="n">processed_mask_img</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">&quot;mri&quot;</span> <span class="o">/</span> <span class="s2">&quot;mask.lit.nii.gz&quot;</span>
-        <span class="n">public_mask_img</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">&quot;mri&quot;</span> <span class="o">/</span> <span class="s2">&quot;orig&quot;</span> <span class="o">/</span> <span class="s2">&quot;mask.lit.nii.gz&quot;</span>
-        <span class="n">public_original_img</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">&quot;mri&quot;</span> <span class="o">/</span> <span class="s2">&quot;orig&quot;</span> <span class="o">/</span> <span class="s2">&quot;inpainting_original_image.lit.nii.gz&quot;</span>
-        <span class="n">public_masked_img</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">&quot;mri&quot;</span> <span class="o">/</span> <span class="s2">&quot;orig&quot;</span> <span class="o">/</span> <span class="s2">&quot;inpainting_masked_image.lit.nii.gz&quot;</span>
-        <span class="n">public_result_png</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">&quot;scripts&quot;</span> <span class="o">/</span> <span class="s2">&quot;inpainting_result.lit.png&quot;</span>
-        <span class="n">public_mask_png</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">&quot;scripts&quot;</span> <span class="o">/</span> <span class="s2">&quot;inpainting_mask.lit.png&quot;</span>
-        <span class="n">public_original_png</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">&quot;scripts&quot;</span> <span class="o">/</span> <span class="s2">&quot;inpainting_original_image.lit.png&quot;</span>
-        <span class="n">public_masked_png</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">&quot;scripts&quot;</span> <span class="o">/</span> <span class="s2">&quot;inpainting_masked_image.lit.png&quot;</span>
+        <span class="n">public_inpainted_img</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">"mri"</span> <span class="o">/</span> <span class="s2">"inpainted.lit.nii.gz"</span>
+        <span class="n">processed_mask_img</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">"mri"</span> <span class="o">/</span> <span class="s2">"mask.lit.nii.gz"</span>
+        <span class="n">public_mask_img</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">"mri"</span> <span class="o">/</span> <span class="s2">"orig"</span> <span class="o">/</span> <span class="s2">"mask.lit.nii.gz"</span>
+        <span class="n">public_original_img</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">"mri"</span> <span class="o">/</span> <span class="s2">"orig"</span> <span class="o">/</span> <span class="s2">"inpainting_original_image.lit.nii.gz"</span>
+        <span class="n">public_masked_img</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">"mri"</span> <span class="o">/</span> <span class="s2">"orig"</span> <span class="o">/</span> <span class="s2">"inpainting_masked_image.lit.nii.gz"</span>
+        <span class="n">public_result_png</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">"scripts"</span> <span class="o">/</span> <span class="s2">"inpainting_result.lit.png"</span>
+        <span class="n">public_mask_png</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">"scripts"</span> <span class="o">/</span> <span class="s2">"inpainting_mask.lit.png"</span>
+        <span class="n">public_original_png</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">"scripts"</span> <span class="o">/</span> <span class="s2">"inpainting_original_image.lit.png"</span>
+        <span class="n">public_masked_png</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="s2">"scripts"</span> <span class="o">/</span> <span class="s2">"inpainting_masked_image.lit.png"</span>
 
         <span class="n">required_outputs</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">public_inpainted_img</span><span class="p">,</span>
@@ -535,36 +551,38 @@
             <span class="n">public_masked_png</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">required_outputs</span><span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;FastSurfer-compatible outputs already exist in </span><span class="si">{</span><span class="n">out_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"FastSurfer-compatible outputs already exist in </span><span class="si">{</span><span class="n">out_dir</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;lit-inpainting.&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">"lit-inpainting."</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
                 <span class="n">work_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span>
-                <span class="n">inpainted_img</span> <span class="o">=</span> <span class="n">work_dir</span> <span class="o">/</span> <span class="s2">&quot;inpainting_volumes&quot;</span> <span class="o">/</span> <span class="s2">&quot;inpainting_result.nii.gz&quot;</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running inpainting...&quot;</span><span class="p">)</span>
+                <span class="n">inpainted_img</span> <span class="o">=</span> <span class="n">work_dir</span> <span class="o">/</span> <span class="s2">"inpainting_volumes"</span> <span class="o">/</span> <span class="s2">"inpainting_result.nii.gz"</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"Running inpainting..."</span><span class="p">)</span>
 
                 <span class="n">inpaint_argv</span> <span class="o">=</span> <span class="p">[</span>
-                    <span class="s2">&quot;--input_image&quot;</span><span class="p">,</span>
+                    <span class="s2">"--input_image"</span><span class="p">,</span>
                     <span class="nb">str</span><span class="p">(</span><span class="n">input_image</span><span class="p">),</span>
-                    <span class="s2">&quot;--mask_image&quot;</span><span class="p">,</span>
+                    <span class="s2">"--mask_image"</span><span class="p">,</span>
                     <span class="nb">str</span><span class="p">(</span><span class="n">mask_image</span><span class="p">),</span>
-                    <span class="s2">&quot;--out_dir&quot;</span><span class="p">,</span>
+                    <span class="s2">"--out_dir"</span><span class="p">,</span>
                     <span class="nb">str</span><span class="p">(</span><span class="n">work_dir</span><span class="p">),</span>
-                    <span class="s2">&quot;--checkpoint_axial&quot;</span><span class="p">,</span>
+                    <span class="s2">"--checkpoint_axial"</span><span class="p">,</span>
                     <span class="nb">str</span><span class="p">(</span><span class="n">ckpt_axial</span><span class="p">),</span>
-                    <span class="s2">&quot;--checkpoint_sagittal&quot;</span><span class="p">,</span>
+                    <span class="s2">"--checkpoint_sagittal"</span><span class="p">,</span>
                     <span class="nb">str</span><span class="p">(</span><span class="n">ckpt_sagittal</span><span class="p">),</span>
-                    <span class="s2">&quot;--checkpoint_coronal&quot;</span><span class="p">,</span>
+                    <span class="s2">"--checkpoint_coronal"</span><span class="p">,</span>
                     <span class="nb">str</span><span class="p">(</span><span class="n">ckpt_coronal</span><span class="p">),</span>
-                    <span class="s2">&quot;--dilate&quot;</span><span class="p">,</span>
+                    <span class="s2">"--dilate"</span><span class="p">,</span>
                     <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">dilate</span><span class="p">),</span>
-                    <span class="s2">&quot;--device&quot;</span><span class="p">,</span>
+                    <span class="s2">"--device"</span><span class="p">,</span>
                     <span class="n">args</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
-                    <span class="s2">&quot;--batch_size&quot;</span><span class="p">,</span>
+                    <span class="s2">"--batch_size"</span><span class="p">,</span>
                     <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">batch_size</span><span class="p">),</span>
                 <span class="p">]</span>
 
                 <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">keepgeom</span><span class="p">:</span>
-                    <span class="n">inpaint_argv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;--keepgeom&quot;</span><span class="p">)</span>
+                    <span class="n">inpaint_argv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"--keepgeom"</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">min_auto_img_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">inpaint_argv</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">"--min_auto_img_size"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">min_auto_img_size</span><span class="p">)])</span>
 
                 <span class="c1"># Forward any unknown arguments</span>
                 <span class="n">inpaint_argv</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">unknown</span><span class="p">)</span>
@@ -573,63 +591,65 @@
 
                 <span class="n">_copy_file</span><span class="p">(</span><span class="n">inpainted_img</span><span class="p">,</span> <span class="n">public_inpainted_img</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">keepgeom</span><span class="p">:</span>
-                    <span class="n">_resample_mask_to_reference</span><span class="p">(</span><span class="n">work_dir</span> <span class="o">/</span> <span class="s2">&quot;inpainting_volumes&quot;</span> <span class="o">/</span> <span class="s2">&quot;inpainting_mask.nii.gz&quot;</span><span class="p">,</span> <span class="n">public_inpainted_img</span><span class="p">,</span> <span class="n">processed_mask_img</span><span class="p">)</span>
+                    <span class="n">_resample_mask_to_reference</span><span class="p">(</span><span class="n">work_dir</span> <span class="o">/</span> <span class="s2">"inpainting_volumes"</span> <span class="o">/</span> <span class="s2">"inpainting_mask.nii.gz"</span><span class="p">,</span> <span class="n">public_inpainted_img</span><span class="p">,</span> <span class="n">processed_mask_img</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">_copy_file</span><span class="p">(</span><span class="n">work_dir</span> <span class="o">/</span> <span class="s2">&quot;inpainting_volumes&quot;</span> <span class="o">/</span> <span class="s2">&quot;inpainting_mask.nii.gz&quot;</span><span class="p">,</span> <span class="n">processed_mask_img</span><span class="p">)</span>
+                    <span class="n">_copy_file</span><span class="p">(</span><span class="n">work_dir</span> <span class="o">/</span> <span class="s2">"inpainting_volumes"</span> <span class="o">/</span> <span class="s2">"inpainting_mask.nii.gz"</span><span class="p">,</span> <span class="n">processed_mask_img</span><span class="p">)</span>
                 <span class="n">_copy_file</span><span class="p">(</span><span class="n">mask_image</span><span class="p">,</span> <span class="n">public_mask_img</span><span class="p">)</span>
-                <span class="n">_copy_if_exists</span><span class="p">(</span><span class="n">work_dir</span> <span class="o">/</span> <span class="s2">&quot;inpainting_volumes&quot;</span> <span class="o">/</span> <span class="s2">&quot;inpainting_original_image.nii.gz&quot;</span><span class="p">,</span> <span class="n">public_original_img</span><span class="p">)</span>
-                <span class="n">_copy_if_exists</span><span class="p">(</span><span class="n">work_dir</span> <span class="o">/</span> <span class="s2">&quot;inpainting_volumes&quot;</span> <span class="o">/</span> <span class="s2">&quot;inpainting_masked_image.nii.gz&quot;</span><span class="p">,</span> <span class="n">public_masked_img</span><span class="p">)</span>
-                <span class="n">_copy_if_exists</span><span class="p">(</span><span class="n">work_dir</span> <span class="o">/</span> <span class="s2">&quot;inpainting_images&quot;</span> <span class="o">/</span> <span class="s2">&quot;inpainting_result.png&quot;</span><span class="p">,</span> <span class="n">public_result_png</span><span class="p">)</span>
-                <span class="n">_copy_if_exists</span><span class="p">(</span><span class="n">work_dir</span> <span class="o">/</span> <span class="s2">&quot;inpainting_images&quot;</span> <span class="o">/</span> <span class="s2">&quot;inpainting_mask.png&quot;</span><span class="p">,</span> <span class="n">public_mask_png</span><span class="p">)</span>
-                <span class="n">_copy_if_exists</span><span class="p">(</span><span class="n">work_dir</span> <span class="o">/</span> <span class="s2">&quot;inpainting_images&quot;</span> <span class="o">/</span> <span class="s2">&quot;inpainting_original_image.png&quot;</span><span class="p">,</span> <span class="n">public_original_png</span><span class="p">)</span>
-                <span class="n">_copy_if_exists</span><span class="p">(</span><span class="n">work_dir</span> <span class="o">/</span> <span class="s2">&quot;inpainting_images&quot;</span> <span class="o">/</span> <span class="s2">&quot;inpainting_masked_image.png&quot;</span><span class="p">,</span> <span class="n">public_masked_png</span><span class="p">)</span>
+                <span class="n">_copy_if_exists</span><span class="p">(</span><span class="n">work_dir</span> <span class="o">/</span> <span class="s2">"inpainting_volumes"</span> <span class="o">/</span> <span class="s2">"inpainting_original_image.nii.gz"</span><span class="p">,</span> <span class="n">public_original_img</span><span class="p">)</span>
+                <span class="n">_copy_if_exists</span><span class="p">(</span><span class="n">work_dir</span> <span class="o">/</span> <span class="s2">"inpainting_volumes"</span> <span class="o">/</span> <span class="s2">"inpainting_masked_image.nii.gz"</span><span class="p">,</span> <span class="n">public_masked_img</span><span class="p">)</span>
+                <span class="n">_copy_if_exists</span><span class="p">(</span><span class="n">work_dir</span> <span class="o">/</span> <span class="s2">"inpainting_images"</span> <span class="o">/</span> <span class="s2">"inpainting_result.png"</span><span class="p">,</span> <span class="n">public_result_png</span><span class="p">)</span>
+                <span class="n">_copy_if_exists</span><span class="p">(</span><span class="n">work_dir</span> <span class="o">/</span> <span class="s2">"inpainting_images"</span> <span class="o">/</span> <span class="s2">"inpainting_mask.png"</span><span class="p">,</span> <span class="n">public_mask_png</span><span class="p">)</span>
+                <span class="n">_copy_if_exists</span><span class="p">(</span><span class="n">work_dir</span> <span class="o">/</span> <span class="s2">"inpainting_images"</span> <span class="o">/</span> <span class="s2">"inpainting_original_image.png"</span><span class="p">,</span> <span class="n">public_original_png</span><span class="p">)</span>
+                <span class="n">_copy_if_exists</span><span class="p">(</span><span class="n">work_dir</span> <span class="o">/</span> <span class="s2">"inpainting_images"</span> <span class="o">/</span> <span class="s2">"inpainting_masked_image.png"</span><span class="p">,</span> <span class="n">public_masked_png</span><span class="p">)</span>
 
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Materialized FastSurfer-compatible outputs in </span><span class="si">{</span><span class="n">out_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Materialized FastSurfer-compatible outputs in </span><span class="si">{</span><span class="n">out_dir</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">work_dir</span> <span class="o">=</span> <span class="n">out_dir</span>
-        <span class="n">inpainted_img</span> <span class="o">=</span> <span class="n">work_dir</span> <span class="o">/</span> <span class="s2">&quot;inpainting_volumes&quot;</span> <span class="o">/</span> <span class="s2">&quot;inpainting_result.nii.gz&quot;</span>
+        <span class="n">inpainted_img</span> <span class="o">=</span> <span class="n">work_dir</span> <span class="o">/</span> <span class="s2">"inpainting_volumes"</span> <span class="o">/</span> <span class="s2">"inpainting_result.nii.gz"</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">inpainted_img</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running inpainting...&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"Running inpainting..."</span><span class="p">)</span>
 
             <span class="n">inpaint_argv</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="s2">&quot;--input_image&quot;</span><span class="p">,</span>
+                <span class="s2">"--input_image"</span><span class="p">,</span>
                 <span class="nb">str</span><span class="p">(</span><span class="n">input_image</span><span class="p">),</span>
-                <span class="s2">&quot;--mask_image&quot;</span><span class="p">,</span>
+                <span class="s2">"--mask_image"</span><span class="p">,</span>
                 <span class="nb">str</span><span class="p">(</span><span class="n">mask_image</span><span class="p">),</span>
-                <span class="s2">&quot;--out_dir&quot;</span><span class="p">,</span>
+                <span class="s2">"--out_dir"</span><span class="p">,</span>
                 <span class="nb">str</span><span class="p">(</span><span class="n">work_dir</span><span class="p">),</span>
-                <span class="s2">&quot;--checkpoint_axial&quot;</span><span class="p">,</span>
+                <span class="s2">"--checkpoint_axial"</span><span class="p">,</span>
                 <span class="nb">str</span><span class="p">(</span><span class="n">ckpt_axial</span><span class="p">),</span>
-                <span class="s2">&quot;--checkpoint_sagittal&quot;</span><span class="p">,</span>
+                <span class="s2">"--checkpoint_sagittal"</span><span class="p">,</span>
                 <span class="nb">str</span><span class="p">(</span><span class="n">ckpt_sagittal</span><span class="p">),</span>
-                <span class="s2">&quot;--checkpoint_coronal&quot;</span><span class="p">,</span>
+                <span class="s2">"--checkpoint_coronal"</span><span class="p">,</span>
                 <span class="nb">str</span><span class="p">(</span><span class="n">ckpt_coronal</span><span class="p">),</span>
-                <span class="s2">&quot;--dilate&quot;</span><span class="p">,</span>
+                <span class="s2">"--dilate"</span><span class="p">,</span>
                 <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">dilate</span><span class="p">),</span>
-                <span class="s2">&quot;--device&quot;</span><span class="p">,</span>
+                <span class="s2">"--device"</span><span class="p">,</span>
                 <span class="n">args</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
-                <span class="s2">&quot;--batch_size&quot;</span><span class="p">,</span>
+                <span class="s2">"--batch_size"</span><span class="p">,</span>
                 <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">batch_size</span><span class="p">),</span>
             <span class="p">]</span>
 
             <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">keepgeom</span><span class="p">:</span>
-                <span class="n">inpaint_argv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;--keepgeom&quot;</span><span class="p">)</span>
+                <span class="n">inpaint_argv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"--keepgeom"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">min_auto_img_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">inpaint_argv</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">"--min_auto_img_size"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">min_auto_img_size</span><span class="p">)])</span>
 
             <span class="c1"># Forward any unknown arguments</span>
             <span class="n">inpaint_argv</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">unknown</span><span class="p">)</span>
 
             <span class="n">inpaint_main</span><span class="p">(</span><span class="n">inpaint_argv</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inpainted image already exists: </span><span class="si">{</span><span class="n">inpainted_img</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Inpainted image already exists: </span><span class="si">{</span><span class="n">inpainted_img</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">fastsurfer_dir</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;FastSurfer-compatible outputs available in </span><span class="si">{</span><span class="n">out_dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">&#39;mri&#39;</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">out_dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">&#39;scripts&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"FastSurfer-compatible outputs available in </span><span class="si">{</span><span class="n">out_dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'mri'</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">out_dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'scripts'</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Finished inpainting&quot;</span><span class="p">)</span></div>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Finished inpainting"</span><span class="p">)</span></div>
 
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
     <span class="n">run_lit</span><span class="p">()</span>
 </pre></div>
 

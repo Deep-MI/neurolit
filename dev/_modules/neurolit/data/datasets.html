@@ -181,6 +181,8 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slice_centers"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slice_centers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slab_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slab_slices()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slice_from_volume()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.slice_selector"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.slice_selector()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slices()</span></code></a></li>
@@ -216,6 +218,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.positive_int"><code class="docutils literal notranslate"><span class="pre">positive_int()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.resolve_inference_device"><code class="docutils literal notranslate"><span class="pre">resolve_inference_device()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
@@ -378,25 +381,25 @@
 <div class="viewcode-block" id="get_test_sample">
 <a class="viewcode-back" href="../../../api/data.html#neurolit.data.datasets.get_test_sample">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_test_sample</span><span class="p">():</span>
-    <span class="n">root_idr</span> <span class="o">=</span> <span class="s1">&#39;/groups/ag-reuter/projects/fastsurfer-tumor/fastsurfer-tumor-pipeline/tumor_validation_data/cleaned_hires_dataset/data/Rhineland&#39;</span>
-    <span class="n">filepath_image</span> <span class="o">=</span> <span class="n">root_idr</span> <span class="o">+</span> <span class="s1">&#39;/0078875e-c7b8-4d60-b055-c0d3a6a693bb/orig_deformed_masked.nii.gz&#39;</span>
-    <span class="n">filepath_mask</span> <span class="o">=</span> <span class="n">root_idr</span> <span class="o">+</span> <span class="s1">&#39;/0078875e-c7b8-4d60-b055-c0d3a6a693bb/tumor_mask_conformed.mgz&#39;</span>
+    <span class="n">root_idr</span> <span class="o">=</span> <span class="s1">'/groups/ag-reuter/projects/fastsurfer-tumor/fastsurfer-tumor-pipeline/tumor_validation_data/cleaned_hires_dataset/data/Rhineland'</span>
+    <span class="n">filepath_image</span> <span class="o">=</span> <span class="n">root_idr</span> <span class="o">+</span> <span class="s1">'/0078875e-c7b8-4d60-b055-c0d3a6a693bb/orig_deformed_masked.nii.gz'</span>
+    <span class="n">filepath_mask</span> <span class="o">=</span> <span class="n">root_idr</span> <span class="o">+</span> <span class="s1">'/0078875e-c7b8-4d60-b055-c0d3a6a693bb/tumor_mask_conformed.mgz'</span>
 
     <span class="n">nib_image</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filepath_image</span><span class="p">)</span>
     <span class="n">nib_mask</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filepath_mask</span><span class="p">)</span>
 
-    <span class="k">assert</span><span class="p">(</span><span class="n">conform</span><span class="o">.</span><span class="n">is_conform</span><span class="p">(</span><span class="n">nib_image</span><span class="p">,</span> <span class="n">vox_size</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="n">img_size</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)),</span> <span class="s2">&quot;Image is not conform&quot;</span>
-    <span class="k">assert</span><span class="p">(</span><span class="n">conform</span><span class="o">.</span><span class="n">is_conform</span><span class="p">(</span><span class="n">nib_mask</span><span class="p">,</span> <span class="n">vox_size</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="n">img_size</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)),</span> <span class="s2">&quot;Mask is not conform&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">conform</span><span class="o">.</span><span class="n">is_conform</span><span class="p">(</span><span class="n">nib_image</span><span class="p">,</span> <span class="n">vox_size</span><span class="o">=</span><span class="s1">'min'</span><span class="p">,</span> <span class="n">img_size</span><span class="o">=</span><span class="s1">'auto'</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)),</span> <span class="s2">"Image is not conform"</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">conform</span><span class="o">.</span><span class="n">is_conform</span><span class="p">(</span><span class="n">nib_mask</span><span class="p">,</span> <span class="n">vox_size</span><span class="o">=</span><span class="s1">'min'</span><span class="p">,</span> <span class="n">img_size</span><span class="o">=</span><span class="s1">'auto'</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)),</span> <span class="s2">"Mask is not conform"</span>
 
     <span class="n">sample</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="n">nib_image</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">(),</span>
-        <span class="s1">&#39;mask&#39;</span><span class="p">:</span> <span class="n">nib_mask</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">(),</span>
-        <span class="s1">&#39;zooms&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">nib_image</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">get_zooms</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span> <span class="c1"># conformed image must be isotropic</span>
+        <span class="s1">'image'</span><span class="p">:</span> <span class="n">nib_image</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">(),</span>
+        <span class="s1">'mask'</span><span class="p">:</span> <span class="n">nib_mask</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">(),</span>
+        <span class="s1">'zooms'</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">nib_image</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">get_zooms</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span> <span class="c1"># conformed image must be isotropic</span>
     <span class="p">}</span>
 
     <span class="n">test_tr</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
-        <span class="n">transforms</span><span class="o">.</span><span class="n">AddChanneld</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="s1">&#39;mask&#39;</span><span class="p">]),</span>
-        <span class="n">transforms</span><span class="o">.</span><span class="n">ScaleIntensityd</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">])</span>
+        <span class="n">transforms</span><span class="o">.</span><span class="n">AddChanneld</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">'image'</span><span class="p">,</span> <span class="s1">'mask'</span><span class="p">]),</span>
+        <span class="n">transforms</span><span class="o">.</span><span class="n">ScaleIntensityd</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">'image'</span><span class="p">])</span>
     <span class="p">])</span>
 
     <span class="n">sample</span> <span class="o">=</span> <span class="n">test_tr</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
@@ -407,8 +410,8 @@
 
 <div class="viewcode-block" id="get_dataset">
 <a class="viewcode-back" href="../../../api/data.html#neurolit.data.datasets.get_dataset">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_dataset</span><span class="p">(</span><span class="n">csv_file</span><span class="p">,</span> <span class="n">transforms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s2">&quot;standard&quot;</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a dataset from a CSV file.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_dataset</span><span class="p">(</span><span class="n">csv_file</span><span class="p">,</span> <span class="n">transforms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s2">"standard"</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Get a dataset from a CSV file.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -417,18 +420,18 @@
 <span class="sd">    transforms : callable, optional</span>
 <span class="sd">        Transforms to apply to the data. Defaults to None.</span>
 <span class="sd">    size : str, optional</span>
-<span class="sd">        If &quot;small&quot;, only loads first 3 samples. Defaults to &quot;standard&quot;.</span>
+<span class="sd">        If "small", only loads first 3 samples. Defaults to "standard".</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    CacheDataset</span>
 <span class="sd">        Dataset containing the loaded files</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">csv_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">size</span> <span class="o">==</span> <span class="s1">&#39;small&#39;</span><span class="p">:</span>
-            <span class="n">files</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;image&quot;</span><span class="p">:</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(),</span> <span class="s1">&#39;mri/orig.mgz&#39;</span><span class="p">)}</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()[:</span><span class="mi">3</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="n">size</span> <span class="o">==</span> <span class="s1">'small'</span><span class="p">:</span>
+            <span class="n">files</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">"image"</span><span class="p">:</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(),</span> <span class="s1">'mri/orig.mgz'</span><span class="p">)}</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()[:</span><span class="mi">3</span><span class="p">]]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">files</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;image&quot;</span><span class="p">:</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(),</span> <span class="s1">&#39;mri/orig.mgz&#39;</span><span class="p">)}</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()]</span>
+            <span class="n">files</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">"image"</span><span class="p">:</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(),</span> <span class="s1">'mri/orig.mgz'</span><span class="p">)}</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()]</span>
     
     <span class="n">dataset</span> <span class="o">=</span> <span class="n">CacheDataset</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">files</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="p">,</span> <span class="n">cache_rate</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">dataset</span></div>
@@ -436,14 +439,14 @@
 
 <div class="viewcode-block" id="get_base_dataset">
 <a class="viewcode-back" href="../../../api/data.html#neurolit.data.datasets.get_base_dataset">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_base_dataset</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="s2">&quot;big&quot;</span><span class="p">,</span> <span class="n">transforms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get training and validation datasets from CSV files.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_base_dataset</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="s2">"big"</span><span class="p">,</span> <span class="n">transforms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Get training and validation datasets from CSV files.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    size : str, optional</span>
-<span class="sd">        Size of training dataset to use. Must be one of [&quot;big&quot;, &quot;small&quot;, &quot;standard&quot;].</span>
-<span class="sd">        &quot;big&quot; uses 1268 subjects, &quot;small&quot; uses 120 subjects. Defaults to &quot;big&quot;.</span>
+<span class="sd">        Size of training dataset to use. Must be one of ["big", "small", "standard"].</span>
+<span class="sd">        "big" uses 1268 subjects, "small" uses 120 subjects. Defaults to "big".</span>
 <span class="sd">    transforms : callable, optional</span>
 <span class="sd">        Transforms to apply to the data. Defaults to None.</span>
 
@@ -453,16 +456,16 @@
 <span class="sd">        Training dataset</span>
 <span class="sd">    val_dataset : CacheDataset</span>
 <span class="sd">        Validation dataset</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span><span class="p">(</span><span class="n">size</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;big&quot;</span><span class="p">,</span> <span class="s2">&quot;small&quot;</span><span class="p">,</span> <span class="s2">&quot;standard&quot;</span><span class="p">])</span>
+<span class="sd">    """</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">size</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"big"</span><span class="p">,</span> <span class="s2">"small"</span><span class="p">,</span> <span class="s2">"standard"</span><span class="p">])</span>
 
     <span class="n">data_file_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">size</span> <span class="o">==</span> <span class="s1">&#39;big&#39;</span><span class="p">:</span>
-        <span class="n">train_csv</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_file_dir</span><span class="p">,</span> <span class="s2">&quot;data_csvs/trainingset_1268_subjects_1mm_fastsurfer_hires_hcp_rh.txt&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">size</span> <span class="o">==</span> <span class="s1">'big'</span><span class="p">:</span>
+        <span class="n">train_csv</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_file_dir</span><span class="p">,</span> <span class="s2">"data_csvs/trainingset_1268_subjects_1mm_fastsurfer_hires_hcp_rh.txt"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">train_csv</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_file_dir</span><span class="p">,</span> <span class="s2">&quot;data_csvs/trainingset_120_subjects_1mm_fastsurfer_hires_hcp_rh.txt&quot;</span><span class="p">)</span>
+        <span class="n">train_csv</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_file_dir</span><span class="p">,</span> <span class="s2">"data_csvs/trainingset_120_subjects_1mm_fastsurfer_hires_hcp_rh.txt"</span><span class="p">)</span>
     
-    <span class="n">val_csv</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_file_dir</span><span class="p">,</span> <span class="s2">&quot;data_csvs/validationset_80_subjects_1mm_fastsurfer_hires_hcp_rh.txt&quot;</span><span class="p">)</span>
+    <span class="n">val_csv</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_file_dir</span><span class="p">,</span> <span class="s2">"data_csvs/validationset_80_subjects_1mm_fastsurfer_hires_hcp_rh.txt"</span><span class="p">)</span>
 
     <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">get_dataset</span><span class="p">(</span><span class="n">train_csv</span><span class="p">,</span> <span class="n">transforms</span><span class="o">=</span><span class="n">transforms</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">)</span>
     <span class="n">val_dataset</span> <span class="o">=</span> <span class="n">get_dataset</span><span class="p">(</span><span class="n">val_csv</span><span class="p">,</span> <span class="n">transforms</span><span class="o">=</span><span class="n">transforms</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">)</span>
@@ -473,7 +476,7 @@
 <div class="viewcode-block" id="SlicedDataset">
 <a class="viewcode-back" href="../../../api/data.html#neurolit.data.datasets.SlicedDataset">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SlicedDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A dataset that extracts slices from 3D images with a specified thickness.</span>
+<span class="w">    </span><span class="sd">"""A dataset that extracts slices from 3D images with a specified thickness.</span>
 
 <span class="sd">    This dataset wraps another dataset containing 3D images and provides access to 2D slices</span>
 <span class="sd">    with a configurable thickness along a specified axis. Each slice is returned with the</span>
@@ -509,17 +512,17 @@
 <span class="sd">        Cumulative sum of slices per image</span>
 <span class="sd">    len : int</span>
 <span class="sd">        Total number of slices across all images</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
 <div class="viewcode-block" id="SlicedDataset.__init__">
 <a class="viewcode-back" href="../../../api/data.html#neurolit.data.datasets.SlicedDataset.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">thickness</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">slice_per_img</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">assert</span><span class="p">(</span><span class="n">thickness</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;Thickness must be odd&quot;</span>
+        <span class="k">assert</span><span class="p">(</span><span class="n">thickness</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">),</span> <span class="s2">"Thickness must be odd"</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">thickness</span> <span class="o">=</span> <span class="n">thickness</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span>
         <span class="k">if</span> <span class="n">slice_per_img</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">slice_per_img</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample</span><span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">ax</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">thickness</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">slice_per_img</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample</span><span class="p">[</span><span class="s1">'image'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">ax</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">thickness</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">slice_per_img</span> <span class="o">=</span> <span class="p">[</span><span class="n">slice_per_img</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">transform</span>
@@ -531,7 +534,7 @@
 <div class="viewcode-block" id="SlicedDataset.get_slice_axis">
 <a class="viewcode-back" href="../../../api/data.html#neurolit.data.datasets.SlicedDataset.get_slice_axis">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_slice_axis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slice_index</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get slice indices for extracting a slice at the given index.</span>
+<span class="w">        </span><span class="sd">"""Get slice indices for extracting a slice at the given index.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -542,7 +545,7 @@
 <span class="sd">        -------</span>
 <span class="sd">        tuple</span>
 <span class="sd">            Tuple of slice objects for indexing the image array</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">slice_axis</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)]</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
         <span class="n">slice_axis</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">slice_index</span><span class="p">,</span> <span class="n">slice_index</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">thickness</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">slice_axis</span><span class="p">)</span></div>
@@ -554,7 +557,7 @@
 <div class="viewcode-block" id="SlicedDataset.__getitem__">
 <a class="viewcode-back" href="../../../api/data.html#neurolit.data.datasets.SlicedDataset.__getitem__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a slice from the dataset at the specified index.</span>
+<span class="w">        </span><span class="sd">"""Get a slice from the dataset at the specified index.</span>
 
 <span class="sd">        Maps the flat index to an image and slice index, extracts the slice,</span>
 <span class="sd">        and ensures the slice thickness becomes the channel dimension.</span>
@@ -567,12 +570,12 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        dict</span>
-<span class="sd">            Dictionary containing the slice under &#39;image&#39; key and any additional</span>
+<span class="sd">            Dictionary containing the slice under 'image' key and any additional</span>
 <span class="sd">            metadata from the base dataset</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">img_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_per_img_cumsum</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
         <span class="n">slice_index</span> <span class="o">=</span> <span class="n">index</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">slice_per_img_cumsum</span><span class="p">[</span><span class="n">img_index</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">img_index</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">index</span>
-        <span class="n">img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="n">img_index</span><span class="p">][</span><span class="s1">&#39;image&#39;</span><span class="p">]</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="n">img_index</span><span class="p">][</span><span class="s1">'image'</span><span class="p">]</span>
         <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_slice_axis</span><span class="p">(</span><span class="n">slice_index</span><span class="p">)]</span>
         <span class="c1"># swap axis to put slice axis first</span>
         <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
@@ -581,8 +584,8 @@
             <span class="n">img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
 
         <span class="n">return_dict</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="n">img</span><span class="p">,</span>
-            <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="n">img_index</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s1">&#39;image&#39;</span><span class="p">}</span>
+            <span class="s1">'image'</span><span class="p">:</span> <span class="n">img</span><span class="p">,</span>
+            <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="n">img_index</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s1">'image'</span><span class="p">}</span>
         <span class="p">}</span>
 
         <span class="k">return</span> <span class="n">return_dict</span></div>

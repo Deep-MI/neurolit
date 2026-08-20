@@ -184,6 +184,8 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slice_centers"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slice_centers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slab_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slab_slices()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slice_from_volume()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.slice_selector"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.slice_selector()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slices()</span></code></a></li>
@@ -219,6 +221,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="api/inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.positive_int"><code class="docutils literal notranslate"><span class="pre">positive_int()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.resolve_inference_device"><code class="docutils literal notranslate"><span class="pre">resolve_inference_device()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
@@ -437,7 +440,7 @@ mris_preproc<span class="w"> </span>...<span class="w"> </span>--hemi<span class
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="c1"># Load stacked surface data</span>
-<span class="n">thickness_stack</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;lh.thickness.fwhm15.stack.mgh&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+<span class="n">thickness_stack</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"lh.thickness.fwhm15.stack.mgh"</span><span class="p">)</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
 <span class="c1"># shape: (n_subjects, n_vertices)</span>
 
 <span class="c1"># Load per-subject lesion label files and mask affected vertices</span>
@@ -446,7 +449,7 @@ mris_preproc<span class="w"> </span>...<span class="w"> </span>--hemi<span class
     <span class="n">thickness_stack</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">lesion_vertices</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
 <span class="c1"># Restrict to cortex vertices only</span>
-<span class="n">cortex_vertices</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">freesurfer</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read_label</span><span class="p">(</span><span class="s2">&quot;fsaverage/label/lh.cortex.label&quot;</span><span class="p">)</span>
+<span class="n">cortex_vertices</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">freesurfer</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read_label</span><span class="p">(</span><span class="s2">"fsaverage/label/lh.cortex.label"</span><span class="p">)</span>
 <span class="n">thickness_cortex</span> <span class="o">=</span> <span class="n">thickness_stack</span><span class="p">[:,</span> <span class="n">cortex_vertices</span><span class="p">]</span>
 <span class="c1"># NaN vertices are excluded automatically by numpy/scipy functions</span>
 </pre></div>
@@ -501,12 +504,12 @@ mris_preproc<span class="w"> </span>...<span class="w"> </span>--hemi<span class
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">whippersnappy.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">snap4</span>
 
 <span class="n">snap4</span><span class="p">(</span>
-    <span class="n">lhoverlaypath</span><span class="o">=</span><span class="s2">&quot;lh.result.fwhm15.mgh&quot;</span><span class="p">,</span>
-    <span class="n">rhoverlaypath</span><span class="o">=</span><span class="s2">&quot;rh.result.fwhm15.mgh&quot;</span><span class="p">,</span>
+    <span class="n">lhoverlaypath</span><span class="o">=</span><span class="s2">"lh.result.fwhm15.mgh"</span><span class="p">,</span>
+    <span class="n">rhoverlaypath</span><span class="o">=</span><span class="s2">"rh.result.fwhm15.mgh"</span><span class="p">,</span>
     <span class="n">fthresh</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
     <span class="n">fmax</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-    <span class="n">sdir</span><span class="o">=</span><span class="s2">&quot;/path/to/fsaverage&quot;</span><span class="p">,</span>
-    <span class="n">outpath</span><span class="o">=</span><span class="s2">&quot;result_surface.png&quot;</span>
+    <span class="n">sdir</span><span class="o">=</span><span class="s2">"/path/to/fsaverage"</span><span class="p">,</span>
+    <span class="n">outpath</span><span class="o">=</span><span class="s2">"result_surface.png"</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -560,14 +563,14 @@ mris_preproc<span class="w"> </span>...<span class="w"> </span>--hemi<span class
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">parse_lesion_report</span><span class="p">(</span><span class="n">report_path</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Replaced&quot;</span><span class="p">,</span> <span class="s2">&quot;Reduced&quot;</span><span class="p">,</span> <span class="s2">&quot;Adjacent&quot;</span><span class="p">)):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return region names listed under the given categories in a lesion report.&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_lesion_report</span><span class="p">(</span><span class="n">report_path</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="p">(</span><span class="s2">"Replaced"</span><span class="p">,</span> <span class="s2">"Reduced"</span><span class="p">,</span> <span class="s2">"Adjacent"</span><span class="p">)):</span>
+<span class="w">    </span><span class="sd">"""Return region names listed under the given categories in a lesion report."""</span>
     <span class="n">affected</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="n">current_category</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">report_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span> <span class="ow">or</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span> <span class="ow">or</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"#"</span><span class="p">):</span>
                 <span class="k">continue</span>
             <span class="c1"># Section headers contain the category name</span>
             <span class="k">for</span> <span class="n">cat</span> <span class="ow">in</span> <span class="n">categories</span><span class="p">:</span>
@@ -576,25 +579,25 @@ mris_preproc<span class="w"> </span>...<span class="w"> </span>--hemi<span class
                     <span class="k">break</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">current_category</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="c1"># Lines under a section are &quot;label_id  region_name&quot;</span>
+                    <span class="c1"># Lines under a section are "label_id  region_name"</span>
                     <span class="n">parts</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
                         <span class="n">affected</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">affected</span>
 
 <span class="c1"># Load volumetric stats table (rows = subjects, columns = regions)</span>
-<span class="n">volumes</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;aseg_volumes.csv&quot;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="s2">&quot;subject&quot;</span><span class="p">)</span>
+<span class="n">volumes</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"aseg_volumes.csv"</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="s2">"subject"</span><span class="p">)</span>
 
 <span class="c1"># Mask affected regions per subject</span>
 <span class="k">for</span> <span class="n">subject</span> <span class="ow">in</span> <span class="n">volumes</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
-    <span class="n">report</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;subjects/</span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2">/stats/aseg.lesion_report.txt&quot;</span>
-    <span class="n">affected_regions</span> <span class="o">=</span> <span class="n">parse_lesion_report</span><span class="p">(</span><span class="n">report</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Replaced&quot;</span><span class="p">,</span> <span class="s2">&quot;Reduced&quot;</span><span class="p">,</span> <span class="s2">&quot;Adjacent&quot;</span><span class="p">))</span>
+    <span class="n">report</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"subjects/</span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2">/stats/aseg.lesion_report.txt"</span>
+    <span class="n">affected_regions</span> <span class="o">=</span> <span class="n">parse_lesion_report</span><span class="p">(</span><span class="n">report</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="p">(</span><span class="s2">"Replaced"</span><span class="p">,</span> <span class="s2">"Reduced"</span><span class="p">,</span> <span class="s2">"Adjacent"</span><span class="p">))</span>
     <span class="n">cols_to_mask</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">volumes</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">affected_regions</span><span class="p">]</span>
     <span class="n">volumes</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">subject</span><span class="p">,</span> <span class="n">cols_to_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
 <span class="c1"># Each column now contains NaN for subjects where that region was lesion-affected.</span>
 <span class="c1"># Standard pandas/scipy functions skip NaN by default.</span>
-<span class="n">group_means</span> <span class="o">=</span> <span class="n">volumes</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;group&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">group_means</span> <span class="o">=</span> <span class="n">volumes</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"group"</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>

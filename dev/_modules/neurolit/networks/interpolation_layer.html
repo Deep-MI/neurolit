@@ -181,6 +181,8 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slice_centers"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slice_centers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slab_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slab_slices()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slice_from_volume()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.slice_selector"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.slice_selector()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slices()</span></code></a></li>
@@ -216,6 +218,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.positive_int"><code class="docutils literal notranslate"><span class="pre">positive_int()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.resolve_inference_device"><code class="docutils literal notranslate"><span class="pre">resolve_inference_device()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
@@ -366,14 +369,14 @@
   <h1>Source code for neurolit.networks.interpolation_layer</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright 2019 Image Analysis Lab, German Center for Neurodegenerative Diseases (DZNE), Bonn</span>
 <span class="c1">#</span>
-<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
 <span class="c1"># You may obtain a copy of the License at</span>
 <span class="c1">#</span>
 <span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
 <span class="c1">#</span>
 <span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
-<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># distributed under the License is distributed on an "AS IS" BASIS,</span>
 <span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
@@ -387,17 +390,17 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">torch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">nn</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">_F</span>
 
-<span class="n">T_Scale</span> <span class="o">=</span> <span class="n">_T</span><span class="o">.</span><span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T_Scale&quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Tensor</span><span class="p">)</span>
-<span class="n">T_ScaleAll</span> <span class="o">=</span> <span class="n">_T</span><span class="o">.</span><span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T_ScaleAll&quot;</span><span class="p">,</span> <span class="n">_T</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+<span class="n">T_Scale</span> <span class="o">=</span> <span class="n">_T</span><span class="o">.</span><span class="n">TypeVar</span><span class="p">(</span><span class="s2">"T_Scale"</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Tensor</span><span class="p">)</span>
+<span class="n">T_ScaleAll</span> <span class="o">=</span> <span class="n">_T</span><span class="o">.</span><span class="n">TypeVar</span><span class="p">(</span><span class="s2">"T_ScaleAll"</span><span class="p">,</span> <span class="n">_T</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">_ZoomNd</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract Class to perform a crop and interpolation on a (N+2)-dimensional Tensor respecting batch and channel.</span>
+<span class="w">    </span><span class="sd">"""Abstract Class to perform a crop and interpolation on a (N+2)-dimensional Tensor respecting batch and channel.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
 <span class="sd">    _mode</span>
-<span class="sd">        interpolation mode as in `torch.nn.interpolate` (default: &#39;neareast&#39;)</span>
+<span class="sd">        interpolation mode as in `torch.nn.interpolate` (default: 'neareast')</span>
 <span class="sd">    _target_shape</span>
 <span class="sd">        Target tensor size for after this module,</span>
 <span class="sd">        not including batchsize and channels.</span>
@@ -414,13 +417,13 @@
 <span class="sd">        abstract method</span>
 <span class="sd">    -calculate_crop_pad</span>
 <span class="sd">        Return start- and end- coordinate</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
-            <span class="n">interpolation_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;nearest&quot;</span>
+            <span class="n">interpolation_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"nearest"</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct Zoom object.</span>
+<span class="w">        </span><span class="sd">"""Construct Zoom object.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -428,12 +431,12 @@
 <span class="sd">            not including batchsize and channels.</span>
 <span class="sd">        interpolation_mode : str</span>
 <span class="sd">            interpolation mode as in `torch.nn.interpolate`</span>
-<span class="sd">            (default: &#39;neareast&#39;)</span>
+<span class="sd">            (default: 'neareast')</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">=</span> <span class="n">interpolation_mode</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_N&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_N"</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_N</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
 
@@ -444,9 +447,9 @@
             <span class="n">target_shape</span><span class="p">:</span> <span class="n">_T</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">rescale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">T_Scale</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Zoom the `input_tensor` with `scale_factors`.</span>
+<span class="w">        </span><span class="sd">"""Zoom the `input_tensor` with `scale_factors`.</span>
 
-<span class="sd">        This is not an exact zoom, but rather an &quot;approximate zoom&quot;.</span>
+<span class="sd">        This is not an exact zoom, but rather an "approximate zoom".</span>
 <span class="sd">        This is due to the fact that the backbone function only interpolates between integer-sized images and therefore</span>
 <span class="sd">        the target shape must be rounded to the nearest integer</span>
 
@@ -475,20 +478,20 @@
 <span class="sd">        If this Module is used to zoom images of different voxelsizes to the same voxelsize, then `scale_factor`</span>
 <span class="sd">        should be equal to `target_voxelsize / source_voxelsize`.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="s2">&quot;Direct instantiation of _InterpolateNd is not supported.&quot;</span>
+                <span class="s2">"Direct instantiation of _InterpolateNd is not supported."</span>
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">input_tensor</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_N</span><span class="o">+</span><span class="mi">2</span><span class="si">}</span><span class="s2">-dimensional input tensor, got </span><span class="si">{</span><span class="n">input_tensor</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"Expected </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_N</span><span class="o">+</span><span class="mi">2</span><span class="si">}</span><span class="s2">-dimensional input tensor, got </span><span class="si">{</span><span class="n">input_tensor</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
-                <span class="s2">&quot;The target_shape was not set, but a valid value is required.&quot;</span>
+                <span class="s2">"The target_shape was not set, but a valid value is required."</span>
             <span class="p">)</span>
 
         <span class="n">scales_chunks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
@@ -496,7 +499,7 @@
         <span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scales_chunks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Invalid scale_factors </span><span class="si">{</span><span class="n">scale_factors</span><span class="si">}</span><span class="s2">, no chunks returned.&quot;</span>
+                <span class="sa">f</span><span class="s2">"Invalid scale_factors </span><span class="si">{</span><span class="n">scale_factors</span><span class="si">}</span><span class="s2">, no chunks returned."</span>
             <span class="p">)</span>
         <span class="n">scales</span><span class="p">,</span> <span class="n">chunks</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">scales_chunks</span><span class="p">)</span>
 
@@ -522,7 +525,7 @@
             <span class="n">scale_factors</span><span class="p">:</span> <span class="n">T_ScaleAll</span><span class="p">,</span>
             <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_T</span><span class="o">.</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">T_Scale</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check and fix the conformity of scale_factors.</span>
+<span class="w">        </span><span class="sd">"""Check and fix the conformity of scale_factors.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -541,7 +544,7 @@
 <span class="sd">        ValueError</span>
 <span class="sd">            scale_factors is neither a _T.Iterable nor a Number</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># if isinstance(scale_factors, (Tensor, np.ndarray)):</span>
         <span class="c1">#     batch_size_sf = scale_factors.shape[0]</span>
         <span class="c1"># elif isinstance(scale_factors, _T.Iterable):</span>
@@ -553,7 +556,7 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scale_factors</span><span class="p">,</span> <span class="n">_T</span><span class="o">.</span><span class="n">Iterable</span><span class="p">):</span>
             <span class="c1"># if batch_size not in [1, batch_size_sf]:</span>
             <span class="c1">#     raise ValueError(</span>
-            <span class="c1">#         &quot;scale_factors is a Sequence, but not the same length as the batch-size.&quot;</span>
+            <span class="c1">#         "scale_factors is a Sequence, but not the same length as the batch-size."</span>
             <span class="c1">#     )</span>
             <span class="n">num</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="n">last_sf</span><span class="p">:</span> <span class="n">T_Scale</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -576,13 +579,13 @@
                         <span class="n">sf</span> <span class="o">=</span> <span class="n">sf</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N</span> <span class="k">if</span> <span class="n">sf_dim</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">sf</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;Invalid type of scale_factors[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]: Expected was an Iterable or a Number, &quot;</span>
-                            <span class="sa">f</span><span class="s2">&quot;but </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">sf</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> found.&quot;</span>
+                            <span class="sa">f</span><span class="s2">"Invalid type of scale_factors[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]: Expected was an Iterable or a Number, "</span>
+                            <span class="sa">f</span><span class="s2">"but </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">sf</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> found."</span>
                         <span class="p">)</span>
                     <span class="k">if</span> <span class="n">sf_dim</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N</span><span class="p">:</span>
                         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;Invalid format of scale_factors[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]: Sequence contains </span><span class="si">{</span><span class="n">sf_dim</span><span class="si">}</span><span class="s2"> &quot;</span>
-                            <span class="sa">f</span><span class="s2">&quot;scale factors, but only 1 or </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_N</span><span class="si">}</span><span class="s2"> are valid: </span><span class="si">{</span><span class="n">sf</span><span class="si">}</span><span class="s2">.&quot;</span>
+                            <span class="sa">f</span><span class="s2">"Invalid format of scale_factors[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]: Sequence contains </span><span class="si">{</span><span class="n">sf_dim</span><span class="si">}</span><span class="s2"> "</span>
+                            <span class="sa">f</span><span class="s2">"scale factors, but only 1 or </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_N</span><span class="si">}</span><span class="s2"> are valid: </span><span class="si">{</span><span class="n">sf</span><span class="si">}</span><span class="s2">."</span>
                         <span class="p">)</span>
 
                 <span class="k">if</span> <span class="n">last_sf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">last</span> <span class="o">!=</span> <span class="n">t</span> <span class="k">for</span> <span class="n">last</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">last_sf</span><span class="p">,</span> <span class="n">sf</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)):</span>
@@ -597,18 +600,18 @@
             <span class="k">yield</span> <span class="p">[</span><span class="n">scale_factors</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N</span><span class="p">,</span> <span class="n">batch_size</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;scale_factors is not the correct type, must be sequence of floats or float.&quot;</span>
+                <span class="s2">"scale_factors is not the correct type, must be sequence of floats or float."</span>
             <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">T_Scale</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Abstract method.</span>
+<span class="w">        </span><span class="sd">"""Abstract method.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        args</span>
 <span class="sd">            placeholder</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_crop_pad</span><span class="p">(</span>
@@ -619,7 +622,7 @@
             <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> 
             <span class="n">alignment</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">,</span> <span class="n">T_Scale</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return start- and end- coordinate given sizes, the updated scale factor [MISSING].</span>
+<span class="w">        </span><span class="sd">"""Return start- and end- coordinate given sizes, the updated scale factor [MISSING].</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -636,7 +639,7 @@
 <span class="sd">        -------</span>
 <span class="sd">        _T.Tuple[slice,T_Scale,_T.Tuple[int,int],int]</span>
 <span class="sd">            crop_slice, new scale_factor, padding, interp_target_shape</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">this_in_shape</span> <span class="o">=</span> <span class="n">in_shape</span><span class="p">[</span><span class="n">dim</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>
         <span class="n">source_size</span> <span class="o">=</span> <span class="n">target_shape</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">*</span> <span class="n">scale_factor</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span>
 
@@ -645,7 +648,7 @@
         <span class="n">end</span> <span class="o">=</span> <span class="n">this_in_shape</span>
 
         <span class="c1"># calculate out and rescale_factor</span>
-        <span class="k">if</span> <span class="n">alignment</span> <span class="o">==</span> <span class="s2">&quot;mid&quot;</span> <span class="ow">and</span> <span class="p">(</span><span class="n">this_in_shape</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">source_size</span><span class="p">))</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">alignment</span> <span class="o">==</span> <span class="s2">"mid"</span> <span class="ow">and</span> <span class="p">(</span><span class="n">this_in_shape</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">source_size</span><span class="p">))</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">out</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">source_size</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">out</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">source_size</span><span class="p">)</span>
@@ -654,17 +657,17 @@
 
         <span class="k">if</span> <span class="n">out</span> <span class="o">&gt;</span> <span class="n">this_in_shape</span><span class="p">:</span>
             <span class="c1"># set distribution of padding for before and after</span>
-            <span class="k">if</span> <span class="n">alignment</span> <span class="o">==</span> <span class="s2">&quot;from_end&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">alignment</span> <span class="o">==</span> <span class="s2">"from_end"</span><span class="p">:</span>
                 <span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">alignment</span> <span class="o">==</span> <span class="s2">&quot;mid&quot;</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">alignment</span> <span class="o">==</span> <span class="s2">"mid"</span><span class="p">:</span>
                 <span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
 
             <span class="n">interp_target_shape</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">this_in_shape</span> <span class="o">/</span> <span class="n">scale_factor</span><span class="p">[</span><span class="n">dim</span><span class="p">])</span>
 
-            <span class="k">if</span> <span class="p">(</span><span class="n">alignment</span> <span class="o">==</span> <span class="s2">&quot;mid&quot;</span> <span class="ow">and</span> <span class="p">(</span><span class="n">interp_target_shape</span> <span class="o">-</span> <span class="n">target_shape</span><span class="p">[</span><span class="n">dim</span><span class="p">])</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;not tested yet!&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">alignment</span> <span class="o">==</span> <span class="s2">"mid"</span> <span class="ow">and</span> <span class="p">(</span><span class="n">interp_target_shape</span> <span class="o">-</span> <span class="n">target_shape</span><span class="p">[</span><span class="n">dim</span><span class="p">])</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"not tested yet!"</span><span class="p">)</span>
                 <span class="n">interp_target_shape</span> <span class="o">=</span> <span class="n">interp_target_shape</span> <span class="o">-</span> <span class="mi">1</span>
 
             <span class="n">rescale_factor</span> <span class="o">=</span> <span class="n">this_in_shape</span> <span class="o">/</span> <span class="n">interp_target_shape</span>
@@ -674,9 +677,9 @@
             <span class="n">padding</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">p</span> <span class="o">*</span> <span class="n">full_pad</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">padding</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># update cropping to fit alignment</span>
-            <span class="k">if</span> <span class="n">alignment</span> <span class="o">==</span> <span class="s2">&quot;mid&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">alignment</span> <span class="o">==</span> <span class="s2">"mid"</span><span class="p">:</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">end</span> <span class="o">-</span> <span class="n">out</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">alignment</span> <span class="o">==</span> <span class="s2">&quot;from_end&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">alignment</span> <span class="o">==</span> <span class="s2">"from_end"</span><span class="p">:</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">out</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">end</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">out</span>
@@ -693,7 +696,7 @@
 <div class="viewcode-block" id="Zoom2d">
 <a class="viewcode-back" href="../../../api/networks.html#neurolit.networks.interpolation_layer.Zoom2d">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Zoom2d</span><span class="p">(</span><span class="n">_ZoomNd</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform a crop and interpolation on a Four-dimensional Tensor respecting batch and channel.</span>
+<span class="w">    </span><span class="sd">"""Perform a crop and interpolation on a Four-dimensional Tensor respecting batch and channel.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -706,39 +709,39 @@
 <span class="sd">    -------</span>
 <span class="sd">    _interpolate</span>
 <span class="sd">        Crops, interpolates and pads the tensor</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
 <div class="viewcode-block" id="Zoom2d.__init__">
 <a class="viewcode-back" href="../../../api/networks.html#neurolit.networks.interpolation_layer.Zoom2d.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
-            <span class="n">interpolation_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
-            <span class="n">crop_position</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;top_left&quot;</span>
+            <span class="n">interpolation_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"nearest"</span><span class="p">,</span>
+            <span class="n">crop_position</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"top_left"</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct Zoom2d object.</span>
+<span class="w">        </span><span class="sd">"""Construct Zoom2d object.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        target_shape : _T.Optional[_T.Sequence[int]]</span>
 <span class="sd">            Target tensor size for after this module, not including batchsize and channels.</span>
 <span class="sd">        interpolation_mode : str</span>
-<span class="sd">            interpolation mode as in `torch.nn.interpolate` (default: &#39;nearest&#39;)</span>
+<span class="sd">            interpolation mode as in `torch.nn.interpolate` (default: 'nearest')</span>
 <span class="sd">        crop_position : str</span>
-<span class="sd">            crop position to use from &#39;top_left&#39;, &#39;bottom_left&#39;, top_right&#39;, &#39;bottom_right&#39;,</span>
-<span class="sd">            &#39;center&#39; (default: &#39;top_left&#39;)</span>
+<span class="sd">            crop position to use from 'top_left', 'bottom_left', top_right', 'bottom_right',</span>
+<span class="sd">            'center' (default: 'top_left')</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">interpolation_mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="s2">&quot;bilinear&quot;</span><span class="p">,</span> <span class="s2">&quot;bicubic&quot;</span><span class="p">,</span> <span class="s2">&quot;area&quot;</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid interpolation_mode, got </span><span class="si">{</span><span class="n">interpolation_mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">interpolation_mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"nearest"</span><span class="p">,</span> <span class="s2">"bilinear"</span><span class="p">,</span> <span class="s2">"bicubic"</span><span class="p">,</span> <span class="s2">"area"</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"invalid interpolation_mode, got </span><span class="si">{</span><span class="n">interpolation_mode</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">crop_position</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span>
-            <span class="s2">&quot;top_left&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;bottom_left&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;top_right&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;bottom_right&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;center&quot;</span><span class="p">,</span>
+            <span class="s2">"top_left"</span><span class="p">,</span>
+            <span class="s2">"bottom_left"</span><span class="p">,</span>
+            <span class="s2">"top_right"</span><span class="p">,</span>
+            <span class="s2">"bottom_right"</span><span class="p">,</span>
+            <span class="s2">"center"</span><span class="p">,</span>
         <span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid crop_position, got </span><span class="si">{</span><span class="n">crop_position</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"invalid crop_position, got </span><span class="si">{</span><span class="n">crop_position</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_N</span> <span class="o">=</span> <span class="mi">2</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">interpolation_mode</span><span class="p">)</span>
@@ -753,7 +756,7 @@
             <span class="n">scale_factor</span><span class="p">:</span> <span class="n">Tensor</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">_T</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
             <span class="n">target_shape</span><span class="p">:</span> <span class="n">_T</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">T_Scale</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Crop, interpolate and pad the tensor according to the scale_factor.</span>
+<span class="w">        </span><span class="sd">"""Crop, interpolate and pad the tensor according to the scale_factor.</span>
 
 <span class="sd">        Scale_factor must be 2-length sequence.</span>
 
@@ -770,7 +773,7 @@
 <span class="sd">        _T.Tuple[Tensor, T_Scale]</span>
 <span class="sd">            The interpolated tensor and its scaling factor</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">scale_factor</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">scale_factor</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scale_factor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
@@ -782,20 +785,20 @@
             <span class="n">scale_factor</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">scale_factor</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;target_shape must be a ndarray, Tensor, or sequence of floats of length 2, received a &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">scale_factor</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">scale_factor</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="sa">f</span><span class="s2">"target_shape must be a ndarray, Tensor, or sequence of floats of length 2, received a "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">scale_factor</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">scale_factor</span><span class="si">}</span><span class="s2">."</span>
             <span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crop_position</span> <span class="o">==</span> <span class="s2">&quot;center&quot;</span><span class="p">:</span>
-            <span class="n">vertical_alignment</span><span class="p">,</span> <span class="n">horizontal_alignment</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;mid&quot;</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crop_position</span> <span class="o">==</span> <span class="s2">"center"</span><span class="p">:</span>
+            <span class="n">vertical_alignment</span><span class="p">,</span> <span class="n">horizontal_alignment</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"mid"</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">2</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">vertical_alignment</span><span class="p">,</span> <span class="n">horizontal_alignment</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;from_start&quot;</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">2</span>
+            <span class="n">vertical_alignment</span><span class="p">,</span> <span class="n">horizontal_alignment</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"from_start"</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">2</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crop_position</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;bottom&quot;</span><span class="p">):</span>
-            <span class="n">vertical_alignment</span> <span class="o">=</span> <span class="s2">&quot;from_end&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crop_position</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"bottom"</span><span class="p">):</span>
+            <span class="n">vertical_alignment</span> <span class="o">=</span> <span class="s2">"from_end"</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crop_position</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;right&quot;</span><span class="p">):</span>
-            <span class="n">horizontal_alignment</span> <span class="o">=</span> <span class="s2">&quot;from_end&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crop_position</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"right"</span><span class="p">):</span>
+            <span class="n">horizontal_alignment</span> <span class="o">=</span> <span class="s2">"from_end"</span>
 
         <span class="n">top_bottom</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">pad_tb</span><span class="p">,</span> <span class="n">shape_tb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_crop_pad</span><span class="p">(</span>
             <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">target_shape</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">vertical_alignment</span>
@@ -826,16 +829,16 @@
 <div class="viewcode-block" id="Zoom3d">
 <a class="viewcode-back" href="../../../api/networks.html#neurolit.networks.interpolation_layer.Zoom3d">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Zoom3d</span><span class="p">(</span><span class="n">_ZoomNd</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform a crop and interpolation on a Five-dimensional Tensor respecting batch and channel.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Perform a crop and interpolation on a Five-dimensional Tensor respecting batch and channel."""</span>
 
 <div class="viewcode-block" id="Zoom3d.__init__">
 <a class="viewcode-back" href="../../../api/networks.html#neurolit.networks.interpolation_layer.Zoom3d.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
-            <span class="n">interpolation_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
-            <span class="n">crop_position</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;front_top_left&quot;</span>
+            <span class="n">interpolation_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"nearest"</span><span class="p">,</span>
+            <span class="n">crop_position</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"front_top_left"</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct Zoom3d object.</span>
+<span class="w">        </span><span class="sd">"""Construct Zoom3d object.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -844,28 +847,28 @@
 <span class="sd">            not including batchsize and channels.</span>
 <span class="sd">        interpolation_mode : str</span>
 <span class="sd">            interpolation mode as in `torch.nn.interpolate`</span>
-<span class="sd">            (default: &#39;neareast&#39;)</span>
+<span class="sd">            (default: 'neareast')</span>
 <span class="sd">        crop_position : str</span>
-<span class="sd">            crop position to use from &#39;front_top_left&#39;, &#39;back_top_left&#39;,</span>
-<span class="sd">            &#39;front_bottom_left&#39;, &#39;back_bottom_left&#39;, &#39;front_top_right&#39;, &#39;back_top_right&#39;,</span>
-<span class="sd">            &#39;front_bottom_right&#39;, &#39;back_bottom_right&#39;, &#39;center&#39; (default: &#39;front_top_left&#39;)</span>
+<span class="sd">            crop position to use from 'front_top_left', 'back_top_left',</span>
+<span class="sd">            'front_bottom_left', 'back_bottom_left', 'front_top_right', 'back_top_right',</span>
+<span class="sd">            'front_bottom_right', 'back_bottom_right', 'center' (default: 'front_top_left')</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">interpolation_mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="s2">&quot;trilinear&quot;</span><span class="p">,</span> <span class="s2">&quot;area&quot;</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid interpolation_mode, got </span><span class="si">{</span><span class="n">interpolation_mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">interpolation_mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"nearest"</span><span class="p">,</span> <span class="s2">"trilinear"</span><span class="p">,</span> <span class="s2">"area"</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"invalid interpolation_mode, got </span><span class="si">{</span><span class="n">interpolation_mode</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">crop_position</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span>
-            <span class="s2">&quot;front_top_left&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;back_top_left&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;front_bottom_left&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;back_bottom_left&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;front_top_right&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;back_top_right&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;front_bottom_right&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;back_bottom_right&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;center&quot;</span><span class="p">,</span>
+            <span class="s2">"front_top_left"</span><span class="p">,</span>
+            <span class="s2">"back_top_left"</span><span class="p">,</span>
+            <span class="s2">"front_bottom_left"</span><span class="p">,</span>
+            <span class="s2">"back_bottom_left"</span><span class="p">,</span>
+            <span class="s2">"front_top_right"</span><span class="p">,</span>
+            <span class="s2">"back_top_right"</span><span class="p">,</span>
+            <span class="s2">"front_bottom_right"</span><span class="p">,</span>
+            <span class="s2">"back_bottom_right"</span><span class="p">,</span>
+            <span class="s2">"center"</span><span class="p">,</span>
         <span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid crop_position, got </span><span class="si">{</span><span class="n">crop_position</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"invalid crop_position, got </span><span class="si">{</span><span class="n">crop_position</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_N</span> <span class="o">=</span> <span class="mi">3</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">interpolation_mode</span><span class="p">)</span>
@@ -878,7 +881,7 @@
             <span class="n">scale_factor</span><span class="p">:</span> <span class="n">Tensor</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">_T</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
             <span class="n">target_shape</span><span class="p">:</span> <span class="n">_T</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Crop, interpolate and pad the tensor according to the scale_factor.</span>
+<span class="w">        </span><span class="sd">"""Crop, interpolate and pad the tensor according to the scale_factor.</span>
 
 <span class="sd">        scale_factor must be 3-length sequence.</span>
 
@@ -893,7 +896,7 @@
 <span class="sd">        -------</span>
 <span class="sd">        _T.Tuple[Tensor, T_Scale]</span>
 <span class="sd">             The interpolated tensor and its scaling factor</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">scale_factor</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">scale_factor</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scale_factor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
@@ -905,25 +908,25 @@
             <span class="n">scale_factor</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">scale_factor</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;target_shape must be a ndarray, Tensor, or sequence of floats of length 3, received a &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">scale_factor</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">scale_factor</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="sa">f</span><span class="s2">"target_shape must be a ndarray, Tensor, or sequence of floats of length 3, received a "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">scale_factor</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">scale_factor</span><span class="si">}</span><span class="s2">."</span>
             <span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crop_position</span> <span class="o">==</span> <span class="s2">&quot;center&quot;</span><span class="p">:</span>
-            <span class="n">depth_alignment</span><span class="p">,</span> <span class="n">vertical_alignment</span><span class="p">,</span> <span class="n">horizontal_alignment</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;mid&quot;</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">3</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crop_position</span> <span class="o">==</span> <span class="s2">"center"</span><span class="p">:</span>
+            <span class="n">depth_alignment</span><span class="p">,</span> <span class="n">vertical_alignment</span><span class="p">,</span> <span class="n">horizontal_alignment</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"mid"</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">3</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">depth_alignment</span><span class="p">,</span> <span class="n">vertical_alignment</span><span class="p">,</span> <span class="n">horizontal_alignment</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="s2">&quot;from_start&quot;</span><span class="p">,</span>
+                <span class="s2">"from_start"</span><span class="p">,</span>
             <span class="p">)</span> <span class="o">*</span> <span class="mi">3</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crop_position</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;back&quot;</span><span class="p">):</span>
-            <span class="n">depth_alignment</span> <span class="o">=</span> <span class="s2">&quot;from_end&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crop_position</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"back"</span><span class="p">):</span>
+            <span class="n">depth_alignment</span> <span class="o">=</span> <span class="s2">"from_end"</span>
 
-        <span class="k">if</span> <span class="s2">&quot;_bottom_&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crop_position</span><span class="p">:</span>
-            <span class="n">vertical_alignment</span> <span class="o">=</span> <span class="s2">&quot;from_end&quot;</span>
+        <span class="k">if</span> <span class="s2">"_bottom_"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crop_position</span><span class="p">:</span>
+            <span class="n">vertical_alignment</span> <span class="o">=</span> <span class="s2">"from_end"</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crop_position</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;right&quot;</span><span class="p">):</span>
-            <span class="n">horizontal_alignment</span> <span class="o">=</span> <span class="s2">&quot;from_end&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crop_position</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"right"</span><span class="p">):</span>
+            <span class="n">horizontal_alignment</span> <span class="o">=</span> <span class="s2">"from_end"</span>
 
         <span class="n">front_back</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">pad_fb</span><span class="p">,</span> <span class="n">shape_fb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_crop_pad</span><span class="p">(</span>
             <span class="n">in_shape</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">target_shape</span><span class="o">=</span><span class="n">target_shape</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span> 
@@ -938,29 +941,29 @@
             <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">alignment</span><span class="o">=</span><span class="n">horizontal_alignment</span><span class="p">,</span> 
         <span class="p">)</span>
 
-        <span class="c1">#print(&#39;cropping&#39;, front_back, top_bottom, left_right)</span>
+        <span class="c1">#print('cropping', front_back, top_bottom, left_right)</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">front_back</span><span class="p">,</span> <span class="n">top_bottom</span><span class="p">,</span> <span class="n">left_right</span><span class="p">]</span>
 
-        <span class="c1">#print(&#39;shape after cropping&#39;, data.shape)</span>
-        <span class="c1">#print(&#39;target shape for interpolation&#39;, shape_fb, shape_tb, shape_lr)</span>
+        <span class="c1">#print('shape after cropping', data.shape)</span>
+        <span class="c1">#print('target shape for interpolation', shape_fb, shape_tb, shape_lr)</span>
 
         <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">!=</span> <span class="p">(</span><span class="n">shape_fb</span><span class="p">,</span> <span class="n">shape_tb</span><span class="p">,</span> <span class="n">shape_lr</span><span class="p">):</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">_F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span>
                 <span class="n">data</span><span class="p">,</span>
                 <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">shape_fb</span><span class="p">,</span> <span class="n">shape_tb</span><span class="p">,</span> <span class="n">shape_lr</span><span class="p">),</span>
                 <span class="n">mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_mode</span><span class="p">,</span>
-                <span class="n">align_corners</span><span class="o">=</span><span class="kc">False</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">!=</span> <span class="s1">&#39;nearest&#39;</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">align_corners</span><span class="o">=</span><span class="kc">False</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">!=</span> <span class="s1">'nearest'</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
             <span class="p">)</span>
 
-        <span class="c1"># print(&#39;shape after interpolation&#39;, data.shape)</span>
-        <span class="c1"># print(&#39;padding&#39;, pad_fb, pad_tb, pad_lr)</span>
+        <span class="c1"># print('shape after interpolation', data.shape)</span>
+        <span class="c1"># print('padding', pad_fb, pad_tb, pad_lr)</span>
 
         <span class="c1"># if padding is necessary, pad</span>
         <span class="k">if</span> <span class="n">pad_fb</span> <span class="o">!=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="n">pad_tb</span> <span class="o">!=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="n">pad_lr</span> <span class="o">!=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">_F</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="n">pad_fb</span> <span class="o">+</span> <span class="n">pad_lr</span> <span class="o">+</span> <span class="n">pad_tb</span><span class="p">)</span>
 
-        <span class="c1">#print(&#39;shape after padding (output_shape)&#39;, data.shape)</span>
+        <span class="c1">#print('shape after padding (output_shape)', data.shape)</span>
 
         <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">scale_factor</span></div>
 
@@ -969,15 +972,15 @@
 <div class="viewcode-block" id="OnlyZoom3d">
 <a class="viewcode-back" href="../../../api/networks.html#neurolit.networks.interpolation_layer.OnlyZoom3d">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OnlyZoom3d</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform a crop and interpolation on a Five-dimensional Tensor respecting batch and channel.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Perform a crop and interpolation on a Five-dimensional Tensor respecting batch and channel."""</span>
 
 <div class="viewcode-block" id="OnlyZoom3d.__init__">
 <a class="viewcode-back" href="../../../api/networks.html#neurolit.networks.interpolation_layer.OnlyZoom3d.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
-            <span class="n">interpolation_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
+            <span class="n">interpolation_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"nearest"</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct Zoom3d object.</span>
+<span class="w">        </span><span class="sd">"""Construct Zoom3d object.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -986,17 +989,17 @@
 <span class="sd">            not including batchsize and channels.</span>
 <span class="sd">        interpolation_mode : str</span>
 <span class="sd">            interpolation mode as in `torch.nn.interpolate`</span>
-<span class="sd">            (default: &#39;neareast&#39;)</span>
+<span class="sd">            (default: 'neareast')</span>
 <span class="sd">        crop_position : str</span>
-<span class="sd">            crop position to use from &#39;front_top_left&#39;, &#39;back_top_left&#39;,</span>
-<span class="sd">            &#39;front_bottom_left&#39;, &#39;back_bottom_left&#39;, &#39;front_top_right&#39;, &#39;back_top_right&#39;,</span>
-<span class="sd">            &#39;front_bottom_right&#39;, &#39;back_bottom_right&#39;, &#39;center&#39; (default: &#39;front_top_left&#39;)</span>
+<span class="sd">            crop position to use from 'front_top_left', 'back_top_left',</span>
+<span class="sd">            'front_bottom_left', 'back_bottom_left', 'front_top_right', 'back_top_right',</span>
+<span class="sd">            'front_bottom_right', 'back_bottom_right', 'center' (default: 'front_top_left')</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="n">interpolation_mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="s2">&quot;trilinear&quot;</span><span class="p">,</span> <span class="s2">&quot;area&quot;</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid interpolation_mode, got </span><span class="si">{</span><span class="n">interpolation_mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">interpolation_mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"nearest"</span><span class="p">,</span> <span class="s2">"trilinear"</span><span class="p">,</span> <span class="s2">"area"</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"invalid interpolation_mode, got </span><span class="si">{</span><span class="n">interpolation_mode</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">interpolation_mode</span> <span class="o">=</span> <span class="n">interpolation_mode</span></div>
 

@@ -181,6 +181,8 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slice_centers"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slice_centers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slab_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slab_slices()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slice_from_volume()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.slice_selector"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.slice_selector()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slices()</span></code></a></li>
@@ -216,6 +218,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="api/inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.positive_int"><code class="docutils literal notranslate"><span class="pre">positive_int()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.resolve_inference_device"><code class="docutils literal notranslate"><span class="pre">resolve_inference_device()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
@@ -524,10 +527,14 @@
 </li>
       <li><a href="api/data.html#neurolit.data.datasets.get_dataset">get_dataset() (in module neurolit.data.datasets)</a>
 </li>
+      <li><a href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slice_centers">get_inference_slice_centers() (neurolit.inference.SliceWiseInpaintingInferer method)</a>
+</li>
       <li><a href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slices">get_inference_slices() (neurolit.inference.SliceWiseInpaintingInferer method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slab_slices">get_slab_slices() (neurolit.inference.SliceWiseInpaintingInferer method)</a>
+</li>
       <li><a href="api/data.html#neurolit.data.datasets.SlicedDataset.get_slice_axis">get_slice_axis() (neurolit.data.datasets.SlicedDataset method)</a>
 </li>
       <li><a href="api/inpainting.html#neurolit.inpaint_image.get_slice_from_volume">get_slice_from_volume() (in module neurolit.inpaint_image)</a>
@@ -739,6 +746,8 @@
       <li><a href="api/utils.html#neurolit.utils.plotting.plot_learning_curve">plot_learning_curve() (in module neurolit.utils.plotting)</a>
 </li>
       <li><a href="api/utils.html#neurolit.utils.plotting.plot_scheduler">plot_scheduler() (in module neurolit.utils.plotting)</a>
+</li>
+      <li><a href="api/inpainting.html#neurolit.inpaint_image.positive_int">positive_int() (in module neurolit.inpaint_image)</a>
 </li>
   </ul></td>
 </tr></table>

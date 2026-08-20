@@ -181,6 +181,8 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slice_centers"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slice_centers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slab_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slab_slices()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_slice_from_volume"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_slice_from_volume()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.slice_selector"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.slice_selector()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/inference.html#neurolit.inference.SliceWiseInpaintingInferer.get_inference_slices"><code class="docutils literal notranslate"><span class="pre">SliceWiseInpaintingInferer.get_inference_slices()</span></code></a></li>
@@ -216,6 +218,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.positive_int"><code class="docutils literal notranslate"><span class="pre">positive_int()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.resolve_inference_device"><code class="docutils literal notranslate"><span class="pre">resolve_inference_device()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/inpainting.html#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
@@ -374,7 +377,7 @@
 <div class="viewcode-block" id="Subsampled">
 <a class="viewcode-back" href="../../../api/data.html#neurolit.data.transforms.Subsampled">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Subsampled</span><span class="p">(</span><span class="n">transforms</span><span class="o">.</span><span class="n">MapTransform</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transform that subsamples input data and pads to a specified size.</span>
+<span class="w">    </span><span class="sd">"""Transform that subsamples input data and pads to a specified size.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -384,7 +387,7 @@
 <span class="sd">        Target spatial size for output (h,w,d)</span>
 <span class="sd">    size_reduction : int, optional</span>
 <span class="sd">        Factor by which to subsample. Defaults to 2.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
 <div class="viewcode-block" id="Subsampled.__init__">
 <a class="viewcode-back" href="../../../api/data.html#neurolit.data.transforms.Subsampled.__init__">[docs]</a>
@@ -397,9 +400,9 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_pad_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">max_out</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="c1"># Get correct size = max along shape</span>
-        <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">max_out</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">),</span> <span class="s1">&#39;max_out must be 3D&#39;</span>
+        <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">max_out</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">),</span> <span class="s1">'max_out must be 3D'</span>
         <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span>
-        <span class="c1">#LOGGER.info(&quot;Padding image from {0} to {1}x{1}x{1}&quot;.format(img.shape, max_out))</span>
+        <span class="c1">#LOGGER.info("Padding image from {0} to {1}x{1}x{1}".format(img.shape, max_out))</span>
         <span class="n">padded_img</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">c</span><span class="p">,</span> <span class="n">max_out</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">max_out</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">max_out</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">img</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         
         <span class="n">padded_img</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span> <span class="n">h</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span> <span class="n">w</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">img</span>
@@ -407,7 +410,7 @@
         <span class="k">return</span> <span class="n">padded_img</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-        <span class="c1">#assert(data.shape[1:]//2 &lt;= self.image_shape), &#39;image_shape must be at least half of data.shape[1:]&#39;</span>
+        <span class="c1">#assert(data.shape[1:]//2 &lt;= self.image_shape), 'image_shape must be at least half of data.shape[1:]'</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">:</span>
                 <span class="n">img</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">][:,::</span><span class="bp">self</span><span class="o">.</span><span class="n">size_reduction</span><span class="p">,::</span><span class="bp">self</span><span class="o">.</span><span class="n">size_reduction</span><span class="p">,::</span><span class="bp">self</span><span class="o">.</span><span class="n">size_reduction</span><span class="p">]</span>
@@ -415,8 +418,8 @@
                 <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pad_image</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_shape</span><span class="p">)</span>
 
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="c1">#data[key].meta[&#39;spatial_shape&#39;] = data[key].shape[1:]</span>
-                    <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;delta&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;delta&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">size_reduction</span>
+                    <span class="c1">#data[key].meta['spatial_shape'] = data[key].shape[1:]</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">'delta'</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">'delta'</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">size_reduction</span>
                 <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
                     <span class="k">pass</span>
 
@@ -426,7 +429,7 @@
 <div class="viewcode-block" id="ScaleAugmentation">
 <a class="viewcode-back" href="../../../api/data.html#neurolit.data.transforms.ScaleAugmentation">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ScaleAugmentation</span><span class="p">(</span><span class="n">transforms</span><span class="o">.</span><span class="n">MapTransform</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transform that randomly scales the voxel size metadata.</span>
+<span class="w">    </span><span class="sd">"""Transform that randomly scales the voxel size metadata.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -434,7 +437,7 @@
 <span class="sd">        List of keys to apply transform to</span>
 <span class="sd">    scale_range : tuple</span>
 <span class="sd">        Range of possible scale factors (min, max)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
 <div class="viewcode-block" id="ScaleAugmentation.__init__">
 <a class="viewcode-back" href="../../../api/data.html#neurolit.data.transforms.ScaleAugmentation.__init__">[docs]</a>
@@ -447,7 +450,7 @@
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">:</span>
                 <span class="n">s</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;delta&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;delta&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">s</span>
+                <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">'delta'</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">'delta'</span><span class="p">]</span> <span class="o">*</span> <span class="n">s</span>
         <span class="k">return</span> <span class="n">data</span></div>
 
     
@@ -455,10 +458,10 @@
 <div class="viewcode-block" id="Identityd">
 <a class="viewcode-back" href="../../../api/data.html#neurolit.data.transforms.Identityd">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Identityd</span><span class="p">(</span><span class="n">transforms</span><span class="o">.</span><span class="n">MapTransform</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transform that returns data unchanged.</span>
+<span class="w">    </span><span class="sd">"""Transform that returns data unchanged.</span>
 <span class="sd">    </span>
 <span class="sd">    Used as a placeholder when no transform is needed.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
         <span class="k">return</span> <span class="n">data</span></div>
