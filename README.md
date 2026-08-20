@@ -144,7 +144,7 @@ lit-postprocessing \
 The current postprocessing workflow updates the primary FastSurfer outputs in place, keeps the
 pre-lesion versions as `.lit` backups or mapped backup files, and writes lesion-specific reports
 such as `stats/aparc.DKTatlas+aseg.lesion_report.txt`, `stats/aseg.lesion_report.txt`, and
-`stats/lesion_impact_summary.yaml`.
+`stats/lesion_impact_summary.json`.
 
 ## Training
 

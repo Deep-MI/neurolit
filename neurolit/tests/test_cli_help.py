@@ -1,3 +1,4 @@
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -8,7 +9,7 @@ import pytest
 
 import neurolit.cli as cli
 from neurolit.inpaint_image import resolve_inference_device
-from neurolit.scripts.lesion_postprocessing import resolve_inpainting_mask_path
+from neurolit.scripts.lesion_postprocessing import generate_lesion_impact_summary, resolve_inpainting_mask_path
 
 
 def run_help_test(module_path):
@@ -78,6 +79,38 @@ def test_postprocessing_resolves_fastsurfer_mask_path_only(tmp_path):
 
     assert resolved == subject_dir / "mri" / "mask.lit.nii.gz"
     assert resolved != legacy_mask
+
+
+def test_generate_lesion_impact_summary_writes_json(tmp_path):
+    """Lesion impact summary should be emitted as machine-parseable JSON."""
+    subject_id = "subject"
+    stats_dir = tmp_path / subject_id / "stats"
+    stats_dir.mkdir(parents=True)
+    report_path = stats_dir / "aparc.DKTatlas+aseg.lesion_report.txt"
+    report_path.write_text(
+        "\n".join(
+            [
+                "Replaced Labels",
+                "# 1001 ctx-lh-bankssts",
+                "Adjacent Labels",
+            ]
+        )
+    )
+
+    summary_path = generate_lesion_impact_summary(
+        tmp_path,
+        subject_id,
+        [("stats/aparc.DKTatlas+aseg.mapped.stats", "stats/aparc.DKTatlas+aseg.lesion_report.txt")],
+        [],
+    )
+
+    assert summary_path == stats_dir / "lesion_impact_summary.json"
+    assert not (stats_dir / "lesion_impact_summary.yaml").exists()
+    summary = json.loads(summary_path.read_text())
+    assert summary["subject"] == subject_id
+    assert summary["hemisphere_impact"]["left_hemisphere_affected"] is True
+    assert summary["detailed_involvement"]["left_cortical_affected"] is True
+    assert summary["affected_structures"] == ["ctx-lh-bankssts"]
 
 
 def test_copy_file_same_path_is_noop(tmp_path):
