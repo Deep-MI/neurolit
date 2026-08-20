@@ -296,9 +296,12 @@ class SliceWiseInpaintingInferer(InpaintingInferer):
         torch.Tensor
             Extracted slice tensor with thickness matching the model channels.
         """
-        volume_slice, slab_slice, _, _ = self.get_slab_slices(
+        volume_slice, slab_slice, valid_start, valid_end = self.get_slab_slices(
             slice_cut, dimension, volume.shape[dimension]
         )
+        if valid_end - valid_start == self.slice_thickness:
+            return volume[volume_slice]
+
         slab = volume.new_zeros(
             [
                 self.slice_thickness if axis == dimension else size
@@ -376,8 +379,14 @@ class SliceWiseInpaintingInferer(InpaintingInferer):
                 batched_masks.append(mask_slice)
                 batch_slice_indices.append(slice_index)
 
-        batched_slices = torch.stack(batched_slices, dim=0)
-        batched_masks = torch.stack(batched_masks, dim=0)
+        if batched_slices:
+            batched_slices = torch.stack(batched_slices, dim=0)
+            batched_masks = torch.stack(batched_masks, dim=0)
+        else:
+            slab_shape = list(image_masked.shape)
+            slab_shape[dimension] = self.slice_thickness
+            batched_slices = image_masked.new_empty((0, *slab_shape))
+            batched_masks = mask.new_empty((0, *slab_shape))
 
         return batched_slices, batched_masks, batch_slice_indices, image_inpainted
         
@@ -417,6 +426,11 @@ class SliceWiseInpaintingInferer(InpaintingInferer):
         torch.Tensor | tuple[torch.Tensor, torch.Tensor]
             Reconstructed volume, optionally with intermediate slices.
         """
+        if not torch.any(mask):
+            if get_intermediates:
+                return image_masked, image_masked.new_empty((0,))
+            return image_masked
+
         intermediates = []
 
         batched_slices, batched_masks, batch_slice_indices, image_inpainted = self.get_inference_slices(mask, image_masked, self.dimension)
@@ -727,6 +741,11 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
         torch.Tensor | tuple[torch.Tensor, torch.Tensor]
             Reconstructed volume, optionally paired with intermediates.
         """
+        if not torch.any(mask):
+            if get_intermediates:
+                return image_masked, image_masked.new_empty((0,))
+            return image_masked
+
         if mask.dtype == torch.bool:
             mask = mask.int()
         else:
@@ -897,6 +916,11 @@ class OffsetTwoAndHalfDInpaintingInferer(TwoAndHalfDInpaintingInferer):
         torch.Tensor | tuple[torch.Tensor, torch.Tensor]
             Reconstructed volume, optionally with intermediates.
         """
+        if not torch.any(mask):
+            if get_intermediates:
+                return image_masked, image_masked.new_empty((0,))
+            return image_masked
+
         if mask.dtype == torch.bool:
             mask = mask.int()
         else:
