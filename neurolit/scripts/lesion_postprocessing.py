@@ -909,7 +909,7 @@ def build_stats_overview(subjects_dir: Path, subject_id: str,
 
 def generate_lesion_impact_summary(subjects_dir: Path, subject_id: str, 
                                    mapping_reports: list[tuple[str, str]], 
-                                   surface_reports: list[tuple[str, str]]) -> Path | None:
+                                   surface_reports: list[tuple[str, str]]) -> Path:
     """Generate a machine-parseable JSON report of lesion impact.
 
     Parameters
@@ -925,8 +925,8 @@ def generate_lesion_impact_summary(subjects_dir: Path, subject_id: str,
 
     Returns
     -------
-    Optional[Path]
-        Path to the generated summary report, or None if no reports found.
+    Path
+        Path to the generated summary report.
     """
     logger.info("Generating lesion impact summary (JSON)...")
     

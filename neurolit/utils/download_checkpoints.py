@@ -196,13 +196,13 @@ def fallback_multiple_urls(
         show_progress: bool = True,
         position: int | None = None,
 ) -> None:
-    last_error: Exception | None = None
+    last_error: requests.exceptions.RequestException | None = None
     for url in urls:
         try:
             check_and_download_ckpts(checkpoint_path, [url], verbose, show_progress, position)
             if Path(checkpoint_path).exists():
                 return
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             tqdm.write(f"Tried downloading {checkpoint_path} from {url} but failed")
             tqdm.write(str(e))
             last_error = e

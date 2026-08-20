@@ -106,7 +106,7 @@ def test_download_checkpoint_rejects_truncated_response(monkeypatch, tmp_path):
 def test_fallback_multiple_urls_raises_after_all_sources_fail(monkeypatch, tmp_path):
     """The fallback helper should fail loudly when no mirror produced a file."""
     checkpoint_path = tmp_path / "model_axial.pt"
-    errors = [requests.exceptions.Timeout("first failure"), PermissionError("second failure")]
+    errors = [requests.exceptions.Timeout("first failure"), requests.exceptions.ConnectionError("second failure")]
 
     def fail_download(*args, **kwargs):
         raise errors.pop(0)
