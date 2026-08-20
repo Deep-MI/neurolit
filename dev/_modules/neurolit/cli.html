@@ -58,6 +58,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../usage.html#basic-usage">Basic Usage</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../usage.html#running-neurolit-with-containerization">Running neuroLIT with Containerization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../usage.html#running-neurolit-from-pypi">Running neuroLIT from PyPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../usage.html#inference-presets">Inference presets</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../usage.html#mask-dilation">Mask Dilation</a></li>
 </ul>
 </li>
@@ -173,6 +174,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../api/inference.html">Inference Module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inference.html#neurolit.inference.InpaintingInferer"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.InpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.InpaintingInferer.scheduler_step_context"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.scheduler_step_context()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.InpaintingInferer.scheduler_context_for_timestep"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.scheduler_context_for_timestep()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.InpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.__call__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.InpaintingInferer.sample_forward_diffusion"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.sample_forward_diffusion()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.InpaintingInferer.diffusion_forward"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.diffusion_forward()</span></code></a></li>
@@ -191,6 +194,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.view_dimension_for_step"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.view_dimension_for_step()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.view_agg_inference()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.denoise"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.denoise()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.__call__()</span></code></a></li>
@@ -218,6 +222,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.resolve_inference_settings"><code class="docutils literal notranslate"><span class="pre">resolve_inference_settings()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.positive_int"><code class="docutils literal notranslate"><span class="pre">positive_int()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.resolve_inference_device"><code class="docutils literal notranslate"><span class="pre">resolve_inference_device()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
@@ -416,6 +421,16 @@
     <span class="n">nib</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">nib</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">mask_data</span><span class="p">,</span> <span class="n">reference_img</span><span class="o">.</span><span class="n">affine</span><span class="p">,</span> <span class="n">header</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">dst</span><span class="p">))</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_append_inference_mode_args</span><span class="p">(</span><span class="n">argv</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">keepgeom</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">fast</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">min_auto_img_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Append common geometry and inference-preset flags to a backend command."""</span>
+    <span class="k">if</span> <span class="n">min_auto_img_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">argv</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">"--min_auto_img_size"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">min_auto_img_size</span><span class="p">)])</span>
+    <span class="k">if</span> <span class="n">keepgeom</span><span class="p">:</span>
+        <span class="n">argv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"--keepgeom"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">fast</span><span class="p">:</span>
+        <span class="n">argv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"--fast"</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="run_lit">
 <a class="viewcode-back" href="../../api/cli.html#neurolit.cli.run_lit">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_lit</span><span class="p">():</span>
@@ -459,6 +474,11 @@
         <span class="n">default</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">"Slices per GPU batch (default: 8); reduce to lower GPU memory usage"</span><span class="p">,</span>
     <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--fast"</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Use the recommended fast preset: DDIM, 50 steps, and RePaint 10/15"</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="c1"># Other arguments</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"-h"</span><span class="p">,</span> <span class="s2">"--help"</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"Show help message and exit"</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"-v"</span><span class="p">,</span> <span class="s2">"--version"</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">"version"</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">get_version_with_hash</span><span class="p">(),</span> <span class="n">help</span><span class="o">=</span><span class="s2">"Print version number and exit"</span><span class="p">)</span>
@@ -478,6 +498,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">"  --fastsurfer_dir      : Treat output_directory as a FastSurfer subject directory"</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">"  --device              : Inference device: auto, cpu, or cuda (default: auto)"</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">"  --batch_size          : Slices per GPU batch (default: 8); reduce to lower GPU memory usage"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"  --fast                : Use DDIM with 50 steps and RePaint 10/15"</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">"Other arguments:"</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">"  -v, --version         : Print version number and exit"</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">"  -h, --help            : Show help message and exit"</span><span class="p">)</span>
@@ -579,10 +600,12 @@
                     <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">batch_size</span><span class="p">),</span>
                 <span class="p">]</span>
 
-                <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">keepgeom</span><span class="p">:</span>
-                    <span class="n">inpaint_argv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"--keepgeom"</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">min_auto_img_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">inpaint_argv</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">"--min_auto_img_size"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">min_auto_img_size</span><span class="p">)])</span>
+                <span class="n">_append_inference_mode_args</span><span class="p">(</span>
+                    <span class="n">inpaint_argv</span><span class="p">,</span>
+                    <span class="n">keepgeom</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">keepgeom</span><span class="p">,</span>
+                    <span class="n">fast</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">fast</span><span class="p">,</span>
+                    <span class="n">min_auto_img_size</span><span class="o">=</span><span class="n">min_auto_img_size</span><span class="p">,</span>
+                <span class="p">)</span>
 
                 <span class="c1"># Forward any unknown arguments</span>
                 <span class="n">inpaint_argv</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">unknown</span><span class="p">)</span>
@@ -630,10 +653,12 @@
                 <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">batch_size</span><span class="p">),</span>
             <span class="p">]</span>
 
-            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">keepgeom</span><span class="p">:</span>
-                <span class="n">inpaint_argv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"--keepgeom"</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">min_auto_img_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">inpaint_argv</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">"--min_auto_img_size"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">min_auto_img_size</span><span class="p">)])</span>
+            <span class="n">_append_inference_mode_args</span><span class="p">(</span>
+                <span class="n">inpaint_argv</span><span class="p">,</span>
+                <span class="n">keepgeom</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">keepgeom</span><span class="p">,</span>
+                <span class="n">fast</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">fast</span><span class="p">,</span>
+                <span class="n">min_auto_img_size</span><span class="o">=</span><span class="n">min_auto_img_size</span><span class="p">,</span>
+            <span class="p">)</span>
 
             <span class="c1"># Forward any unknown arguments</span>
             <span class="n">inpaint_argv</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">unknown</span><span class="p">)</span>

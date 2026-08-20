@@ -61,6 +61,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#basic-usage">Basic Usage</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#running-neurolit-with-containerization">Running neuroLIT with Containerization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#running-neurolit-from-pypi">Running neuroLIT from PyPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#inference-presets">Inference presets</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mask-dilation">Mask Dilation</a></li>
 </ul>
 </li>
@@ -176,6 +177,8 @@
 <li class="toctree-l2"><a class="reference internal" href="api/inference.html">Inference Module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/inference.html#neurolit.inference.InpaintingInferer"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.InpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.InpaintingInferer.scheduler_step_context"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.scheduler_step_context()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.InpaintingInferer.scheduler_context_for_timestep"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.scheduler_context_for_timestep()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.InpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.__call__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.InpaintingInferer.sample_forward_diffusion"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.sample_forward_diffusion()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.InpaintingInferer.diffusion_forward"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.diffusion_forward()</span></code></a></li>
@@ -194,6 +197,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.view_dimension_for_step"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.view_dimension_for_step()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.view_agg_inference()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.denoise"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.denoise()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.__call__()</span></code></a></li>
@@ -221,6 +225,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="api/inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.resolve_inference_settings"><code class="docutils literal notranslate"><span class="pre">resolve_inference_settings()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.positive_int"><code class="docutils literal notranslate"><span class="pre">positive_int()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.resolve_inference_device"><code class="docutils literal notranslate"><span class="pre">resolve_inference_device()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
@@ -407,6 +412,12 @@ the outputs directly into the FastSurfer subject structure. In this mode, the in
 written to <code class="docutils literal notranslate"><span class="pre">mri/inpainted.lit.nii.gz</span></code>, the processed mask to <code class="docutils literal notranslate"><span class="pre">mri/mask.lit.nii.gz</span></code>, and the
 original input mask to <code class="docutils literal notranslate"><span class="pre">mri/orig/mask.lit.nii.gz</span></code>.</p>
 </section>
+<section id="inference-presets">
+<h3>Inference presets<a class="headerlink" href="#inference-presets" title="Link to this heading"></a></h3>
+<p>The original 1000-step DDPM configuration remains the default. Add <code class="docutils literal notranslate"><span class="pre">--fast</span></code> to select the
+recommended accelerated preset: DDIM with 50 inference steps and ten RePaint passes every 15
+scheduler steps. Individual scheduler and step arguments can still override preset values.</p>
+</section>
 <section id="mask-dilation">
 <h3>Mask Dilation<a class="headerlink" href="#mask-dilation" title="Link to this heading"></a></h3>
 <p>We recommend performing mask dilation by default to account for potential undersegmentation e.g. <code class="docutils literal notranslate"><span class="pre">--dilate</span> <span class="pre">2</span></code>
@@ -528,6 +539,7 @@ Options:
   --fastsurfer_dir                                Treat output_directory as a FastSurfer subject directory
   --device [auto|cpu|cuda]                        Inference device [default: auto]
   --batch_size INTEGER                            Slices per GPU batch [default: 8]; reduce to lower GPU memory usage
+  --fast                                          Use DDIM with 50 steps and RePaint 10/15
   -h, --help                                      Show this message and exit
 </pre></div>
 </div>

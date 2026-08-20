@@ -58,6 +58,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../usage.html#basic-usage">Basic Usage</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../usage.html#running-neurolit-with-containerization">Running neuroLIT with Containerization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../usage.html#running-neurolit-from-pypi">Running neuroLIT from PyPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../usage.html#inference-presets">Inference presets</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../usage.html#mask-dilation">Mask Dilation</a></li>
 </ul>
 </li>
@@ -173,6 +174,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../api/inference.html">Inference Module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inference.html#neurolit.inference.InpaintingInferer"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.InpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.InpaintingInferer.scheduler_step_context"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.scheduler_step_context()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.InpaintingInferer.scheduler_context_for_timestep"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.scheduler_context_for_timestep()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.InpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.__call__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.InpaintingInferer.sample_forward_diffusion"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.sample_forward_diffusion()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.InpaintingInferer.diffusion_forward"><code class="docutils literal notranslate"><span class="pre">InpaintingInferer.diffusion_forward()</span></code></a></li>
@@ -191,6 +194,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.__init__"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.view_dimension_for_step"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.view_dimension_for_step()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.view_agg_inference"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.view_agg_inference()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.denoise"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.denoise()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.__call__"><code class="docutils literal notranslate"><span class="pre">TwoAndHalfDInpaintingInferer.__call__()</span></code></a></li>
@@ -218,6 +222,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/inpainting.html">Inpainting Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.resolve_inference_settings"><code class="docutils literal notranslate"><span class="pre">resolve_inference_settings()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.positive_int"><code class="docutils literal notranslate"><span class="pre">positive_int()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.resolve_inference_device"><code class="docutils literal notranslate"><span class="pre">resolve_inference_device()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
@@ -428,6 +433,35 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">diffusion_model</span></div>
 
 
+<div class="viewcode-block" id="InpaintingInferer.scheduler_step_context">
+<a class="viewcode-back" href="../../api/inference.html#neurolit.inference.InpaintingInferer.scheduler_step_context">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">scheduler_step_context</span><span class="p">(</span><span class="n">timesteps</span><span class="p">,</span> <span class="n">step_index</span><span class="p">,</span> <span class="n">num_resample_jumps</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Return the current/previous scheduled timesteps and RePaint decision.</span>
+
+<span class="sd">        RePaint intervals are expressed in inference steps. The previous</span>
+<span class="sd">        timestep is taken from the scheduler sequence, which may skip many</span>
+<span class="sd">        training timesteps for accelerated samplers.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">num_resample_jumps</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"num_resample_jumps must be &gt; 0"</span><span class="p">)</span>
+        <span class="n">timestep</span> <span class="o">=</span> <span class="n">timesteps</span><span class="p">[</span><span class="n">step_index</span><span class="p">]</span>
+        <span class="n">previous_timestep</span> <span class="o">=</span> <span class="n">timesteps</span><span class="p">[</span><span class="n">step_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">step_index</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">timesteps</span><span class="p">)</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">should_resample</span> <span class="o">=</span> <span class="p">(</span><span class="n">step_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">num_resample_jumps</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">step_index</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">timesteps</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">previous_timestep</span><span class="p">,</span> <span class="n">should_resample</span></div>
+
+
+<div class="viewcode-block" id="InpaintingInferer.scheduler_context_for_timestep">
+<a class="viewcode-back" href="../../api/inference.html#neurolit.inference.InpaintingInferer.scheduler_context_for_timestep">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">scheduler_context_for_timestep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">num_resample_jumps</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Resolve scheduler context for a direct denoise call."""</span>
+        <span class="n">timestep_value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">timestep</span><span class="o">.</span><span class="n">item</span><span class="p">())</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">timestep</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">timestep</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">step_index</span><span class="p">,</span> <span class="n">scheduled_timestep</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">timesteps</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">scheduled_timestep</span><span class="p">)</span> <span class="o">==</span> <span class="n">timestep_value</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_step_context</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">timesteps</span><span class="p">,</span> <span class="n">step_index</span><span class="p">,</span> <span class="n">num_resample_jumps</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Timestep </span><span class="si">{</span><span class="n">timestep_value</span><span class="si">}</span><span class="s2"> is not in the active scheduler sequence"</span><span class="p">)</span></div>
+
+
 
 <div class="viewcode-block" id="InpaintingInferer.__call__">
 <a class="viewcode-back" href="../../api/inference.html#neurolit.inference.InpaintingInferer.__call__">[docs]</a>
@@ -477,18 +511,21 @@
         <span class="n">image_inpainted</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">image_masked</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
 
 
-        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">timesteps</span><span class="p">):</span>
-            <span class="n">last_step</span> <span class="o">=</span> <span class="n">t</span> <span class="o">==</span> <span class="mi">0</span>
-            <span class="c1"># skip resampling at last step and do jumps</span>
-            <span class="k">if</span> <span class="n">last_step</span> <span class="ow">or</span> <span class="n">t</span> <span class="o">%</span> <span class="n">num_resample_jumps</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> <span class="n">samplings_at_cuttent_t</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="k">else</span><span class="p">:</span> <span class="n">samplings_at_cuttent_t</span> <span class="o">=</span> <span class="n">num_resample_steps</span>
+        <span class="n">timesteps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">timesteps</span>
+        <span class="k">for</span> <span class="n">step_index</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">timesteps</span><span class="p">)):</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">previous_timestep</span><span class="p">,</span> <span class="n">should_resample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_step_context</span><span class="p">(</span><span class="n">timesteps</span><span class="p">,</span> <span class="n">step_index</span><span class="p">,</span> <span class="n">num_resample_jumps</span><span class="p">)</span>
+            <span class="n">previous_timestep_value</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">previous_timestep</span><span class="o">.</span><span class="n">item</span><span class="p">())</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">previous_timestep</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">previous_timestep</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">last_step</span> <span class="o">=</span> <span class="n">previous_timestep_value</span> <span class="o">&lt;</span> <span class="mi">0</span>
+            <span class="n">samplings_at_cuttent_t</span> <span class="o">=</span> <span class="n">num_resample_steps</span> <span class="k">if</span> <span class="n">should_resample</span> <span class="k">else</span> <span class="mi">1</span>
 
             <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">samplings_at_cuttent_t</span><span class="p">):</span>
                 <span class="n">last_sample_step</span> <span class="o">=</span> <span class="n">u</span> <span class="o">==</span> <span class="p">(</span><span class="n">samplings_at_cuttent_t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
                 
                 <span class="c1"># get the known region at t-1 (forward diffusion to get t-1)</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">last_step</span><span class="p">:</span>
-                    <span class="n">image_inpainted_backward_known</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_forward_diffusion</span><span class="p">(</span><span class="n">image_masked</span><span class="p">,</span> <span class="n">t</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="n">image_inpainted_backward_known</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_forward_diffusion</span><span class="p">(</span><span class="n">image_masked</span><span class="p">,</span> <span class="n">previous_timestep</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">image_inpainted_backward_known</span> <span class="o">=</span> <span class="n">image_masked</span> <span class="c1"># is this skipping the last denoising?</span>
 
@@ -507,7 +544,7 @@
                     <span class="c1"># perform resampling (forward &amp; backward)</span>
                     <span class="c1"># for u in range(num_resample_steps):</span>
                     <span class="c1">#     image_inpainted = self.resample(image_inpainted, t)</span>
-                    <span class="n">image_inpainted</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">diffusion_forward</span><span class="p">(</span><span class="n">image_inpainted</span><span class="p">,</span> <span class="n">t</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="n">image_inpainted</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">diffusion_forward</span><span class="p">(</span><span class="n">image_inpainted</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">from_t</span><span class="o">=</span><span class="n">previous_timestep</span><span class="p">)</span>
 
 
             <span class="k">if</span> <span class="n">get_intermediates</span> <span class="ow">and</span> <span class="n">t</span> <span class="o">%</span> <span class="mi">50</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -547,7 +584,7 @@
     
 <div class="viewcode-block" id="InpaintingInferer.diffusion_forward">
 <a class="viewcode-back" href="../../api/inference.html#neurolit.inference.InpaintingInferer.diffusion_forward">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">diffusion_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">diffusion_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">from_t</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Apply a single forward diffusion update using the scheduler betas.</span>
 
 <span class="sd">        Parameters</span>
@@ -555,16 +592,26 @@
 <span class="sd">        image : torch.Tensor</span>
 <span class="sd">            Current reconstruction tensor.</span>
 <span class="sd">        t : int | torch.Tensor</span>
-<span class="sd">            Current timestep index.</span>
+<span class="sd">            Target timestep index.</span>
+<span class="sd">        from_t : int | torch.Tensor, optional</span>
+<span class="sd">            Source timestep index. When provided, noise is added across the</span>
+<span class="sd">            complete scheduler gap instead of one training timestep.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        torch.Tensor</span>
 <span class="sd">            Tensor after applying forward diffusion noise.</span>
 <span class="sd">        """</span>
-        <span class="n">noise</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span><span class="n">device</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-        <span class="c1"># sqrt(1-beta) * image + sqrt(beta) * noise</span>
-        <span class="n">image_inpainted</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">betas</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="o">*</span> <span class="n">image</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">betas</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="o">*</span> <span class="n">noise</span><span class="p">)</span>
+        <span class="n">noise</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">from_t</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">alpha_ratio</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">betas</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">target_alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">alphas_cumprod</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
+            <span class="n">source_index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">from_t</span><span class="o">.</span><span class="n">item</span><span class="p">())</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">from_t</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">from_t</span><span class="p">)</span>
+            <span class="n">source_alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">alphas_cumprod</span><span class="p">[</span><span class="n">source_index</span><span class="p">]</span> <span class="k">if</span> <span class="n">source_index</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">target_alpha</span><span class="o">.</span><span class="n">new_tensor</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+            <span class="n">alpha_ratio</span> <span class="o">=</span> <span class="n">target_alpha</span> <span class="o">/</span> <span class="n">source_alpha</span>
+        <span class="n">alpha_ratio</span> <span class="o">=</span> <span class="n">alpha_ratio</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">image_inpainted</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">alpha_ratio</span><span class="p">)</span> <span class="o">*</span> <span class="n">image</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha_ratio</span><span class="p">)</span> <span class="o">*</span> <span class="n">noise</span>
 
         <span class="k">return</span> <span class="n">image_inpainted</span></div>
 
@@ -924,6 +971,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">dimension_to_plane</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s1">'sagittal'</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="s1">'axial'</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s1">'coronal'</span><span class="p">}</span></div>
 
 
+<div class="viewcode-block" id="TwoAndHalfDInpaintingInferer.view_dimension_for_step">
+<a class="viewcode-back" href="../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.view_dimension_for_step">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">view_dimension_for_step</span><span class="p">(</span><span class="n">step_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Return the balanced view dimension for an inference-step index."""</span>
+        <span class="k">return</span> <span class="p">(</span><span class="o">-</span><span class="n">step_index</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span></div>
+
+
 
 <div class="viewcode-block" id="TwoAndHalfDInpaintingInferer.view_agg_inference">
 <a class="viewcode-back" href="../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.view_agg_inference">[docs]</a>
@@ -979,10 +1034,13 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">progress_bar</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">timesteps</span><span class="p">)</span>
         
-        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">progress_bar</span><span class="p">:</span>
+        <span class="n">timesteps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">timesteps</span>
+        <span class="k">for</span> <span class="n">step_index</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">progress_bar</span><span class="p">):</span>
             <span class="n">batch_outputs</span> <span class="o">=</span> <span class="p">[]</span>
 
-            <span class="n">current_plane</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimension_to_plane</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="o">%</span><span class="mi">3</span><span class="p">)]</span> <span class="c1"># alternate between sagittal, axial, coronal</span>
+            <span class="n">view_dimension</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">view_dimension_for_step</span><span class="p">(</span><span class="n">step_index</span><span class="p">)</span>
+            <span class="n">current_plane</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimension_to_plane</span><span class="p">[</span><span class="n">view_dimension</span><span class="p">]</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">previous_timestep</span><span class="p">,</span> <span class="n">should_resample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_step_context</span><span class="p">(</span><span class="n">timesteps</span><span class="p">,</span> <span class="n">step_index</span><span class="p">,</span> <span class="n">num_resample_jumps</span><span class="p">)</span>
             <span class="c1"># TODO: this may not be needed and might cause overhead (same for other eval calls)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">diffusion_model_dict</span><span class="p">[</span><span class="n">current_plane</span><span class="p">]</span> <span class="c1">#.eval() </span>
             <span class="n">batched_slices</span><span class="p">,</span> <span class="n">batched_masks</span><span class="p">,</span> <span class="n">batch_slice_indices</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">inference_slices</span><span class="p">[</span><span class="n">current_plane</span><span class="p">]</span>
@@ -1015,8 +1073,18 @@
                 <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
                     <span class="n">progress_bar</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Inpainting slices </span><span class="si">{</span><span class="n">start_idx</span><span class="si">}</span><span class="s1"> to </span><span class="si">{</span><span class="n">end_idx</span><span class="si">}</span><span class="s1">, plane </span><span class="si">{</span><span class="n">current_plane</span><span class="si">}</span><span class="s1">, timestep </span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
                 
-                <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">denoise</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">masks_batch</span><span class="p">,</span> <span class="n">slices_batch</span><span class="p">,</span> <span class="n">image_inpainted_slice_batch</span><span class="p">,</span>
-                                                <span class="n">num_resample_steps</span><span class="p">,</span> <span class="n">num_resample_jumps</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">)</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">denoise</span><span class="p">(</span>
+                    <span class="n">t</span><span class="p">,</span>
+                    <span class="n">masks_batch</span><span class="p">,</span>
+                    <span class="n">slices_batch</span><span class="p">,</span>
+                    <span class="n">image_inpainted_slice_batch</span><span class="p">,</span>
+                    <span class="n">num_resample_steps</span><span class="p">,</span>
+                    <span class="n">num_resample_jumps</span><span class="p">,</span>
+                    <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+                    <span class="n">step_index</span><span class="o">=</span><span class="n">step_index</span><span class="p">,</span>
+                    <span class="n">previous_timestep</span><span class="o">=</span><span class="n">previous_timestep</span><span class="p">,</span>
+                    <span class="n">should_resample</span><span class="o">=</span><span class="n">should_resample</span><span class="p">,</span>
+                <span class="p">)</span>
                 <span class="n">batch_outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
                 
             <span class="n">image_inpainted_slice_denoised</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">img</span> <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">batch_outputs</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -1049,8 +1117,19 @@
 <div class="viewcode-block" id="TwoAndHalfDInpaintingInferer.denoise">
 <a class="viewcode-back" href="../../api/inference.html#neurolit.inference.TwoAndHalfDInpaintingInferer.denoise">[docs]</a>
     <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">denoise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">image_masked</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">image_inpainted</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-                 <span class="n">num_resample_steps</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">num_resample_jumps</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>    
+    <span class="k">def</span><span class="w"> </span><span class="nf">denoise</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">,</span>
+        <span class="n">mask</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">image_masked</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">image_inpainted</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">num_resample_steps</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">num_resample_jumps</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">step_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">previous_timestep</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">should_resample</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Refine the unknown regions through backward and forward diffusion.</span>
 
 <span class="sd">        Parameters</span>
@@ -1086,7 +1165,12 @@
 
 
     
-        <span class="n">last_step</span> <span class="o">=</span> <span class="n">t</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">previous_timestep</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">should_resample</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">resolved_previous_timestep</span><span class="p">,</span> <span class="n">resolved_should_resample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_context_for_timestep</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">num_resample_jumps</span><span class="p">)</span>
+            <span class="n">previous_timestep</span> <span class="o">=</span> <span class="n">resolved_previous_timestep</span> <span class="k">if</span> <span class="n">previous_timestep</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">previous_timestep</span>
+            <span class="n">should_resample</span> <span class="o">=</span> <span class="n">resolved_should_resample</span> <span class="k">if</span> <span class="n">should_resample</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">should_resample</span>
+        <span class="n">previous_timestep_value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">previous_timestep</span><span class="o">.</span><span class="n">item</span><span class="p">())</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">previous_timestep</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">previous_timestep</span><span class="p">)</span>
+        <span class="n">last_step</span> <span class="o">=</span> <span class="n">previous_timestep_value</span> <span class="o">&lt;</span> <span class="mi">0</span>
 
         <span class="c1"># get known region at t</span>
         <span class="n">image_inpainted</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
@@ -1097,15 +1181,14 @@
         <span class="c1">#plot_batch(image_inpainted, DBG_PATH+ 'dbg_noised.png', slice_cut=[100, 84, 140])</span>
 
         <span class="c1"># skip resampling at last step and do jumps</span>
-        <span class="k">if</span> <span class="n">last_step</span> <span class="ow">or</span> <span class="n">t</span> <span class="o">%</span> <span class="n">num_resample_jumps</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> <span class="n">samplings_at_cuttent_t</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="k">else</span><span class="p">:</span> <span class="n">samplings_at_cuttent_t</span> <span class="o">=</span> <span class="n">num_resample_steps</span>
+        <span class="n">samplings_at_cuttent_t</span> <span class="o">=</span> <span class="n">num_resample_steps</span> <span class="k">if</span> <span class="n">should_resample</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">last_step</span> <span class="k">else</span> <span class="mi">1</span>
 
         <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">samplings_at_cuttent_t</span><span class="p">):</span>
             <span class="n">last_sample_step</span> <span class="o">=</span> <span class="n">u</span> <span class="o">==</span> <span class="p">(</span><span class="n">samplings_at_cuttent_t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
             
             <span class="c1"># get the known region at t-1 (forward diffusion to get t-1)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">last_step</span><span class="p">:</span>
-                <span class="n">image_inpainted_backward_known</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_forward_diffusion</span><span class="p">(</span><span class="n">image_masked</span><span class="p">,</span> <span class="n">t</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">image_inpainted_backward_known</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_forward_diffusion</span><span class="p">(</span><span class="n">image_masked</span><span class="p">,</span> <span class="n">previous_timestep</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">image_inpainted_backward_known</span> <span class="o">=</span> <span class="n">image_masked</span> <span class="c1"># is this skipping the last denoising?</span>
 
@@ -1129,7 +1212,7 @@
                 <span class="c1"># perform resampling (forward &amp; backward)</span>
                 <span class="c1"># for u in range(num_resample_steps):</span>
                 <span class="c1">#     image_inpainted = self.resample(image_inpainted, t)</span>
-                <span class="n">image_inpainted</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">diffusion_forward</span><span class="p">(</span><span class="n">image_inpainted</span><span class="p">,</span> <span class="n">t</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">image_inpainted</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">diffusion_forward</span><span class="p">(</span><span class="n">image_inpainted</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">from_t</span><span class="o">=</span><span class="n">previous_timestep</span><span class="p">)</span>
 
         <span class="c1"># fuse known and unknown regions (only required in case of resampling during t=0)</span>
         <span class="n">image_inpainted</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">image_masked</span><span class="p">,</span> <span class="n">image_inpainted</span><span class="p">)</span>
@@ -1253,14 +1336,24 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">progress_bar</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">timesteps</span><span class="p">)</span>
         
-        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">progress_bar</span><span class="p">:</span>
+        <span class="n">timesteps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">timesteps</span>
+        <span class="n">first_timestep</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">timesteps</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">step_index</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">progress_bar</span><span class="p">):</span>
             <span class="n">batch_outputs</span> <span class="o">=</span> <span class="p">[]</span>
 
-            <span class="n">current_plane</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimension_to_plane</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="o">%</span><span class="mi">3</span><span class="p">)]</span> <span class="c1"># alternate between sagittal, axial, coronal</span>
+            <span class="n">view_dimension</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">view_dimension_for_step</span><span class="p">(</span><span class="n">step_index</span><span class="p">)</span>
+            <span class="n">current_plane</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimension_to_plane</span><span class="p">[</span><span class="n">view_dimension</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">diffusion_model_dict</span><span class="p">[</span><span class="n">current_plane</span><span class="p">]</span> <span class="c1"># .eval()</span>
             <span class="c1"># add offset to alternate slicings to avoid checkerboard pattern</span>
-            <span class="n">batched_slices</span><span class="p">,</span> <span class="n">batched_masks</span><span class="p">,</span> <span class="n">batch_slice_indices</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_inference_slices</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">image_masked</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="o">%</span><span class="mi">3</span><span class="p">),</span> 
-                                                                        <span class="n">offset</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_thickness</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">%</span> <span class="mi">2</span><span class="p">))</span> 
+            <span class="n">offset</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_thickness</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">((</span><span class="n">first_timestep</span> <span class="o">-</span> <span class="n">step_index</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">batched_slices</span><span class="p">,</span> <span class="n">batched_masks</span><span class="p">,</span> <span class="n">batch_slice_indices</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_inference_slices</span><span class="p">(</span>
+                <span class="n">mask</span><span class="p">,</span>
+                <span class="n">image_masked</span><span class="p">,</span>
+                <span class="n">view_dimension</span><span class="p">,</span>
+                <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">_</span><span class="p">,</span> <span class="n">previous_timestep</span><span class="p">,</span> <span class="n">should_resample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_step_context</span><span class="p">(</span><span class="n">timesteps</span><span class="p">,</span> <span class="n">step_index</span><span class="p">,</span> <span class="n">num_resample_jumps</span><span class="p">)</span>
 
             
 
@@ -1290,8 +1383,18 @@
                 <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
                     <span class="n">progress_bar</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Inpainting slices </span><span class="si">{</span><span class="n">start_idx</span><span class="si">}</span><span class="s1"> to </span><span class="si">{</span><span class="n">end_idx</span><span class="si">}</span><span class="s1">, plane </span><span class="si">{</span><span class="n">current_plane</span><span class="si">}</span><span class="s1">, timestep </span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
                 
-                <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">denoise</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">masks_batch</span><span class="p">,</span> <span class="n">slices_batch</span><span class="p">,</span> <span class="n">image_inpainted_slice_batch</span><span class="p">,</span>
-                                                <span class="n">num_resample_steps</span><span class="p">,</span> <span class="n">num_resample_jumps</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">)</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">denoise</span><span class="p">(</span>
+                    <span class="n">t</span><span class="p">,</span>
+                    <span class="n">masks_batch</span><span class="p">,</span>
+                    <span class="n">slices_batch</span><span class="p">,</span>
+                    <span class="n">image_inpainted_slice_batch</span><span class="p">,</span>
+                    <span class="n">num_resample_steps</span><span class="p">,</span>
+                    <span class="n">num_resample_jumps</span><span class="p">,</span>
+                    <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+                    <span class="n">step_index</span><span class="o">=</span><span class="n">step_index</span><span class="p">,</span>
+                    <span class="n">previous_timestep</span><span class="o">=</span><span class="n">previous_timestep</span><span class="p">,</span>
+                    <span class="n">should_resample</span><span class="o">=</span><span class="n">should_resample</span><span class="p">,</span>
+                <span class="p">)</span>
                 <span class="n">batch_outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
                 
             <span class="n">image_inpainted_slice_denoised</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">img</span> <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">batch_outputs</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -1475,10 +1578,12 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">progress_bar</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">timesteps</span><span class="p">)</span>
         
-        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">progress_bar</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">step_index</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">progress_bar</span><span class="p">):</span>
             <span class="n">batch_outputs</span> <span class="o">=</span> <span class="p">[]</span>
 
-            <span class="n">current_plane</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimension_to_plane</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="o">%</span><span class="mi">3</span><span class="p">)]</span> <span class="c1"># alternate between sagittal, axial, coronal</span>
+            <span class="n">view_dimension</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">view_dimension_for_step</span><span class="p">(</span><span class="n">step_index</span><span class="p">)</span>
+            <span class="n">current_plane</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimension_to_plane</span><span class="p">[</span><span class="n">view_dimension</span><span class="p">]</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">previous_timestep</span><span class="p">,</span> <span class="n">should_resample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_step_context</span><span class="p">(</span><span class="n">timesteps</span><span class="p">,</span> <span class="n">step_index</span><span class="p">,</span> <span class="n">num_resample_jumps</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">diffusion_model_dict</span><span class="p">[</span><span class="n">current_plane</span><span class="p">]</span> <span class="c1">#.eval()</span>
             <span class="n">batched_slices</span><span class="p">,</span> <span class="n">batched_masks</span><span class="p">,</span> <span class="n">batch_slice_indices</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">inference_slices</span><span class="p">[</span><span class="n">current_plane</span><span class="p">]</span>
 
@@ -1503,8 +1608,15 @@
                 <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
                     <span class="n">progress_bar</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Denoising slices </span><span class="si">{</span><span class="n">start_idx</span><span class="si">}</span><span class="s1"> to </span><span class="si">{</span><span class="n">end_idx</span><span class="si">}</span><span class="s1">, plane </span><span class="si">{</span><span class="n">current_plane</span><span class="si">}</span><span class="s1">, timestep </span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
                 
-                <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">denoise</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">image_denoised_slice_batch</span><span class="p">,</span>
-                                                <span class="n">num_resample_steps</span><span class="p">,</span> <span class="n">num_resample_jumps</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">)</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">denoise</span><span class="p">(</span>
+                    <span class="n">t</span><span class="p">,</span>
+                    <span class="n">image_denoised_slice_batch</span><span class="p">,</span>
+                    <span class="n">num_resample_steps</span><span class="p">,</span>
+                    <span class="n">num_resample_jumps</span><span class="p">,</span>
+                    <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+                    <span class="n">previous_timestep</span><span class="o">=</span><span class="n">previous_timestep</span><span class="p">,</span>
+                    <span class="n">should_resample</span><span class="o">=</span><span class="n">should_resample</span><span class="p">,</span>
+                <span class="p">)</span>
                 <span class="n">batch_outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
                 
             <span class="n">image_inpainted_slice_denoised</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">img</span> <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">batch_outputs</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -1536,8 +1648,16 @@
 <div class="viewcode-block" id="AnomalyInferer.denoise">
 <a class="viewcode-back" href="../../api/inference.html#neurolit.inference.AnomalyInferer.denoise">[docs]</a>
     <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">denoise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-                 <span class="n">num_resample_steps</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">num_resample_jumps</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>    
+    <span class="k">def</span><span class="w"> </span><span class="nf">denoise</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">,</span>
+        <span class="n">image</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">num_resample_steps</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">num_resample_jumps</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">previous_timestep</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">should_resample</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Denoise `image` for `starting_t` forward iterations.</span>
 
 <span class="sd">        Parameters</span>
@@ -1561,11 +1681,15 @@
         <span class="n">image_denoised</span> <span class="o">=</span> <span class="n">image</span>
 
     
-        <span class="n">last_step</span> <span class="o">=</span> <span class="n">t</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">previous_timestep</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">should_resample</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">resolved_previous_timestep</span><span class="p">,</span> <span class="n">resolved_should_resample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_context_for_timestep</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">num_resample_jumps</span><span class="p">)</span>
+            <span class="n">previous_timestep</span> <span class="o">=</span> <span class="n">resolved_previous_timestep</span> <span class="k">if</span> <span class="n">previous_timestep</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">previous_timestep</span>
+            <span class="n">should_resample</span> <span class="o">=</span> <span class="n">resolved_should_resample</span> <span class="k">if</span> <span class="n">should_resample</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">should_resample</span>
+        <span class="n">previous_timestep_value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">previous_timestep</span><span class="o">.</span><span class="n">item</span><span class="p">())</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">previous_timestep</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">previous_timestep</span><span class="p">)</span>
+        <span class="n">last_step</span> <span class="o">=</span> <span class="n">previous_timestep_value</span> <span class="o">&lt;</span> <span class="mi">0</span>
 
         <span class="c1"># skip resampling at last step and do jumps</span>
-        <span class="k">if</span> <span class="n">last_step</span> <span class="ow">or</span> <span class="n">t</span> <span class="o">%</span> <span class="n">num_resample_jumps</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> <span class="n">samplings_at_cuttent_t</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="k">else</span><span class="p">:</span> <span class="n">samplings_at_cuttent_t</span> <span class="o">=</span> <span class="n">num_resample_steps</span>
+        <span class="n">samplings_at_cuttent_t</span> <span class="o">=</span> <span class="n">num_resample_steps</span> <span class="k">if</span> <span class="n">should_resample</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">last_step</span> <span class="k">else</span> <span class="mi">1</span>
 
         <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">samplings_at_cuttent_t</span><span class="p">):</span>
             <span class="n">last_sample_step</span> <span class="o">=</span> <span class="n">u</span> <span class="o">==</span> <span class="p">(</span><span class="n">samplings_at_cuttent_t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
@@ -1576,7 +1700,7 @@
             <span class="c1"># if we are doing resampling add noise and go again</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">last_sample_step</span><span class="p">:</span> 
                 <span class="c1"># perform resampling (forward &amp; backward)</span>
-                <span class="n">image_denoised</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">diffusion_forward</span><span class="p">(</span><span class="n">image_denoised</span><span class="p">,</span> <span class="n">t</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">image_denoised</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">diffusion_forward</span><span class="p">(</span><span class="n">image_denoised</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">from_t</span><span class="o">=</span><span class="n">previous_timestep</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">image_denoised</span></div>
 </div>
