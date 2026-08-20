@@ -11,7 +11,9 @@ from platformdirs import user_data_dir
 
 from neurolit._version import get_version_with_hash
 from neurolit.inpaint_image import main as inpaint_main
+from neurolit.inpaint_image import positive_int
 from neurolit.utils.download_checkpoints import main as download_main
+from neurolit.utils.geometry_policy import FASTSURFER_MIN_AUTO_IMG_SIZE
 
 
 def _copy_file(src: Path, dst: Path) -> None:
@@ -45,8 +47,10 @@ def _resample_mask_to_reference(src: Path, reference: Path, dst: Path) -> None:
     nib.save(nib.Nifti1Image(mask_data, reference_img.affine, header), str(dst))
 
 
-def _append_inference_mode_args(argv: list[str], *, keepgeom: bool, fast: bool) -> None:
+def _append_inference_mode_args(argv: list[str], *, keepgeom: bool, fast: bool, min_auto_img_size: int | None = None) -> None:
     """Append common geometry and inference-preset flags to a backend command."""
+    if min_auto_img_size is not None:
+        argv.extend(["--min_auto_img_size", str(min_auto_img_size)])
     if keepgeom:
         argv.append("--keepgeom")
     if fast:
@@ -70,6 +74,13 @@ def run_lit():
     # Optional arguments
     parser.add_argument("--dilate", type=int, default=0, help="Number of times to dilate the lesion mask (default: 0)")
     parser.add_argument("--keepgeom", action="store_true", help="Preserve native output geometry")
+    parser.add_argument(
+        "--min_auto_img_size",
+        "--min-auto-img-size",
+        type=positive_int,
+        default=None,
+        help="Optional minimum side length for automatic conforming",
+    )
     parser.add_argument(
         "--fastsurfer_dir",
         action="store_true",
@@ -107,6 +118,7 @@ def run_lit():
         print("Optional arguments:")
         print("  --dilate              : Number of times to dilate the lesion mask (default: 0)")
         print("  --keepgeom            : Preserve native output geometry")
+        print("  --min-auto-img-size   : Optional minimum side length for automatic conforming")
         print("  --fastsurfer_dir      : Treat output_directory as a FastSurfer subject directory")
         print("  --device              : Inference device: auto, cpu, or cuda (default: auto)")
         print("  --batch_size          : Slices per GPU batch (default: 8); reduce to lower GPU memory usage")
@@ -125,7 +137,6 @@ def run_lit():
     if not args.input_image or not args.sd or not args.lesion_mask:
         print("Error: Input image, lesion mask, and output directory are required")
         sys.exit(1)
-
     # Validate input files
     input_image = Path(args.input_image).resolve()
     if not input_image.exists():
@@ -141,6 +152,10 @@ def run_lit():
 
     out_dir = Path(args.sd).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    min_auto_img_size = args.min_auto_img_size
+    if args.fastsurfer_dir:
+        min_auto_img_size = max(FASTSURFER_MIN_AUTO_IMG_SIZE, min_auto_img_size or 0)
 
     # Download checkpoints
     print("Checking/Downloading checkpoints...")
@@ -209,7 +224,12 @@ def run_lit():
                     str(args.batch_size),
                 ]
 
-                _append_inference_mode_args(inpaint_argv, keepgeom=args.keepgeom, fast=args.fast)
+                _append_inference_mode_args(
+                    inpaint_argv,
+                    keepgeom=args.keepgeom,
+                    fast=args.fast,
+                    min_auto_img_size=min_auto_img_size,
+                )
 
                 # Forward any unknown arguments
                 inpaint_argv.extend(unknown)
@@ -257,7 +277,12 @@ def run_lit():
                 str(args.batch_size),
             ]
 
-            _append_inference_mode_args(inpaint_argv, keepgeom=args.keepgeom, fast=args.fast)
+            _append_inference_mode_args(
+                inpaint_argv,
+                keepgeom=args.keepgeom,
+                fast=args.fast,
+                min_auto_img_size=min_auto_img_size,
+            )
 
             # Forward any unknown arguments
             inpaint_argv.extend(unknown)

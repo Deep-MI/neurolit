@@ -407,6 +407,7 @@ def conformed_vox_img_size(
     img_size,
     threshold_1mm: float | None = None,
     vox_eps: float = 1e-4,
+    min_auto_img_size: int | None = None,
     **kwargs,
 ) -> tuple[np.ndarray | None, np.ndarray | None]:
     """Extract target voxel size and image size with FastSurfer-compatible semantics."""
@@ -416,6 +417,8 @@ def conformed_vox_img_size(
         vox_size = kwargs["conform_vox_size"]
 
     max_vox_size = 1.0
+    if min_auto_img_size is not None and min_auto_img_size <= 0:
+        raise ValueError("min_auto_img_size must be > 0 when specified.")
 
     if isinstance(vox_size, str) and vox_size.lower() in ["min", "auto"]:
         decimals = int(np.ceil(-np.log10(vox_eps)))
@@ -446,6 +449,8 @@ def conformed_vox_img_size(
             target_img_size = np.ceil((fov / target_vox_size * 10000).astype(int).astype(float) / 10000).astype(int)
         if mode == "auto":
             max_dim = int(np.amax(target_img_size))
+            if min_auto_img_size is not None:
+                max_dim = max(min_auto_img_size, max_dim)
             target_img_size = np.full((3,), max_dim)
     else:
         raise ValueError("Invalid value for img_size passed.")
@@ -464,6 +469,7 @@ def conform(
     rescale: int | float | None = 255,
     conform_vox_size=None,
     conform_to_1mm_threshold: float | None = None,
+    min_auto_img_size: int | None = None,
 ) -> nib.MGHImage:
     """Python version of mri_convert -c.
 
@@ -487,6 +493,8 @@ def conform(
     conform_to_1mm_threshold : Optional[float]
         the threshold above which the image is conformed to 1mm
         (default: ignore).
+    min_auto_img_size : Optional[int]
+        minimum side length when ``img_size='auto'`` (default: no minimum).
 
     Returns
     -------
@@ -512,6 +520,7 @@ def conform(
         vox_size,
         img_size,
         threshold_1mm=threshold_1mm,
+        min_auto_img_size=min_auto_img_size,
     )
 
     h1 = MGHHeader.from_header(img.header)  # may copy some parameters if input was MGH format
@@ -593,6 +602,7 @@ def is_conform(
     threshold_1mm: float | None = None,
     conform_vox_size=None,
     conform_to_1mm_threshold: float | None = None,
+    min_auto_img_size: int | None = None,
 ) -> bool:
     """Check if an image is already conformed or not.
 
@@ -622,6 +632,8 @@ def is_conform(
     conform_to_1mm_threshold : Optional[float]
         the threshold above which the image is conformed to 1mm
         (default: ignore).
+    min_auto_img_size : Optional[int]
+        minimum side length when ``img_size='auto'`` (default: no minimum).
 
     Returns
     -------
@@ -647,6 +659,7 @@ def is_conform(
         vox_size,
         img_size,
         threshold_1mm=threshold_1mm,
+        min_auto_img_size=min_auto_img_size,
     )
 
     ishape = img.shape
