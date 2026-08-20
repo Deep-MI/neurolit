@@ -68,6 +68,14 @@ VolumeSlice = tuple[int | slice, ...]
 AffineMatrix = NDArray[np.float64]
 
 
+def positive_int(value: str) -> int:
+    """Parse a positive integer for a command-line argument."""
+    parsed_value = int(value)
+    if parsed_value <= 0:
+        raise argparse.ArgumentTypeError("must be greater than zero")
+    return parsed_value
+
+
 def resolve_inference_device(device: str) -> torch.device:
     """Resolve the requested inference device.
 
@@ -421,7 +429,7 @@ def main(argv=None):
     parser.add_argument(
         "--min_auto_img_size",
         "--min-auto-img-size",
-        type=int,
+        type=positive_int,
         default=None,
         help="Optional minimum side length for automatic conforming",
     )

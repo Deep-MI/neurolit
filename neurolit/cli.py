@@ -11,6 +11,7 @@ from platformdirs import user_data_dir
 
 from neurolit._version import get_version_with_hash
 from neurolit.inpaint_image import main as inpaint_main
+from neurolit.inpaint_image import positive_int
 from neurolit.utils.download_checkpoints import main as download_main
 from neurolit.utils.geometry_policy import FASTSURFER_MIN_AUTO_IMG_SIZE
 
@@ -66,7 +67,7 @@ def run_lit():
     parser.add_argument(
         "--min_auto_img_size",
         "--min-auto-img-size",
-        type=int,
+        type=positive_int,
         default=None,
         help="Optional minimum side length for automatic conforming",
     )
@@ -120,9 +121,6 @@ def run_lit():
     if not args.input_image or not args.sd or not args.lesion_mask:
         print("Error: Input image, lesion mask, and output directory are required")
         sys.exit(1)
-    if args.min_auto_img_size is not None and args.min_auto_img_size <= 0:
-        parser.error("--min-auto-img-size must be greater than zero")
-
     # Validate input files
     input_image = Path(args.input_image).resolve()
     if not input_image.exists():
