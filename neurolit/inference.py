@@ -54,6 +54,29 @@ class InpaintingInferer:
         self.inference_steps = inference_steps
         self.model = diffusion_model
 
+    @staticmethod
+    def scheduler_step_context(timesteps, step_index, num_resample_jumps):
+        """Return the current/previous scheduled timesteps and RePaint decision.
+
+        RePaint intervals are expressed in inference steps. The previous
+        timestep is taken from the scheduler sequence, which may skip many
+        training timesteps for accelerated samplers.
+        """
+        if num_resample_jumps <= 0:
+            raise ValueError("num_resample_jumps must be > 0")
+        timestep = timesteps[step_index]
+        previous_timestep = timesteps[step_index + 1] if step_index + 1 < len(timesteps) else -1
+        should_resample = (step_index + 1) % num_resample_jumps == 0 and step_index + 1 < len(timesteps)
+        return timestep, previous_timestep, should_resample
+
+    def scheduler_context_for_timestep(self, timestep, num_resample_jumps):
+        """Resolve scheduler context for a direct denoise call."""
+        timestep_value = int(timestep.item()) if isinstance(timestep, torch.Tensor) else int(timestep)
+        for step_index, scheduled_timestep in enumerate(self.scheduler.timesteps):
+            if int(scheduled_timestep) == timestep_value:
+                return self.scheduler_step_context(self.scheduler.timesteps, step_index, num_resample_jumps)
+        raise ValueError(f"Timestep {timestep_value} is not in the active scheduler sequence")
+
 
     @torch.no_grad()
     def __call__(self, mask: torch.Tensor, image_masked: torch.Tensor,
@@ -101,18 +124,21 @@ class InpaintingInferer:
         image_inpainted = torch.randn(image_masked.shape, device=device)
 
 
-        for t in tqdm(self.scheduler.timesteps):
-            last_step = t == 0
-            # skip resampling at last step and do jumps
-            if last_step or t % num_resample_jumps != 0: samplings_at_cuttent_t = 1
-            else: samplings_at_cuttent_t = num_resample_steps
+        timesteps = self.scheduler.timesteps
+        for step_index, t in enumerate(tqdm(timesteps)):
+            _, previous_timestep, should_resample = self.scheduler_step_context(timesteps, step_index, num_resample_jumps)
+            previous_timestep_value = (
+                int(previous_timestep.item()) if isinstance(previous_timestep, torch.Tensor) else int(previous_timestep)
+            )
+            last_step = previous_timestep_value < 0
+            samplings_at_cuttent_t = num_resample_steps if should_resample else 1
 
             for u in range(samplings_at_cuttent_t):
                 last_sample_step = u == (samplings_at_cuttent_t - 1)
                 
                 # get the known region at t-1 (forward diffusion to get t-1)
                 if not last_step:
-                    image_inpainted_backward_known = self.sample_forward_diffusion(image_masked, t-1)
+                    image_inpainted_backward_known = self.sample_forward_diffusion(image_masked, previous_timestep)
                 else:
                     image_inpainted_backward_known = image_masked # is this skipping the last denoising?
 
@@ -131,7 +157,7 @@ class InpaintingInferer:
                     # perform resampling (forward & backward)
                     # for u in range(num_resample_steps):
                     #     image_inpainted = self.resample(image_inpainted, t)
-                    image_inpainted = self.diffusion_forward(image_inpainted, t-1)
+                    image_inpainted = self.diffusion_forward(image_inpainted, t, from_t=previous_timestep)
 
 
             if get_intermediates and t % 50 == 0:
@@ -165,7 +191,7 @@ class InpaintingInferer:
         noised_image = self.scheduler.add_noise(original_samples=image, noise=noise, timesteps=t)
         return noised_image
     
-    def diffusion_forward(self, image, t):
+    def diffusion_forward(self, image, t, from_t=None):
         """Apply a single forward diffusion update using the scheduler betas.
 
         Parameters
@@ -173,16 +199,26 @@ class InpaintingInferer:
         image : torch.Tensor
             Current reconstruction tensor.
         t : int | torch.Tensor
-            Current timestep index.
+            Target timestep index.
+        from_t : int | torch.Tensor, optional
+            Source timestep index. When provided, noise is added across the
+            complete scheduler gap instead of one training timestep.
 
         Returns
         -------
         torch.Tensor
             Tensor after applying forward diffusion noise.
         """
-        noise = torch.randn((image.shape),device=image.device)
-        # sqrt(1-beta) * image + sqrt(beta) * noise
-        image_inpainted = (torch.sqrt(1 - self.scheduler.betas[t]) * image + torch.sqrt(self.scheduler.betas[t]) * noise)
+        noise = torch.randn(image.shape, device=image.device)
+        if from_t is None:
+            alpha_ratio = 1 - self.scheduler.betas[t]
+        else:
+            target_alpha = self.scheduler.alphas_cumprod[t]
+            source_index = int(from_t.item()) if isinstance(from_t, torch.Tensor) else int(from_t)
+            source_alpha = self.scheduler.alphas_cumprod[source_index] if source_index >= 0 else target_alpha.new_tensor(1.0)
+            alpha_ratio = target_alpha / source_alpha
+        alpha_ratio = alpha_ratio.to(device=image.device, dtype=image.dtype)
+        image_inpainted = torch.sqrt(alpha_ratio) * image + torch.sqrt(1 - alpha_ratio) * noise
 
         return image_inpainted
 
@@ -508,6 +544,11 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
         self.plane_to_dimension = {'sagittal': 0, 'axial': 1, 'coronal': 2}
         self.dimension_to_plane = {0: 'sagittal', 1: 'axial', 2: 'coronal'}
 
+    @staticmethod
+    def view_dimension_for_step(step_index: int) -> int:
+        """Return the balanced view dimension for an inference-step index."""
+        return (-step_index) % 3
+
 
     def view_agg_inference(self, image_masked: torch.Tensor, mask: torch.Tensor, 
                            batch_size: int, inference_slices: dict,
@@ -561,10 +602,13 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
         else:
             progress_bar = iter(self.scheduler.timesteps)
         
-        for t in progress_bar:
+        timesteps = self.scheduler.timesteps
+        for step_index, t in enumerate(progress_bar):
             batch_outputs = []
 
-            current_plane = self.dimension_to_plane[int(t%3)] # alternate between sagittal, axial, coronal
+            view_dimension = self.view_dimension_for_step(step_index)
+            current_plane = self.dimension_to_plane[view_dimension]
+            _, previous_timestep, should_resample = self.scheduler_step_context(timesteps, step_index, num_resample_jumps)
             # TODO: this may not be needed and might cause overhead (same for other eval calls)
             self.model = self.diffusion_model_dict[current_plane] #.eval() 
             batched_slices, batched_masks, batch_slice_indices, _ = inference_slices[current_plane]
@@ -597,8 +641,18 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
                 if verbose:
                     progress_bar.set_description(f'Inpainting slices {start_idx} to {end_idx}, plane {current_plane}, timestep {t}')
                 
-                d = self.denoise(t, masks_batch, slices_batch, image_inpainted_slice_batch,
-                                                num_resample_steps, num_resample_jumps, scale_factor=scale_factor)
+                d = self.denoise(
+                    t,
+                    masks_batch,
+                    slices_batch,
+                    image_inpainted_slice_batch,
+                    num_resample_steps,
+                    num_resample_jumps,
+                    scale_factor=scale_factor,
+                    step_index=step_index,
+                    previous_timestep=previous_timestep,
+                    should_resample=should_resample,
+                )
                 batch_outputs.append(d)
                 
             image_inpainted_slice_denoised = torch.cat([img for img in batch_outputs], dim=0)
@@ -628,8 +682,19 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
 
 
     @torch.no_grad()
-    def denoise(self, t, mask: torch.Tensor, image_masked: torch.Tensor, image_inpainted: torch.Tensor,
-                 num_resample_steps=10, num_resample_jumps=5, scale_factor=None):    
+    def denoise(
+        self,
+        t,
+        mask: torch.Tensor,
+        image_masked: torch.Tensor,
+        image_inpainted: torch.Tensor,
+        num_resample_steps=10,
+        num_resample_jumps=5,
+        scale_factor=None,
+        step_index: int | None = None,
+        previous_timestep: int | torch.Tensor | None = None,
+        should_resample: bool | None = None,
+    ):
         """Refine the unknown regions through backward and forward diffusion.
 
         Parameters
@@ -665,7 +730,12 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
 
 
     
-        last_step = t == 0
+        if previous_timestep is None or should_resample is None:
+            _, resolved_previous_timestep, resolved_should_resample = self.scheduler_context_for_timestep(t, num_resample_jumps)
+            previous_timestep = resolved_previous_timestep if previous_timestep is None else previous_timestep
+            should_resample = resolved_should_resample if should_resample is None else should_resample
+        previous_timestep_value = int(previous_timestep.item()) if isinstance(previous_timestep, torch.Tensor) else int(previous_timestep)
+        last_step = previous_timestep_value < 0
 
         # get known region at t
         image_inpainted = torch.where(
@@ -676,15 +746,14 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
         #plot_batch(image_inpainted, DBG_PATH+ 'dbg_noised.png', slice_cut=[100, 84, 140])
 
         # skip resampling at last step and do jumps
-        if last_step or t % num_resample_jumps != 0: samplings_at_cuttent_t = 1
-        else: samplings_at_cuttent_t = num_resample_steps
+        samplings_at_cuttent_t = num_resample_steps if should_resample and not last_step else 1
 
         for u in range(samplings_at_cuttent_t):
             last_sample_step = u == (samplings_at_cuttent_t - 1)
             
             # get the known region at t-1 (forward diffusion to get t-1)
             if not last_step:
-                image_inpainted_backward_known = self.sample_forward_diffusion(image_masked, t-1)
+                image_inpainted_backward_known = self.sample_forward_diffusion(image_masked, previous_timestep)
             else:
                 image_inpainted_backward_known = image_masked # is this skipping the last denoising?
 
@@ -708,7 +777,7 @@ class TwoAndHalfDInpaintingInferer(SliceWiseInpaintingInferer):
                 # perform resampling (forward & backward)
                 # for u in range(num_resample_steps):
                 #     image_inpainted = self.resample(image_inpainted, t)
-                image_inpainted = self.diffusion_forward(image_inpainted, t-1)
+                image_inpainted = self.diffusion_forward(image_inpainted, t, from_t=previous_timestep)
 
         # fuse known and unknown regions (only required in case of resampling during t=0)
         image_inpainted = torch.where(mask == 0, image_masked, image_inpainted)
@@ -823,14 +892,24 @@ class OffsetTwoAndHalfDInpaintingInferer(TwoAndHalfDInpaintingInferer):
         else:
             progress_bar = iter(self.scheduler.timesteps)
         
-        for t in progress_bar:
+        timesteps = self.scheduler.timesteps
+        first_timestep = int(timesteps[0])
+        for step_index, t in enumerate(progress_bar):
             batch_outputs = []
 
-            current_plane = self.dimension_to_plane[int(t%3)] # alternate between sagittal, axial, coronal
+            view_dimension = self.view_dimension_for_step(step_index)
+            current_plane = self.dimension_to_plane[view_dimension]
             self.model = self.diffusion_model_dict[current_plane] # .eval()
             # add offset to alternate slicings to avoid checkerboard pattern
-            batched_slices, batched_masks, batch_slice_indices, _ = self.get_inference_slices(mask, image_masked, int(t%3), 
-                                                                        offset=(self.slice_thickness//2) * (t.item() % 2)) 
+            offset = (self.slice_thickness // 2) * ((first_timestep - step_index) % 2)
+            batched_slices, batched_masks, batch_slice_indices, _ = self.get_inference_slices(
+                mask,
+                image_masked,
+                view_dimension,
+                offset=offset,
+            )
+
+            _, previous_timestep, should_resample = self.scheduler_step_context(timesteps, step_index, num_resample_jumps)
 
             
 
@@ -860,8 +939,18 @@ class OffsetTwoAndHalfDInpaintingInferer(TwoAndHalfDInpaintingInferer):
                 if verbose:
                     progress_bar.set_description(f'Inpainting slices {start_idx} to {end_idx}, plane {current_plane}, timestep {t}')
                 
-                d = self.denoise(t, masks_batch, slices_batch, image_inpainted_slice_batch,
-                                                num_resample_steps, num_resample_jumps, scale_factor=scale_factor)
+                d = self.denoise(
+                    t,
+                    masks_batch,
+                    slices_batch,
+                    image_inpainted_slice_batch,
+                    num_resample_steps,
+                    num_resample_jumps,
+                    scale_factor=scale_factor,
+                    step_index=step_index,
+                    previous_timestep=previous_timestep,
+                    should_resample=should_resample,
+                )
                 batch_outputs.append(d)
                 
             image_inpainted_slice_denoised = torch.cat([img for img in batch_outputs], dim=0)
@@ -1033,10 +1122,12 @@ class AnomalyInferer(TwoAndHalfDInpaintingInferer):
         else:
             progress_bar = iter(timesteps)
         
-        for t in progress_bar:
+        for step_index, t in enumerate(progress_bar):
             batch_outputs = []
 
-            current_plane = self.dimension_to_plane[int(t%3)] # alternate between sagittal, axial, coronal
+            view_dimension = self.view_dimension_for_step(step_index)
+            current_plane = self.dimension_to_plane[view_dimension]
+            _, previous_timestep, should_resample = self.scheduler_step_context(timesteps, step_index, num_resample_jumps)
             self.model = self.diffusion_model_dict[current_plane] #.eval()
             batched_slices, batched_masks, batch_slice_indices, _ = inference_slices[current_plane]
 
@@ -1061,8 +1152,15 @@ class AnomalyInferer(TwoAndHalfDInpaintingInferer):
                 if verbose:
                     progress_bar.set_description(f'Denoising slices {start_idx} to {end_idx}, plane {current_plane}, timestep {t}')
                 
-                d = self.denoise(t, image_denoised_slice_batch,
-                                                num_resample_steps, num_resample_jumps, scale_factor=scale_factor)
+                d = self.denoise(
+                    t,
+                    image_denoised_slice_batch,
+                    num_resample_steps,
+                    num_resample_jumps,
+                    scale_factor=scale_factor,
+                    previous_timestep=previous_timestep,
+                    should_resample=should_resample,
+                )
                 batch_outputs.append(d)
                 
             image_inpainted_slice_denoised = torch.cat([img for img in batch_outputs], dim=0)
@@ -1091,8 +1189,16 @@ class AnomalyInferer(TwoAndHalfDInpaintingInferer):
 
     
     @torch.no_grad()
-    def denoise(self, t, image: torch.Tensor,
-                 num_resample_steps=10, num_resample_jumps=5, scale_factor=None):    
+    def denoise(
+        self,
+        t,
+        image: torch.Tensor,
+        num_resample_steps=10,
+        num_resample_jumps=5,
+        scale_factor=None,
+        previous_timestep: int | torch.Tensor | None = None,
+        should_resample: bool | None = None,
+    ):
         """Denoise `image` for `starting_t` forward iterations.
 
         Parameters
@@ -1116,11 +1222,15 @@ class AnomalyInferer(TwoAndHalfDInpaintingInferer):
         image_denoised = image
 
     
-        last_step = t == 0
+        if previous_timestep is None or should_resample is None:
+            _, resolved_previous_timestep, resolved_should_resample = self.scheduler_context_for_timestep(t, num_resample_jumps)
+            previous_timestep = resolved_previous_timestep if previous_timestep is None else previous_timestep
+            should_resample = resolved_should_resample if should_resample is None else should_resample
+        previous_timestep_value = int(previous_timestep.item()) if isinstance(previous_timestep, torch.Tensor) else int(previous_timestep)
+        last_step = previous_timestep_value < 0
 
         # skip resampling at last step and do jumps
-        if last_step or t % num_resample_jumps != 0: samplings_at_cuttent_t = 1
-        else: samplings_at_cuttent_t = num_resample_steps
+        samplings_at_cuttent_t = num_resample_steps if should_resample and not last_step else 1
 
         for u in range(samplings_at_cuttent_t):
             last_sample_step = u == (samplings_at_cuttent_t - 1)
@@ -1131,7 +1241,7 @@ class AnomalyInferer(TwoAndHalfDInpaintingInferer):
             # if we are doing resampling add noise and go again
             if not last_sample_step: 
                 # perform resampling (forward & backward)
-                image_denoised = self.diffusion_forward(image_denoised, t-1)
+                image_denoised = self.diffusion_forward(image_denoised, t, from_t=previous_timestep)
 
         return image_denoised
 

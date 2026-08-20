@@ -54,6 +54,7 @@ def test_keepgeom_anisotropic_smoke_30_steps_ci(tmp_path, monkeypatch):
     class _DummyInferer:
         def __init__(self, *, inference_steps, scheduler, diffusion_model_dict):
             tracker["steps"] = int(inference_steps)
+            tracker["scheduler"] = type(scheduler).__name__
             self._models = diffusion_model_dict
 
         def __call__(
@@ -66,6 +67,9 @@ def test_keepgeom_anisotropic_smoke_30_steps_ci(tmp_path, monkeypatch):
             get_intermediates=False,
             scale_factor=None,
         ):
+            tracker["resample_steps"] = num_resample_steps
+            tracker["resample_jumps"] = num_resample_jumps
+            tracker["batch_size"] = batch_size
             # Keep the tensor shape unchanged and return a deterministic result.
             return image_masked.clone()
 
@@ -97,11 +101,25 @@ def test_keepgeom_anisotropic_smoke_30_steps_ci(tmp_path, monkeypatch):
             "dummy_sagittal.pt",
             "--num_inference_steps",
             "30",
+            "--scheduler",
+            "ddim",
+            "--num_resample_steps",
+            "1",
+            "--num_resample_jumps",
+            "7",
+            "--batch_size",
+            "4",
+            "--seed",
+            "42",
             "--keepgeom",
         ]
     )
 
     assert tracker["steps"] == 30
+    assert tracker["scheduler"] == "DDIMScheduler"
+    assert tracker["resample_steps"] == 1
+    assert tracker["resample_jumps"] == 7
+    assert tracker["batch_size"] == 4
 
     output_path = out_dir / "inpainting_volumes" / "inpainting_result.nii.gz"
     intermediate_path = out_dir / "inpainting_volumes" / "inpainting_original_image.nii.gz"

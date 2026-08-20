@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 import neurolit.cli as cli
-from neurolit.inpaint_image import resolve_inference_device
+from neurolit.inpaint_image import resolve_inference_device, resolve_inference_settings
 from neurolit.scripts.lesion_postprocessing import generate_lesion_impact_summary, resolve_inpainting_mask_path
 
 
@@ -32,6 +32,7 @@ def test_lit_inpainting_help():
     assert "--min-auto-img-size" in result.stdout
     assert "--fastsurfer_dir" in result.stdout
     assert "--device" in result.stdout
+    assert "--fast" in result.stdout
     assert "auto, cpu, or cuda" in result.stdout
 
 
@@ -39,7 +40,49 @@ def test_inpaint_image_help():
     """Test neurolit.inpaint_image help includes keepgeom."""
     result = run_help_test("neurolit.inpaint_image")
     assert "--keepgeom" in result.stdout
+    assert "--fast" in result.stdout
     assert "--min-auto-img-size" in result.stdout
+
+
+def test_inference_presets_and_explicit_overrides():
+    """Fast must be opt-in and individual settings must remain overridable."""
+    unset = {
+        "scheduler": None,
+        "num_inference_steps": None,
+        "num_resample_steps": None,
+        "num_resample_jumps": None,
+    }
+    assert resolve_inference_settings(fast=False, **unset) == {
+        "scheduler": "ddpm",
+        "num_inference_steps": 1000,
+        "num_resample_steps": 10,
+        "num_resample_jumps": 15,
+    }
+    assert resolve_inference_settings(fast=True, **unset) == {
+        "scheduler": "ddim",
+        "num_inference_steps": 50,
+        "num_resample_steps": 10,
+        "num_resample_jumps": 15,
+    }
+    assert resolve_inference_settings(
+        fast=True,
+        scheduler="ddpm",
+        num_inference_steps=100,
+        num_resample_steps=2,
+        num_resample_jumps=7,
+    ) == {
+        "scheduler": "ddpm",
+        "num_inference_steps": 100,
+        "num_resample_steps": 2,
+        "num_resample_jumps": 7,
+    }
+
+
+def test_cli_appends_fast_and_geometry_flags():
+    """Both public CLI paths use the same inference-mode forwarding helper."""
+    argv = ["--input_image", "input.nii.gz"]
+    cli._append_inference_mode_args(argv, keepgeom=True, fast=True)
+    assert argv[-2:] == ["--keepgeom", "--fast"]
 
 def test_lesion_to_segmentation_help():
     """Test lit-lesion-to-segmentation help."""
@@ -252,8 +295,8 @@ def test_lit_inpainting_fastsurfer_dir_materializes_outputs(tmp_path, monkeypatc
     )
 
 
-def test_lit_inpainting_fastsurfer_dir_forwards_keepgeom(tmp_path, monkeypatch):
-    """FastSurfer mode should pass keepgeom through to the inpainting backend."""
+def test_lit_inpainting_fastsurfer_dir_forwards_inference_modes(tmp_path, monkeypatch):
+    """FastSurfer mode should pass geometry and fast-preset flags to the backend."""
     input_image = tmp_path / "input.nii.gz"
     mask_image = tmp_path / "mask.nii.gz"
     subject_dir = tmp_path / "subject"
@@ -275,6 +318,7 @@ def test_lit_inpainting_fastsurfer_dir_forwards_keepgeom(tmp_path, monkeypatch):
 
     def fake_inpaint_main(argv: list[str]) -> None:
         assert "--keepgeom" in argv
+        assert "--fast" in argv
         assert argv[argv.index("--min_auto_img_size") + 1] == "256"
         out_dir = Path(argv[argv.index("--out_dir") + 1])
         volumes_dir = out_dir / "inpainting_volumes"
@@ -301,6 +345,7 @@ def test_lit_inpainting_fastsurfer_dir_forwards_keepgeom(tmp_path, monkeypatch):
             str(subject_dir),
             "--fastsurfer_dir",
             "--keepgeom",
+            "--fast",
         ],
     )
 

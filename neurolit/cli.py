@@ -47,6 +47,16 @@ def _resample_mask_to_reference(src: Path, reference: Path, dst: Path) -> None:
     nib.save(nib.Nifti1Image(mask_data, reference_img.affine, header), str(dst))
 
 
+def _append_inference_mode_args(argv: list[str], *, keepgeom: bool, fast: bool, min_auto_img_size: int | None = None) -> None:
+    """Append common geometry and inference-preset flags to a backend command."""
+    if min_auto_img_size is not None:
+        argv.extend(["--min_auto_img_size", str(min_auto_img_size)])
+    if keepgeom:
+        argv.append("--keepgeom")
+    if fast:
+        argv.append("--fast")
+
+
 def run_lit():
     """Run the neuroLIT CLI.
 
@@ -88,6 +98,11 @@ def run_lit():
         default=8,
         help="Slices per GPU batch (default: 8); reduce to lower GPU memory usage",
     )
+    parser.add_argument(
+        "--fast",
+        action="store_true",
+        help="Use the recommended fast preset: DDIM, 50 steps, and RePaint 10/15",
+    )
     # Other arguments
     parser.add_argument("-h", "--help", action="store_true", help="Show help message and exit")
     parser.add_argument("-v", "--version", action="version", version=get_version_with_hash(), help="Print version number and exit")
@@ -107,6 +122,7 @@ def run_lit():
         print("  --fastsurfer_dir      : Treat output_directory as a FastSurfer subject directory")
         print("  --device              : Inference device: auto, cpu, or cuda (default: auto)")
         print("  --batch_size          : Slices per GPU batch (default: 8); reduce to lower GPU memory usage")
+        print("  --fast                : Use DDIM with 50 steps and RePaint 10/15")
         print("Other arguments:")
         print("  -v, --version         : Print version number and exit")
         print("  -h, --help            : Show help message and exit")
@@ -208,10 +224,12 @@ def run_lit():
                     str(args.batch_size),
                 ]
 
-                if args.keepgeom:
-                    inpaint_argv.append("--keepgeom")
-                if min_auto_img_size is not None:
-                    inpaint_argv.extend(["--min_auto_img_size", str(min_auto_img_size)])
+                _append_inference_mode_args(
+                    inpaint_argv,
+                    keepgeom=args.keepgeom,
+                    fast=args.fast,
+                    min_auto_img_size=min_auto_img_size,
+                )
 
                 # Forward any unknown arguments
                 inpaint_argv.extend(unknown)
@@ -259,10 +277,12 @@ def run_lit():
                 str(args.batch_size),
             ]
 
-            if args.keepgeom:
-                inpaint_argv.append("--keepgeom")
-            if min_auto_img_size is not None:
-                inpaint_argv.extend(["--min_auto_img_size", str(min_auto_img_size)])
+            _append_inference_mode_args(
+                inpaint_argv,
+                keepgeom=args.keepgeom,
+                fast=args.fast,
+                min_auto_img_size=min_auto_img_size,
+            )
 
             # Forward any unknown arguments
             inpaint_argv.extend(unknown)
