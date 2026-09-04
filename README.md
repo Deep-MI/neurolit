@@ -37,7 +37,7 @@ the processed mask at `mri/mask.lit.nii.gz`, and the original input mask at
 
 We recommend using containerization in combination with the [neurolit/scripts/run_lit_containerized.sh](neurolit/scripts/run_lit_containerized.sh) wrapper script.
 This will automatically pull the Docker image from [Docker Hub](https://hub.docker.com/r/deepmi/lit) or create a Singularity image cache and run the neuroLIT inpainting. Additional `lit-inpainting` flags such as `--dilate 2` are forwarded through the wrapper to the container entrypoint.
-If you do not pass `--tag`, the wrapper selects the newest numeric release tag available on Docker Hub (for example `0.6.0`), rather than Docker's floating `latest` tag.
+If you do not pass `--tag`, the wrapper selects the newest numeric release tag available on Docker Hub (for example `0.7.0`), rather than Docker's floating `latest` tag.
 We also have a pip release of neuroLIT.
 
 ### Running neuroLIT
@@ -107,7 +107,7 @@ lit-inpainting --input_image T1w.nii.gz --lesion_mask lesion_mask.nii.gz --outpu
 
 ## Expected Runtimes
 
-Runtimes below are for a typical whole-brain T1w volume (1 mm isotropic), measured with neuroLIT v0.6.1:
+Runtimes below are for a typical whole-brain T1w volume (1 mm isotropic), measured with neuroLIT v0.7.0:
 
 | Hardware | Runtime |
 |---|---|
