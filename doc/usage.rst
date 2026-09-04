@@ -47,9 +47,9 @@ original input mask to ``mri/orig/mask.lit.nii.gz``.
 Inference presets
 ~~~~~~~~~~~~~~~~~
 
-The original 1000-step DDPM configuration remains the default. Add ``--fast`` to select the
-recommended accelerated preset: DDIM with 50 inference steps and ten RePaint passes every 15
-scheduler steps. Individual scheduler and step arguments can still override preset values.
+The recommended accelerated preset is the default: DDIM with 50 inference steps and ten RePaint
+passes every 15 scheduler steps. Add ``--slow`` to restore the original 1000-step DDPM
+configuration. Individual scheduler and step arguments can still override preset values.
 
 Mask Dilation
 ~~~~~~~~~~~~~
@@ -185,7 +185,7 @@ Main command to run the neuroLIT inpainting.
      --fastsurfer_dir                                Treat output_directory as a FastSurfer subject directory
      --device [auto|cpu|cuda]                        Inference device [default: auto]
      --batch_size INTEGER                            Slices per GPU batch [default: 8]; reduce to lower GPU memory usage
-     --fast                                          Use DDIM with 50 steps and RePaint 10/15
+     --slow                                          Use DDPM with 1000 steps and RePaint 10/15
      -h, --help                                      Show this message and exit
 
 lit-download-models

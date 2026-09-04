@@ -25,8 +25,8 @@ pip install neurolit
 lit-inpainting --input_image T1w.nii.gz --lesion_mask lesion_mask.nii.gz --output_directory output_directory
 ```
 
-The command retains the original 1000-step DDPM inference by default. Add ``--fast`` to use the
-recommended DDIM preset with 50 inference steps and RePaint 10/15.
+The command uses the recommended fast preset by default: DDIM with 50 inference steps and RePaint
+10/15. Add ``--slow`` to restore the original 1000-step DDPM inference behavior.
 
 When preparing a FastSurfer subject directory directly, add `--fastsurfer_dir`. This writes the
 LIT outputs directly into the FastSurfer subject structure, including `mri/inpainted.lit.nii.gz`,

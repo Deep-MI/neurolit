@@ -48,7 +48,7 @@ def _make_dummy_pair(image_path: Path, mask_path: Path, shape=(37, 53, 19), zoom
     nib.save(nib.Nifti1Image(mask, affine), mask_path)
 
 
-def test_keepgeom_anisotropic_smoke_30_steps_ci(tmp_path, monkeypatch):
+def test_keepgeom_anisotropic_default_and_slow_smoke_ci(tmp_path, monkeypatch):
     tracker: dict[str, int] = {}
 
     class _DummyInferer:
@@ -99,10 +99,6 @@ def test_keepgeom_anisotropic_smoke_30_steps_ci(tmp_path, monkeypatch):
             "dummy_axial.pt",
             "--checkpoint_sagittal",
             "dummy_sagittal.pt",
-            "--num_inference_steps",
-            "30",
-            "--scheduler",
-            "ddim",
             "--num_resample_steps",
             "1",
             "--num_resample_jumps",
@@ -115,7 +111,7 @@ def test_keepgeom_anisotropic_smoke_30_steps_ci(tmp_path, monkeypatch):
         ]
     )
 
-    assert tracker["steps"] == 30
+    assert tracker["steps"] == 50
     assert tracker["scheduler"] == "DDIMScheduler"
     assert tracker["resample_steps"] == 1
     assert tracker["resample_jumps"] == 7
@@ -138,3 +134,26 @@ def test_keepgeom_anisotropic_smoke_30_steps_ci(tmp_path, monkeypatch):
     # In keepgeom mode, inference runs in conformed/model space, while final
     # output is resampled back to native geometry.
     assert intermediate_img.shape[:3] != src_img.shape[:3]
+
+    slow_out_dir = tmp_path / "slow-out"
+    inpaint_image.main(
+        [
+            "--input_image",
+            str(image_path),
+            "--mask_image",
+            str(mask_path),
+            "--out_dir",
+            str(slow_out_dir),
+            "--checkpoint_coronal",
+            "dummy_coronal.pt",
+            "--checkpoint_axial",
+            "dummy_axial.pt",
+            "--checkpoint_sagittal",
+            "dummy_sagittal.pt",
+            "--slow",
+        ]
+    )
+
+    assert tracker["steps"] == 1000
+    assert tracker["scheduler"] == "DDPMScheduler"
+    assert (slow_out_dir / "inpainting_volumes" / "inpainting_result.nii.gz").exists()

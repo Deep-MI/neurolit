@@ -52,15 +52,15 @@ from neurolit.utils.plotting import plot_batch, plot_inpainting  # noqa: E402
 
 logger = get_logger(__name__)
 
-SLOW_INFERENCE_DEFAULTS = {
-    "scheduler": "ddpm",
-    "num_inference_steps": 1000,
-    "num_resample_steps": 10,
-    "num_resample_jumps": 15,
-}
 FAST_INFERENCE_DEFAULTS = {
     "scheduler": "ddim",
     "num_inference_steps": 50,
+    "num_resample_steps": 10,
+    "num_resample_jumps": 15,
+}
+SLOW_INFERENCE_DEFAULTS = {
+    "scheduler": "ddpm",
+    "num_inference_steps": 1000,
     "num_resample_steps": 10,
     "num_resample_jumps": 15,
 }
@@ -68,14 +68,14 @@ FAST_INFERENCE_DEFAULTS = {
 
 def resolve_inference_settings(
     *,
-    fast: bool,
+    slow: bool,
     scheduler: str | None,
     num_inference_steps: int | None,
     num_resample_steps: int | None,
     num_resample_jumps: int | None,
 ) -> dict[str, str | int]:
-    """Resolve slow or fast preset values while retaining explicit overrides."""
-    preset = FAST_INFERENCE_DEFAULTS if fast else SLOW_INFERENCE_DEFAULTS
+    """Resolve fast or slow preset values while retaining explicit overrides."""
+    preset = SLOW_INFERENCE_DEFAULTS if slow else FAST_INFERENCE_DEFAULTS
     return {
         "scheduler": scheduler if scheduler is not None else preset["scheduler"],
         "num_inference_steps": num_inference_steps if num_inference_steps is not None else preset["num_inference_steps"],
@@ -486,21 +486,21 @@ def main(argv=None):
         help="Optional minimum side length for automatic conforming",
     )
     parser.add_argument(
-        "--fast",
+        "--slow",
         action="store_true",
-        help="Use the recommended fast preset: DDIM, 50 steps, and RePaint 10/15",
+        help="Use the original slow preset: DDPM, 1000 steps, and RePaint 10/15",
     )
     parser.add_argument(
         "--num_inference_steps",
         type=int,
         default=None,
-        help="Number of diffusion inference iterations (default: 1000, or 50 with --fast)",
+        help="Number of diffusion inference iterations (default: 50, or 1000 with --slow)",
     )
     parser.add_argument(
         "--scheduler",
         choices=["ddpm", "ddim"],
         default=None,
-        help="Diffusion scheduler to use (default: ddpm, or ddim with --fast)",
+        help="Diffusion scheduler to use (default: ddim, or ddpm with --slow)",
     )
     parser.add_argument(
         "--num_resample_steps",
@@ -537,7 +537,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     settings = resolve_inference_settings(
-        fast=args.fast,
+        slow=args.slow,
         scheduler=args.scheduler,
         num_inference_steps=args.num_inference_steps,
         num_resample_steps=args.num_resample_steps,
