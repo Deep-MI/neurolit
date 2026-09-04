@@ -36,7 +36,7 @@ FLAGS:
   --singularity_image <path>
       Path to an existing Singularity/Apptainer image (.sif or .simg). Implies --singularity.
   --tag <tag>
-      Docker tag to use (e.g., '0.6.0' or 'latest'). If omitted, the wrapper
+      Docker tag to use (e.g., '0.7.0' or 'latest'). If omitted, the wrapper
       selects the newest numeric release tag available on Docker Hub. If a full
       image name is provided (containing '/' or ':'), it overrides the default
       repository.
@@ -144,7 +144,7 @@ while [[ $# -gt 0 ]]; do
                     grep -oP '"name":\s*"\K[0-9]+\.[0-9]+\.[0-9]+' | \
                     sort -V | tail -n 1)
         fi
-        [[ -z "$VERSION" ]] && VERSION="0.6.1"
+        [[ -z "$VERSION" ]] && VERSION="0.7.0"
       fi
       hash_file="$PROJ_DIR/git.hash"
       if [[ -n "$(which git)" ]] && (git -C "$PROJ_DIR" rev-parse 2>/dev/null ) ; then
@@ -196,7 +196,7 @@ if [[ -z "$VERSION" ]]; then
               sort -V | tail -n 1)
   fi
   if [[ -z "$VERSION" ]]; then
-    VERSION="0.6.1"
+    VERSION="0.7.0"
   fi
 fi
 
