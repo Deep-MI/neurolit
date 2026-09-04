@@ -421,14 +421,14 @@
     <span class="n">nib</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">nib</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">mask_data</span><span class="p">,</span> <span class="n">reference_img</span><span class="o">.</span><span class="n">affine</span><span class="p">,</span> <span class="n">header</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">dst</span><span class="p">))</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_append_inference_mode_args</span><span class="p">(</span><span class="n">argv</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">keepgeom</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">fast</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">min_auto_img_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_append_inference_mode_args</span><span class="p">(</span><span class="n">argv</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">keepgeom</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">slow</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">min_auto_img_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Append common geometry and inference-preset flags to a backend command."""</span>
     <span class="k">if</span> <span class="n">min_auto_img_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">argv</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">"--min_auto_img_size"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">min_auto_img_size</span><span class="p">)])</span>
     <span class="k">if</span> <span class="n">keepgeom</span><span class="p">:</span>
         <span class="n">argv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"--keepgeom"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">fast</span><span class="p">:</span>
-        <span class="n">argv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"--fast"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">slow</span><span class="p">:</span>
+        <span class="n">argv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"--slow"</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="run_lit">
@@ -475,9 +475,9 @@
         <span class="n">help</span><span class="o">=</span><span class="s2">"Slices per GPU batch (default: 8); reduce to lower GPU memory usage"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">"--fast"</span><span class="p">,</span>
+        <span class="s2">"--slow"</span><span class="p">,</span>
         <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">"Use the recommended fast preset: DDIM, 50 steps, and RePaint 10/15"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Use the original slow preset: DDPM, 1000 steps, and RePaint 10/15"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="c1"># Other arguments</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"-h"</span><span class="p">,</span> <span class="s2">"--help"</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"Show help message and exit"</span><span class="p">)</span>
@@ -498,7 +498,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">"  --fastsurfer_dir      : Treat output_directory as a FastSurfer subject directory"</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">"  --device              : Inference device: auto, cpu, or cuda (default: auto)"</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">"  --batch_size          : Slices per GPU batch (default: 8); reduce to lower GPU memory usage"</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">"  --fast                : Use DDIM with 50 steps and RePaint 10/15"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"  --slow                : Use DDPM with 1000 steps and RePaint 10/15"</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">"Other arguments:"</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">"  -v, --version         : Print version number and exit"</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">"  -h, --help            : Show help message and exit"</span><span class="p">)</span>
@@ -603,7 +603,7 @@
                 <span class="n">_append_inference_mode_args</span><span class="p">(</span>
                     <span class="n">inpaint_argv</span><span class="p">,</span>
                     <span class="n">keepgeom</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">keepgeom</span><span class="p">,</span>
-                    <span class="n">fast</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">fast</span><span class="p">,</span>
+                    <span class="n">slow</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">slow</span><span class="p">,</span>
                     <span class="n">min_auto_img_size</span><span class="o">=</span><span class="n">min_auto_img_size</span><span class="p">,</span>
                 <span class="p">)</span>
 
@@ -656,7 +656,7 @@
             <span class="n">_append_inference_mode_args</span><span class="p">(</span>
                 <span class="n">inpaint_argv</span><span class="p">,</span>
                 <span class="n">keepgeom</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">keepgeom</span><span class="p">,</span>
-                <span class="n">fast</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">fast</span><span class="p">,</span>
+                <span class="n">slow</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">slow</span><span class="p">,</span>
                 <span class="n">min_auto_img_size</span><span class="o">=</span><span class="n">min_auto_img_size</span><span class="p">,</span>
             <span class="p">)</span>
 

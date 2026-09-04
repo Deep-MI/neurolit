@@ -414,9 +414,9 @@ original input mask to <code class="docutils literal notranslate"><span class="p
 </section>
 <section id="inference-presets">
 <h3>Inference presets<a class="headerlink" href="#inference-presets" title="Link to this heading"></a></h3>
-<p>The original 1000-step DDPM configuration remains the default. Add <code class="docutils literal notranslate"><span class="pre">--fast</span></code> to select the
-recommended accelerated preset: DDIM with 50 inference steps and ten RePaint passes every 15
-scheduler steps. Individual scheduler and step arguments can still override preset values.</p>
+<p>The recommended accelerated preset is the default: DDIM with 50 inference steps and ten RePaint
+passes every 15 scheduler steps. Add <code class="docutils literal notranslate"><span class="pre">--slow</span></code> to restore the original 1000-step DDPM
+configuration. Individual scheduler and step arguments can still override preset values.</p>
 </section>
 <section id="mask-dilation">
 <h3>Mask Dilation<a class="headerlink" href="#mask-dilation" title="Link to this heading"></a></h3>
@@ -539,7 +539,7 @@ Options:
   --fastsurfer_dir                                Treat output_directory as a FastSurfer subject directory
   --device [auto|cpu|cuda]                        Inference device [default: auto]
   --batch_size INTEGER                            Slices per GPU batch [default: 8]; reduce to lower GPU memory usage
-  --fast                                          Use DDIM with 50 steps and RePaint 10/15
+  --slow                                          Use DDPM with 1000 steps and RePaint 10/15
   -h, --help                                      Show this message and exit
 </pre></div>
 </div>
