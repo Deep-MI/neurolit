@@ -16,6 +16,9 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import nibabel as nib
+import numpy as np
+
 from neurolit._version import get_version_with_hash
 from neurolit.postprocessing.lesion_to_segmentation import main as lesion_to_segmentation_main
 from neurolit.postprocessing.lesion_to_surface import main as lesion_to_surface_main
@@ -69,8 +72,8 @@ Pollak C, Kuegler D, Bauer T, Rueber T, Reuter M, FastSurfer-LIT: Lesion Inpaint
                         help='Skip surface masking step')
     parser.add_argument('--verbose', action='store_true',
                         help='Enable debug logging (shows captured command output)')
-    parser.add_argument('--python-cmd', type=str, default='python3',
-                        help='Python command to use for running scripts (default: python3)')
+    parser.add_argument('--python-cmd', type=str, default=sys.executable,
+                        help=f'Python command to use for running scripts (default: {sys.executable})')
     parser.add_argument('-v', '--version', action='version',
                         version=get_version_with_hash(),
                         help='Print version number and exit')
@@ -105,7 +108,9 @@ def ensure_backup(file_path: Path) -> Path | None:
     Adds '.lit' before the extension(s). Handles symlinks by creating a 
     corresponding .lit symlink.
     """
-    if not file_path.exists(follow_symlinks=False):
+    # os.path.lexists has the same no-follow semantics as
+    # Path.exists(follow_symlinks=False), but also supports Python 3.10 and 3.11.
+    if not os.path.lexists(file_path):
         return None
 
     # Construct backup name (e.g., file.mgz -> file.lit.mgz, file.nii.gz -> file.lit.nii.gz)
@@ -118,7 +123,7 @@ def ensure_backup(file_path: Path) -> Path | None:
     backup_name = f"{stem}.lit{ext}"
     backup_path = file_path.with_name(backup_name)
 
-    if not backup_path.exists():
+    if not os.path.lexists(backup_path):
         if file_path.is_symlink():
             target = os.readlink(file_path)
             target_path = Path(target)
@@ -132,7 +137,7 @@ def ensure_backup(file_path: Path) -> Path | None:
                 ensure_backup(abs_target_path)
 
             # Re-check existence as recursive call might have created us
-            if not backup_path.exists():
+            if not os.path.lexists(backup_path):
                 logger.info(f"  Creating backup: {file_path.name} -> {backup_name}")
                 # If target is relative and in the same directory, lit-ify it
                 if not target_path.is_absolute():
@@ -168,7 +173,7 @@ def ensure_backup(file_path: Path) -> Path | None:
                     s_stem = item.name[:-len(i_ext)] if i_ext else item.name
                     s_backup_name = f"{s_stem}.lit{i_ext}"
                     s_backup_path = item.with_name(s_backup_name)
-                    if not s_backup_path.exists():
+                    if not os.path.lexists(s_backup_path):
                         logger.info(f"  Creating backup symlink: {item.name} -> {s_backup_name}")
                         # Point the new .lit symlink to the .lit backup of the target
                         os.symlink(backup_name, s_backup_path)
@@ -347,6 +352,65 @@ def _subject_relative_path(path: Path, subject_path: Path) -> str:
         return str(path)
 
 
+def resolve_segstats_input_candidates(subjects_dir: Path, subject_id: str,
+                                      config: dict[str, Any]) -> dict[str, Any]:
+    """Select configured statistic inputs that match the segmentation geometry.
+
+    FastSurfer modules normally write segmentations in the primary image grid, but
+    CerebNet always uses a 1 mm grid. Candidate lists allow postprocessing to reuse
+    FastSurfer's corresponding conformed intensity image without changing behavior
+    for inputs that were already at 1 mm resolution.
+
+    Parameters
+    ----------
+    subjects_dir : Path
+        Directory containing FastSurfer subjects.
+    subject_id : str
+        Subject identifier.
+    config : Dict[str, Any]
+        Segstats call configuration. ``<key>_candidates`` entries are supported for
+        ``normfile`` and ``pvfile``.
+
+    Returns
+    -------
+    Dict[str, Any]
+        A shallow copy with matching candidate paths selected where available.
+    """
+    resolved = dict(config)
+    segfile = config.get("segfile")
+    if not segfile:
+        return resolved
+
+    subject_path = subjects_dir / subject_id
+    seg_path = subject_path / segfile
+    if not seg_path.exists():
+        return resolved
+
+    try:
+        seg_img = nib.load(seg_path)
+    except (OSError, ValueError) as e:
+        logger.debug(f"Could not inspect segmentation geometry for {seg_path}: {e}")
+        return resolved
+
+    for key in ("normfile", "pvfile"):
+        candidates = config.get(f"{key}_candidates", [])
+        for candidate in candidates:
+            candidate_path = subject_path / candidate
+            if not candidate_path.exists():
+                continue
+            try:
+                candidate_img = nib.load(candidate_path)
+            except (OSError, ValueError) as e:
+                logger.debug(f"Could not inspect candidate geometry for {candidate_path}: {e}")
+                continue
+            if seg_img.shape == candidate_img.shape and np.allclose(seg_img.affine, candidate_img.affine):
+                resolved[key] = candidate
+                logger.info(f"  Using geometry-matched {key}: {candidate}")
+                break
+
+    return resolved
+
+
 def _collect_segstats_dependencies(subjects_dir: Path, subject_id: str,
                                    config: dict[str, Any]) -> list[Path]:
     """Collect input paths required for a segstats call.
@@ -521,7 +585,7 @@ def map_lesion_to_segmentation(subjects_dir: Path, subject_id: str,
 
 def build_segstats_command(fastsurfer_path: Path | None, subjects_dir: Path, subject_id: str,
                             config: dict[str, Any], fs_home: Path | None = None,
-                            python_cmd: str = 'python3', use_mri_segstats: bool = False) -> list[str]:
+                            python_cmd: str = sys.executable, use_mri_segstats: bool = False) -> list[str]:
     """Build segstats command from the provided configuration.
 
     Parameters
@@ -537,7 +601,7 @@ def build_segstats_command(fastsurfer_path: Path | None, subjects_dir: Path, sub
     fs_home : Optional[Path], optional
         FreeSurfer installation path for LUT fallbacks, by default ``None``.
     python_cmd : str, optional
-        Python executable to run FastSurfer's script, by default ``'python3'``.
+        Python executable to run FastSurfer's script, by default the current interpreter.
     use_mri_segstats : bool, optional
         Whether to run FreeSurfer's ``mri_segstats`` instead of FastSurfer's ``segstats.py``, by default ``False``.
 
@@ -651,7 +715,7 @@ def build_segstats_command(fastsurfer_path: Path | None, subjects_dir: Path, sub
 
 def run_segstats(fastsurfer_path: Path | None, subjects_dir: Path, subject_id: str,
                        config: dict[str, Any], fs_home: Path | None = None,
-                       use_mri_segstats: bool = False, python_cmd: str = 'python3') -> bool:
+                       use_mri_segstats: bool = False, python_cmd: str = sys.executable) -> bool:
     """Invoke segstats with the configured arguments.
 
     Parameters
@@ -670,7 +734,7 @@ def run_segstats(fastsurfer_path: Path | None, subjects_dir: Path, subject_id: s
         Whether to use FreeSurfer's ``mri_segstats`` (True) versus FastSurfer's ``segstats.py`` (False),
         by default ``False``.
     python_cmd : str, optional
-        Python executable for FastSurfer, by default ``'python3'``.
+        Python executable for FastSurfer, by default the current interpreter.
 
     Returns
     -------
@@ -866,7 +930,8 @@ def build_stats_overview(subjects_dir: Path, subject_id: str,
     overview: list[str] = []
     subj_path = subjects_dir / subject_id
 
-    for segstats_call in config.get("segstats_calls", []):
+    for raw_segstats_call in config.get("segstats_calls", []):
+        segstats_call = resolve_segstats_input_candidates(subjects_dir, subject_id, raw_segstats_call)
         inputs: list[str] = []
         if "segfile" in segstats_call:
             inputs.append(segstats_call["segfile"])
@@ -957,33 +1022,42 @@ def generate_lesion_impact_summary(subjects_dir: Path, subject_id: str,
                 current_cat = "adjacent"
                 continue
             
-            if current_cat == "overlap" and line.startswith("#") and "LabelName" not in line and "None found" not in line:
-                parts = line[1:].split()
-                if not parts: continue
-                
-                try:
-                    lid = int(parts[0])
-                    lname = parts[1] if len(parts) > 1 else str(lid)
-                except ValueError:
-                    continue
+            if current_cat != "overlap":
+                continue
 
-                if is_surface:
-                    if hemi == "lh": impact["lh_cortical"] = True
-                    elif hemi == "rh": impact["rh_cortical"] = True
-                else:
-                    # Volumetric DKT+aseg logic
-                    is_lh = (1000 <= lid < 2000) or lname.startswith("Left-") or lname.startswith("ctx-lh-")
-                    is_rh = (2000 <= lid < 3000) or lname.startswith("Right-") or lname.startswith("ctx-rh-")
-                    is_cortical = (1000 <= lid < 3000) or lname.startswith("ctx-")
-                    
-                    if is_lh:
-                        if is_cortical: impact["lh_cortical"] = True
-                        else: impact["lh_subcortical"] = True
-                    if is_rh:
-                        if is_cortical: impact["rh_cortical"] = True
-                        else: impact["rh_subcortical"] = True
-                
-                impact["affected_labels"].append(f"{hemi + '.' if hemi else ''}{lname}")
+            # Report writers emit data rows without a comment prefix, for example
+            # ``49    Right-Thalamus``.  Continue to accept the previously tested
+            # ``# 49 Right-Thalamus`` form for compatibility with older reports.
+            row = line.removeprefix("#").strip()
+            if "LabelName" in row or "None found" in row:
+                continue
+            parts = row.split(maxsplit=1)
+            if not parts:
+                continue
+
+            try:
+                lid = int(parts[0])
+                lname = parts[1] if len(parts) > 1 else str(lid)
+            except ValueError:
+                continue
+
+            if is_surface:
+                if hemi == "lh": impact["lh_cortical"] = True
+                elif hemi == "rh": impact["rh_cortical"] = True
+            else:
+                # Volumetric DKT+aseg logic
+                is_lh = (1000 <= lid < 2000) or lname.startswith("Left-") or lname.startswith("ctx-lh-")
+                is_rh = (2000 <= lid < 3000) or lname.startswith("Right-") or lname.startswith("ctx-rh-")
+                is_cortical = (1000 <= lid < 3000) or lname.startswith("ctx-")
+
+                if is_lh:
+                    if is_cortical: impact["lh_cortical"] = True
+                    else: impact["lh_subcortical"] = True
+                if is_rh:
+                    if is_cortical: impact["rh_cortical"] = True
+                    else: impact["rh_subcortical"] = True
+
+            impact["affected_labels"].append(f"{hemi + '.' if hemi else ''}{lname}")
 
     # Process volumetric reports
     for _, report_file in mapping_reports:
@@ -1102,7 +1176,8 @@ def main():
         else:
             logger.info("Using FastSurfer segstats.py (full features)")
         
-        for segstats_config in config.get('segstats_calls', []):
+        for raw_segstats_config in config.get('segstats_calls', []):
+            segstats_config = resolve_segstats_input_candidates(subjects_dir, subject_id, raw_segstats_config)
             # Determine if this specific call needs mri_segstats
             # (Surface-based calls with --in or --annot are FS-only)
             call_use_mri_segstats = use_mri_segstats or \
@@ -1165,7 +1240,8 @@ def main():
         logger.info("STEP 4: Running surface segstats (mri_segstats)")
         logger.info("=" * 60)
 
-        for segstats_config in surface_segstats_calls:
+        for raw_segstats_config in surface_segstats_calls:
+            segstats_config = resolve_segstats_input_candidates(subjects_dir, subject_id, raw_segstats_config)
             logger.info("-" * 60)
             logger.info(f"Running: {segstats_config['name']}")
             logger.info("-" * 60)

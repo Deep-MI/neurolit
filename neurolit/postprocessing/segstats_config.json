@@ -46,6 +46,8 @@
       "segstatsfile": "stats/cerebellum.CerebNet.stats",
       "normfile": "mri/orig_nu.mgz",
       "pvfile": "mri/orig_nu.mgz",
+      "normfile_candidates": ["mri/orig_nu.10mm.mgz", "mri/orig_nu.mgz"],
+      "pvfile_candidates": ["mri/orig_nu.10mm.mgz", "mri/orig_nu.mgz"],
       "lut": "config/FreeSurferColorLUT.txt",
       "empty": true,
       "excludeid": [0],

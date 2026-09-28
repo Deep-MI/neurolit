@@ -129,7 +129,7 @@ def test_postprocessing_resolves_fastsurfer_mask_path_only(tmp_path):
 
 
 def test_generate_lesion_impact_summary_writes_json(tmp_path):
-    """Lesion impact summary should be emitted as machine-parseable JSON."""
+    """Summary parsing should consume rows written by volumetric and surface reports."""
     subject_id = "subject"
     stats_dir = tmp_path / subject_id / "stats"
     stats_dir.mkdir(parents=True)
@@ -137,9 +137,56 @@ def test_generate_lesion_impact_summary_writes_json(tmp_path):
     report_path.write_text(
         "\n".join(
             [
-                "Replaced Labels",
+                "# Replaced Labels (fully covered by lesion)",
+                "# LabelID    LabelName",
+                "      49    Right-Thalamus",
+                "# Reduced Labels (partially covered by lesion)",
+                "      14    3rd-Ventricle",
+                "# Adjacent Labels (touching lesion boundary)",
+            ]
+        )
+    )
+    surface_report_path = stats_dir / "rh.aparc.DKTatlas.lesion_report.txt"
+    surface_report_path.write_text(
+        "\n".join(
+            [
+                "# Replaced Labels (fully covered by lesion)",
+                "# Index    LabelName",
+                "       1    superiorfrontal",
+                "# Adjacent Labels (touching lesion boundary)",
+            ]
+        )
+    )
+
+    summary_path = generate_lesion_impact_summary(
+        tmp_path,
+        subject_id,
+        [("stats/aparc.DKTatlas+aseg.mapped.stats", "stats/aparc.DKTatlas+aseg.lesion_report.txt")],
+        [("stats/rh.aparc.DKTatlas.mapped.stats", "stats/rh.aparc.DKTatlas.lesion_report.txt")],
+    )
+
+    assert summary_path == stats_dir / "lesion_impact_summary.json"
+    assert not (stats_dir / "lesion_impact_summary.yaml").exists()
+    summary = json.loads(summary_path.read_text())
+    assert summary["subject"] == subject_id
+    assert summary["hemisphere_impact"]["right_hemisphere_affected"] is True
+    assert summary["detailed_involvement"]["right_cortical_affected"] is True
+    assert summary["detailed_involvement"]["right_subcortical_affected"] is True
+    assert summary["affected_structures"] == ["3rd-Ventricle", "Right-Thalamus", "rh.superiorfrontal"]
+
+
+def test_generate_lesion_impact_summary_accepts_comment_prefixed_rows(tmp_path):
+    """Previously accepted comment-prefixed data rows should remain compatible."""
+    subject_id = "subject"
+    stats_dir = tmp_path / subject_id / "stats"
+    stats_dir.mkdir(parents=True)
+    report_path = stats_dir / "aparc.DKTatlas+aseg.lesion_report.txt"
+    report_path.write_text(
+        "\n".join(
+            [
+                "# Replaced Labels (fully covered by lesion)",
                 "# 1001 ctx-lh-bankssts",
-                "Adjacent Labels",
+                "# Adjacent Labels (touching lesion boundary)",
             ]
         )
     )
@@ -151,10 +198,7 @@ def test_generate_lesion_impact_summary_writes_json(tmp_path):
         [],
     )
 
-    assert summary_path == stats_dir / "lesion_impact_summary.json"
-    assert not (stats_dir / "lesion_impact_summary.yaml").exists()
     summary = json.loads(summary_path.read_text())
-    assert summary["subject"] == subject_id
     assert summary["hemisphere_impact"]["left_hemisphere_affected"] is True
     assert summary["detailed_involvement"]["left_cortical_affected"] is True
     assert summary["affected_structures"] == ["ctx-lh-bankssts"]
