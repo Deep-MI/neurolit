@@ -9,6 +9,8 @@ import pytest
 
 import neurolit.cli as cli
 from neurolit.inpaint_image import resolve_inference_device, resolve_inference_settings
+from neurolit.postprocessing.lesion_to_segmentation import write_report
+from neurolit.postprocessing.lesion_to_surface import write_surface_report
 from neurolit.scripts.lesion_postprocessing import generate_lesion_impact_summary, resolve_inpainting_mask_path
 
 
@@ -134,29 +136,9 @@ def test_generate_lesion_impact_summary_writes_json(tmp_path):
     stats_dir = tmp_path / subject_id / "stats"
     stats_dir.mkdir(parents=True)
     report_path = stats_dir / "aparc.DKTatlas+aseg.lesion_report.txt"
-    report_path.write_text(
-        "\n".join(
-            [
-                "# Replaced Labels (fully covered by lesion)",
-                "# LabelID    LabelName",
-                "      49    Right-Thalamus",
-                "# Reduced Labels (partially covered by lesion)",
-                "      14    3rd-Ventricle",
-                "# Adjacent Labels (touching lesion boundary)",
-            ]
-        )
-    )
+    write_report(report_path, {49}, {14}, {10}, {49: "Right-Thalamus", 14: "3rd-Ventricle", 10: "Left-Thalamus"})
     surface_report_path = stats_dir / "rh.aparc.DKTatlas.lesion_report.txt"
-    surface_report_path.write_text(
-        "\n".join(
-            [
-                "# Replaced Labels (fully covered by lesion)",
-                "# Index    LabelName",
-                "       1    superiorfrontal",
-                "# Adjacent Labels (touching lesion boundary)",
-            ]
-        )
-    )
+    write_surface_report(surface_report_path, {1}, set(), {0}, [b"unknown", b"superiorfrontal"])
 
     summary_path = generate_lesion_impact_summary(
         tmp_path,

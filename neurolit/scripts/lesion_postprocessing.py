@@ -2,6 +2,7 @@
 
 """
 Script to process volumetric statistics with lesion mapping.
+
 Supports both local and Docker execution modes.
 Handles multiple segmentation files and segstats calls dynamically.
 """
@@ -20,14 +21,18 @@ import nibabel as nib
 import numpy as np
 
 from neurolit._version import get_version_with_hash
+from neurolit.postprocessing.backups import ensure_backup
 from neurolit.postprocessing.lesion_to_segmentation import main as lesion_to_segmentation_main
 from neurolit.postprocessing.lesion_to_surface import main as lesion_to_surface_main
+from neurolit.postprocessing.statistics import StatsBackend, StepResult, StepStatus, segstats_requires_surfaces, select_segstats_backend
 from neurolit.utils.log import get_logger
 
 logger = get_logger(__name__)
 
 
 ADJACENT_LABEL_TARGET = 99
+ASEG_LEFT_LABELS = frozenset([2, 3, 4, 5, 7, 8, 10, 11, 12, 13, 17, 18, 26, 28, 30, 31, 78, 81])
+ASEG_RIGHT_LABELS = frozenset([41, 42, 43, 44, 46, 47, 49, 50, 51, 52, 53, 54, 58, 60, 62, 63, 79, 82])
 
 
 def setup_argparse() -> argparse.ArgumentParser:
@@ -102,92 +107,13 @@ def load_config(config_path: Path) -> dict[str, Any]:
         return json.load(f)
 
 
-def ensure_backup(file_path: Path) -> Path | None:
-    """Ensure a backup of the original file exists before overwriting it.
-
-    Adds '.lit' before the extension(s). Handles symlinks by creating a 
-    corresponding .lit symlink.
-    """
-    # os.path.lexists has the same no-follow semantics as
-    # Path.exists(follow_symlinks=False), but also supports Python 3.10 and 3.11.
-    if not os.path.lexists(file_path):
-        return None
-
-    # Construct backup name (e.g., file.mgz -> file.lit.mgz, file.nii.gz -> file.lit.nii.gz)
-    if file_path.name.endswith(".nii.gz"):
-        ext = ".nii.gz"
-    else:
-        ext = file_path.suffix
-
-    stem = file_path.name[:-len(ext)] if ext else file_path.name
-    backup_name = f"{stem}.lit{ext}"
-    backup_path = file_path.with_name(backup_name)
-
-    if not os.path.lexists(backup_path):
-        if file_path.is_symlink():
-            target = os.readlink(file_path)
-            target_path = Path(target)
-            
-            # Ensure the target file itself is backed up
-            try:
-                abs_target_path = (file_path.parent / target_path).resolve()
-            except (OSError, RuntimeError) as e:
-                logger.debug(f"Could not resolve symlink target {target_path} for {file_path}: {e}")
-            else:
-                ensure_backup(abs_target_path)
-
-            # Re-check existence as recursive call might have created us
-            if not os.path.lexists(backup_path):
-                logger.info(f"  Creating backup: {file_path.name} -> {backup_name}")
-                # If target is relative and in the same directory, lit-ify it
-                if not target_path.is_absolute():
-                    if target_path.name.endswith(".nii.gz"):
-                        t_ext = ".nii.gz"
-                    else:
-                        t_ext = target_path.suffix
-                    t_stem = target_path.name[:-len(t_ext)] if t_ext else target_path.name
-                    t_backup_name = f"{t_stem}.lit{t_ext}"
-                    os.symlink(t_backup_name, backup_path)
-                else:
-                    os.symlink(target, backup_path)
-        else:
-            logger.info(f"  Creating backup: {file_path.name} -> {backup_name}")
-            shutil.copy2(file_path, backup_path)
-
-    # Also look for other symlinks in the same directory that point to this file
-    # and create corresponding .lit symlinks for them.
-    try:
-        abs_file_path = file_path.resolve()
-        for item in file_path.parent.iterdir():
-            if not item.is_symlink():
-                continue
-            
-            # Re-read suffix/extension for item
-            i_ext = ".nii.gz" if item.name.endswith(".nii.gz") else item.suffix
-            if item.name == backup_name or item.name.endswith(".lit" + i_ext):
-                continue
-
-            try:
-                if item.resolve() == abs_file_path:
-                    # This symlink points to our file! Create a .lit version of it.
-                    s_stem = item.name[:-len(i_ext)] if i_ext else item.name
-                    s_backup_name = f"{s_stem}.lit{i_ext}"
-                    s_backup_path = item.with_name(s_backup_name)
-                    if not os.path.lexists(s_backup_path):
-                        logger.info(f"  Creating backup symlink: {item.name} -> {s_backup_name}")
-                        # Point the new .lit symlink to the .lit backup of the target
-                        os.symlink(backup_name, s_backup_path)
-            except (OSError, RuntimeError) as e:
-                logger.debug(f"Could not resolve symlink {item}: {e}")
-                continue
-    except (OSError, RuntimeError) as e:
-        logger.debug(f"Could not search for related symlinks in {file_path.parent}: {e}")
-
-    return backup_path
-
-
-def validate_segstats_installation() -> tuple[Path | None, bool]:
+def validate_segstats_installation(python_cmd: str = sys.executable) -> tuple[Path | None, bool]:
     """Validate segstats installation and select the appropriate tool.
+
+    Parameters
+    ----------
+    python_cmd : str
+        Interpreter used for FastSurfer statistics, including the availability probe.
 
     Returns
     -------
@@ -215,9 +141,9 @@ def validate_segstats_installation() -> tuple[Path | None, bool]:
             try:
                 # Set PYTHONPATH and try to import
                 test_env = os.environ.copy()
-                test_env['PYTHONPATH'] = f"{fs_path}:{test_env.get('PYTHONPATH', '')}"
+                test_env['PYTHONPATH'] = f"{fs_path}{os.pathsep}{test_env.get('PYTHONPATH', '')}"
                 result = subprocess.run(
-                    [sys.executable, str(segstats_script), "--help"],
+                    [python_cmd, str(segstats_script), "--help"],
                     capture_output=True,
                     env=test_env,
                     timeout=15
@@ -369,7 +295,8 @@ def resolve_segstats_input_candidates(subjects_dir: Path, subject_id: str,
         Subject identifier.
     config : Dict[str, Any]
         Segstats call configuration. ``<key>_candidates`` entries are supported for
-        ``normfile`` and ``pvfile``.
+        ``normfile`` and ``pvfile``. ``measures.compute_if_exists`` enables optional
+        measures only when their subject-relative input files are present.
 
     Returns
     -------
@@ -377,6 +304,12 @@ def resolve_segstats_input_candidates(subjects_dir: Path, subject_id: str,
         A shallow copy with matching candidate paths selected where available.
     """
     resolved = dict(config)
+    subj_path = subjects_dir / subject_id
+    measures = config.get("measures", {})
+    optional_compute = [measure for filename, names in measures.get("compute_if_exists", {}).items()
+                        if (subj_path / filename).is_file() for measure in names]
+    if optional_compute:
+        resolved["measures"] = {**measures, "compute": list(dict.fromkeys([*measures.get("compute", []), *optional_compute]))}
     segfile = config.get("segfile")
     if not segfile:
         return resolved
@@ -433,6 +366,8 @@ def _collect_segstats_dependencies(subjects_dir: Path, subject_id: str,
     measures = config.get("measures", {})
     if "file" in measures:
         dependencies.append(subj_path / measures["file"])
+    dependencies.extend(subj_path / filename for filename in measures.get("compute_if_exists", {})
+                        if (subj_path / filename).is_file())
 
     for item in measures.get("compute", []):
         if not item.startswith("Mask(") or not item.endswith(")"):
@@ -469,7 +404,7 @@ def _missing_segstats_dependencies(subjects_dir: Path, subject_id: str,
     for dep in _collect_segstats_dependencies(subjects_dir, subject_id, config):
         rel_dep = _subject_relative_path(dep, subj_path)
         if rel_dep in unavailable_outputs:
-            missing.append(f"{rel_dep} (unavailable from skipped prior step)")
+            missing.append(f"{rel_dep} (unavailable from failed or skipped prior step)")
             continue
         if not dep.exists():
             missing.append(rel_dep)
@@ -525,12 +460,17 @@ def run_command(cmd: list[str], description: str, env: dict[str, str] | None = N
             return False
         logger.error(f"{description} failed with exit code {e.returncode}")
         sys.exit(1)
+    except OSError as e:
+        logger.error(f"{description} could not be started: {e}")
+        if fail_ok:
+            return False
+        sys.exit(1)
 
 
 def map_lesion_to_segmentation(subjects_dir: Path, subject_id: str,
                                 input_file: str, output_file: str, 
                                 report_file: str | None = None, 
-                                fs_home: Path | None = None) -> bool:
+                                fs_home: Path | None = None, fastsurfer_path: Path | None = None) -> bool:
     """Map lesion labels into a segmentation file via the lesion_to_segmentation script.
 
     Parameters
@@ -547,11 +487,13 @@ def map_lesion_to_segmentation(subjects_dir: Path, subject_id: str,
         Relative path to the anatomy report file.
     fs_home : Path, optional
         FreeSurfer installation path for LUT files.
+    fastsurfer_path : Path, optional
+        FastSurfer installation path for the fallback LUT.
 
     Returns
     -------
     bool
-        Currently always ``True``; kept for signature compatibility.
+        ``True`` after mapping, or ``False`` when the input is missing.
     """
     input_path = subjects_dir / subject_id / input_file
     output_path = subjects_dir / subject_id / output_file
@@ -571,7 +513,7 @@ def map_lesion_to_segmentation(subjects_dir: Path, subject_id: str,
     report_path = subjects_dir / subject_id / report_file if report_file else None
     if report_path:
         ensure_backup(report_path)
-    lut_path = _find_lut_file(fs_home) if report_file else None
+    lut_path = _find_lut_file(fs_home, fastsurfer_path) if report_file else None
 
     lesion_to_segmentation_main(
         image=str(input_path),
@@ -611,7 +553,17 @@ def build_segstats_command(fastsurfer_path: Path | None, subjects_dir: Path, sub
         Command line invocation including all configured flags.
     """
     if use_mri_segstats:
+        unsupported = [key for key in ('measures', 'merged_labels', 'measure_only') if config.get(key)]
+        if 'volume_precision' in config:
+            unsupported.append('volume_precision')
+        if unsupported:
+            raise ValueError(f"FreeSurfer mri_segstats cannot honor {', '.join(unsupported)}; this call requires FastSurfer")
+        if config.get('in_file') and config.get('normfile') and config['in_file'] != config['normfile']:
+            raise ValueError("FreeSurfer mri_segstats accepts only one intensity input (in_file or normfile)")
         cmd = ["mri_segstats"]
+        freesurfer_home = fs_home or (Path(os.environ['FREESURFER_HOME']) if os.environ.get('FREESURFER_HOME') else None)
+        if freesurfer_home and (freesurfer_home / "bin" / "mri_segstats").exists():
+            cmd[0] = str(freesurfer_home / "bin" / "mri_segstats")
     else:
         if fastsurfer_path is None:
             raise ValueError("fastsurfer_path is required when not using mri_segstats")
@@ -625,9 +577,14 @@ def build_segstats_command(fastsurfer_path: Path | None, subjects_dir: Path, sub
         cmd.extend(["--sid", subject_id])
     
     # File paths (convert to absolute paths)
-    for key, flag in [('segfile', '--segfile'), ('in_file', '--in'), 
-                      ('segstatsfile', '--segstatsfile'), ('sum', '--sum'),
-                      ('normfile', '--normfile'), ('pvfile', '--pvfile')]:
+    file_flags = [('segfile', '--segfile'), ('in_file', '--in'),
+                  ('segstatsfile', '--segstatsfile'), ('sum', '--sum'),
+                  ('normfile', '--normfile'), ('pvfile', '--pvfile')]
+    if use_mri_segstats:
+        file_flags = [('segfile', '--seg'), ('in_file', '--in'),
+                      ('segstatsfile', '--sum'), ('sum', '--sum'),
+                      ('normfile', '--in'), ('pvfile', '--pv')]
+    for key, flag in file_flags:
         if key in config:
             cmd.extend([flag, str(subj_path / config[key])])
     
@@ -651,13 +608,14 @@ def build_segstats_command(fastsurfer_path: Path | None, subjects_dir: Path, sub
     # List parameters (each item as separate argument)
     for key, flag in [('excludeid', '--excludeid'), ('ids', '--ids')]:
         if key in config:
+            if use_mri_segstats and key == 'ids':
+                flag = '--id'
             cmd.extend([flag] + [str(x) for x in config[key]])
     
-    # Merged labels (each list as separate --merged_label/--merge call)
+    # Merged labels are FastSurfer-only (rejected above for FreeSurfer).
     if 'merged_labels' in config:
-        flag = "--merge" if use_mri_segstats else "--merged_label"
         for item in config['merged_labels']:
-            cmd.extend([flag] + [str(x) for x in item])
+            cmd.extend(["--merged_label"] + [str(x) for x in item])
     
     # LUT handling - prefer FastSurfer LUTs, fall back to FreeSurfer
     if 'lut' in config:
@@ -683,14 +641,18 @@ def build_segstats_command(fastsurfer_path: Path | None, subjects_dir: Path, sub
                     fallback = Path('/usr/local/freesurfer')
                 lut_path = fallback / config['lut']
         else:
-            # For relative LUTs, use FastSurfer's config directory
-            if fastsurfer_path is None:
+            # Prefer FastSurfer's configured LUT; FreeSurfer-only installs use
+            # their standard LUT with the same filename.
+            if fastsurfer_path is not None:
+                lut_path = fastsurfer_path / "FastSurferCNN" / config['lut']
+            elif use_mri_segstats and freesurfer_home:
+                lut_path = freesurfer_home / Path(config['lut']).name
+            else:
                 raise ValueError("Relative LUT paths require FastSurfer installation")
-            lut_path = fastsurfer_path / "FastSurferCNN" / config['lut']
-        cmd.extend(["--lut", str(lut_path)])
+        cmd.extend(["--ctab" if use_mri_segstats else "--lut", str(lut_path)])
     
     # Measures subcommand
-    if 'measures' in config:
+    if 'measures' in config and not use_mri_segstats:
         cmd.append("measures")
         measures = config['measures']
         
@@ -739,7 +701,7 @@ def run_segstats(fastsurfer_path: Path | None, subjects_dir: Path, subject_id: s
     Returns
     -------
     bool
-        ``True`` when the command succeeded or failure was tolerated via ``fail_ok``.
+        ``True`` when the command succeeded, or ``False`` after a tolerated failure.
     """
     # Build command with appropriate tool
     cmd = build_segstats_command(fastsurfer_path, subjects_dir, subject_id, config, 
@@ -747,24 +709,44 @@ def run_segstats(fastsurfer_path: Path | None, subjects_dir: Path, subject_id: s
     
     # Ensure backups for output files
     subj_path = subjects_dir / subject_id
-    if 'segstatsfile' in config:
-        ensure_backup(subj_path / config['segstatsfile'])
-    if 'sum' in config:
-        ensure_backup(subj_path / config['sum'])
+    output = _segstats_output_path(config)
+    aliases = [subj_path / alias for alias in config.get('output_aliases', [])]
+    output_path = subj_path / output if output else None
+    # Older subjects may only contain a legacy CC stats filename. Reuse its
+    # first snapshot, not a previously lesion-modified table, when migrating.
+    if output_path and not output_path.exists():
+        for alias in aliases:
+            if alias.is_file():
+                snapshot = ensure_backup(alias)
+                shutil.copy2(snapshot if snapshot and snapshot.is_file() else alias, output_path)
+                break
+    output_backup = ensure_backup(output_path) if output_path else None
 
     if use_mri_segstats:
-        # Note: mri_segstats does not support measures subcommand
-        if 'measures' in config:
-            logger.info("  Note: mri_segstats does not support 'measures' subcommand.")
-            logger.info("        Measures will not be computed. Use FastSurfer segstats.py for measures support.")
-        
-        return run_command(cmd, f"Running mri_segstats: {config['name']}", fail_ok=True)
+        success = run_command(cmd, f"Running mri_segstats: {config['name']}", fail_ok=True)
     else:
         # Use FastSurfer's segstats.py - set up environment with PYTHONPATH
         env = os.environ.copy()
-        env['PYTHONPATH'] = f"{fastsurfer_path}:{env.get('PYTHONPATH', '')}"
+        env['PYTHONPATH'] = f"{fastsurfer_path}{os.pathsep}{env.get('PYTHONPATH', '')}"
         
-        return run_command(cmd, f"Running segstats: {config['name']}", env=env, fail_ok=True)
+        success = run_command(cmd, f"Running segstats: {config['name']}", env=env, fail_ok=True)
+
+    if success and output_path and output_path.is_file():
+        for alias in aliases:
+            if alias.is_symlink() and alias.resolve() == output_path.resolve():
+                continue
+            # New compatibility aliases share the canonical pre-lesion snapshot,
+            # including when symlinks are unavailable and copies are used.
+            if not os.path.lexists(alias) and output_backup and output_backup.is_file():
+                shutil.copy2(output_backup, alias)
+            ensure_backup(alias)
+            if os.path.lexists(alias):
+                alias.unlink()
+            try:
+                alias.symlink_to(os.path.relpath(output_path, alias.parent))
+            except OSError:
+                shutil.copy2(output_path, alias)
+    return success
 
 
 def build_surfstats_command(subjects_dir: Path, subject_id: str, hemisphere: str, 
@@ -797,10 +779,14 @@ def build_surfstats_command(subjects_dir: Path, subject_id: str, hemisphere: str
     return cmd
 
 
-def run_surfstats(subjects_dir: Path, subject_id: str, hemisphere: str, 
-                  config: dict[str, Any]) -> bool:
-    """Run surface-based anatomical statistics."""
+def run_surfstats(subjects_dir: Path, subject_id: str, hemisphere: str,
+                  config: dict[str, Any], unavailable_outputs: set[str] | None = None,
+                  skip_reason: str = "") -> StepResult:
+    """Run surface anatomical statistics and record the outcome and file paths."""
     subj_path = subjects_dir / subject_id
+    name = f"{hemisphere}.{config['name']}"
+    output = config.get('statsfile')
+    outputs = (output.format(hemi=hemisphere),) if output else ()
     
     # Check if required files exist before running
     required_files = []
@@ -812,11 +798,19 @@ def run_surfstats(subjects_dir: Path, subject_id: str, hemisphere: str,
     # Also check pial/white surface
     surf_name = config.get('surface', 'white')
     required_files.append(subj_path / "surf" / f"{hemisphere}.{surf_name}")
+    inputs = tuple(_subject_relative_path(path, subj_path) for path in required_files)
+
+    def result(status: StepStatus, reason: str = "") -> StepResult:
+        return StepResult(name, status, inputs, outputs, "freesurfer", reason)
+
+    if skip_reason:
+        return result("skipped", skip_reason)
 
     for f in required_files:
-        if not f.exists():
-            logger.warning(f"  Skipping surface stats for {hemisphere}: {f.name} not found.")
-            return False
+        if not f.exists() or (unavailable_outputs is not None and _subject_relative_path(f, subj_path) in unavailable_outputs):
+            reason = f"Required input missing or unavailable: {_subject_relative_path(f, subj_path)}"
+            logger.warning(f"  Skipping surface stats for {hemisphere}: {reason}")
+            return result("skipped", reason)
 
     # Ensure backup for statsfile
     if 'statsfile' in config:
@@ -826,19 +820,27 @@ def run_surfstats(subjects_dir: Path, subject_id: str, hemisphere: str,
     cmd = build_surfstats_command(subjects_dir, subject_id, hemisphere, config)
     env = os.environ.copy()
     env["SUBJECTS_DIR"] = str(subjects_dir)
-    return run_command(cmd, f"Running mris_anatomical_stats: {hemisphere}.{config['name']}", env=env, fail_ok=True)
+    success = run_command(cmd, f"Running mris_anatomical_stats: {name}", env=env, fail_ok=True)
+    if not success:
+        return result("failed", "Command failed; see command output above")
+    if outputs and not (subj_path / outputs[0]).exists():
+        return result("failed", f"Command did not create {outputs[0]}")
+    return result("succeeded")
 
 
-def _find_lut_file(fs_home: Path | None) -> Path | None:
-    """Return the FreeSurferColorLUT.txt path if available."""
+def _find_lut_file(fs_home: Path | None, fastsurfer_path: Path | None = None) -> Path | None:
+    """Find a FreeSurfer LUT, falling back to FastSurfer's bundled table."""
     candidates = []
     if fs_home:
         candidates.append(fs_home / "FreeSurferColorLUT.txt")
     env_fs = os.environ.get("FREESURFER_HOME")
     if env_fs:
         candidates.append(Path(env_fs) / "FreeSurferColorLUT.txt")
+    fastsurfer_home = fastsurfer_path or os.environ.get("FASTSURFER_HOME")
+    if fastsurfer_home:
+        candidates.append(Path(fastsurfer_home) / "FastSurferCNN" / "config" / "FreeSurferColorLUT.txt")
     for candidate in candidates:
-        if candidate.exists():
+        if candidate.is_file():
             return candidate
     return None
 
@@ -871,7 +873,7 @@ def surface_masking(lit_path: Path, subjects_dir: Path, subject_id: str,
     Returns
     -------
     bool
-        Always ``True`` (kept for backwards compatibility).
+        ``True`` after masking, or ``False`` when the input annotation is missing.
     """
     insurf = str(subjects_dir / subject_id / "surf" / f"{hemisphere}.pial")
     inseg = str(resolve_inpainting_mask_path(subjects_dir, subject_id))
@@ -920,56 +922,48 @@ def surface_masking(lit_path: Path, subjects_dir: Path, subject_id: str,
     return True
 
 
-def _format_inputs(inputs: list[str]) -> str:
-    return " + ".join(inputs)
-
-
-def build_stats_overview(subjects_dir: Path, subject_id: str,
-                         config: dict[str, Any], surf_config: dict[str, Any]) -> list[str]:
-    """Build human-readable mapping of inputs to output stats files."""
-    overview: list[str] = []
+def _run_segstats_step(fastsurfer_path: Path | None, subjects_dir: Path, subject_id: str,
+                       config: dict[str, Any], fs_home: Path | None,
+                       default_backend: StatsBackend, python_cmd: str, unavailable_outputs: set[str],
+                       skip_reason: str = "") -> StepResult:
+    """Record backend, resolved inputs, and outcome for a single statistics call."""
+    backend = select_segstats_backend(config, default_backend)
+    if not skip_reason:
+        config = resolve_segstats_input_candidates(subjects_dir, subject_id, config)
     subj_path = subjects_dir / subject_id
+    inputs = tuple(_subject_relative_path(path, subj_path) for path in _collect_segstats_dependencies(subjects_dir, subject_id, config))
+    output = _segstats_output_path(config)
+    outputs = (output, *config.get('output_aliases', [])) if output else ()
 
-    for raw_segstats_call in config.get("segstats_calls", []):
-        segstats_call = resolve_segstats_input_candidates(subjects_dir, subject_id, raw_segstats_call)
-        inputs: list[str] = []
-        if "segfile" in segstats_call:
-            inputs.append(segstats_call["segfile"])
-        if "in_file" in segstats_call:
-            inputs.append(segstats_call["in_file"])
-        if "normfile" in segstats_call:
-            inputs.append(segstats_call["normfile"])
-        if "pvfile" in segstats_call:
-            inputs.append(segstats_call["pvfile"])
+    def result(status: StepStatus, reason: str = "") -> StepResult:
+        if status != "succeeded":
+            unavailable_outputs.update(outputs)
+        return StepResult(config['name'], status, inputs, outputs, backend, reason)
 
-        if "annot" in segstats_call:
-            hemi, atlas = segstats_call["annot"]
-            inputs.append(f"label/{hemi}.{atlas}.annot")
+    if skip_reason:
+        return result("skipped", skip_reason)
+    missing = _missing_segstats_dependencies(subjects_dir, subject_id, config, unavailable_outputs)
+    if missing:
+        return result("skipped", f"Missing or unavailable inputs: {', '.join(missing)}")
 
-        output = segstats_call.get("segstatsfile") or segstats_call.get("sum")
-        if inputs and output and (subj_path / output).exists():
-            overview.append(f"{_format_inputs(inputs)} => {output}")
+    try:
+        success = run_segstats(fastsurfer_path, subjects_dir, subject_id, config,
+                              fs_home, backend == "freesurfer", python_cmd)
+    except (ValueError, OSError) as error:
+        return result("failed", str(error))
+    if not success:
+        return result("failed", "Command failed; see command output above")
+    for filename in outputs:
+        if not (subj_path / filename).exists():
+            return result("failed", f"Command did not create {filename}")
+    return result("succeeded")
 
-    for surfstats_call in surf_config.get("surfstats_calls", []):
-        for hemisphere in ["lh", "rh"]:
-            inputs = []
-            if "cortex" in surfstats_call:
-                inputs.append(surfstats_call["cortex"].format(hemi=hemisphere))
-            if "annot" in surfstats_call:
-                inputs.append(surfstats_call["annot"].format(hemi=hemisphere))
-            if "ctab" in surfstats_call:
-                inputs.append(surfstats_call["ctab"].format(hemi=hemisphere))
-            surface = surfstats_call.get("surface", "white")
-            inputs.append(f"surf/{hemisphere}.{surface}")
 
-            output = surfstats_call.get("statsfile")
-            if output:
-                output = output.format(hemi=hemisphere)
-
-            if inputs and output and (subj_path / output).exists():
-                overview.append(f"{_format_inputs(inputs)} => {output}")
-
-    return overview
+def build_stats_overview(results: list[StepResult]) -> list[str]:
+    """List only outputs from successful statistics calls in the current run."""
+    return [f"{' + '.join(result.inputs)} => {output}"
+            for result in results if result.status == "succeeded"
+            for output in result.outputs]
 
 
 def generate_lesion_impact_summary(subjects_dir: Path, subject_id: str, 
@@ -1046,9 +1040,9 @@ def generate_lesion_impact_summary(subjects_dir: Path, subject_id: str,
                 elif hemi == "rh": impact["rh_cortical"] = True
             else:
                 # Volumetric DKT+aseg logic
-                is_lh = (1000 <= lid < 2000) or lname.startswith("Left-") or lname.startswith("ctx-lh-")
-                is_rh = (2000 <= lid < 3000) or lname.startswith("Right-") or lname.startswith("ctx-rh-")
-                is_cortical = (1000 <= lid < 3000) or lname.startswith("ctx-")
+                is_lh = lid in ASEG_LEFT_LABELS or (1000 <= lid < 2000) or lname.startswith("Left-") or lname.startswith("ctx-lh-")
+                is_rh = lid in ASEG_RIGHT_LABELS or (2000 <= lid < 3000) or lname.startswith("Right-") or lname.startswith("ctx-rh-")
+                is_cortical = lid in (3, 42) or (1000 <= lid < 3000) or lname.startswith("ctx-")
 
                 if is_lh:
                     if is_cortical: impact["lh_cortical"] = True
@@ -1092,8 +1086,8 @@ def generate_lesion_impact_summary(subjects_dir: Path, subject_id: str,
     return summary_path
 
 
-def main():
-    """Main entry point orchestrating neuroLIT postprocessing.
+def main() -> int:
+    """Run neuroLIT postprocessing.
 
     Parses CLI arguments, validates segstats tooling, runs lesion mapping,
     executes segstats (unless skipped), and applies surface masking as required.
@@ -1130,7 +1124,7 @@ def main():
     
     # Validate segstats installation (unless skipping segstats)
     if not args.skip_segstats:
-        fastsurfer_path, use_mri_segstats = validate_segstats_installation()
+        fastsurfer_path, use_mri_segstats = validate_segstats_installation(args.python_cmd)
         
         # Update fs_home if not provided and using mri_segstats
         if use_mri_segstats and not fs_home:
@@ -1147,6 +1141,16 @@ def main():
     
     # Create output directories
     (subjects_dir / subject_id / "stats").mkdir(parents=True, exist_ok=True)
+    results: list[StepResult] = []
+    unavailable_outputs: set[str] = set()
+    default_backend: StatsBackend = "freesurfer" if use_mri_segstats else "fastsurfer"
+
+    def record(result: StepResult) -> None:
+        results.append(result)
+        backend = f" [{result.backend}]" if result.backend else ""
+        reason = f": {result.reason}" if result.reason else ""
+        log = logger.warning if result.status == "failed" else logger.info
+        log(f"{result.name}{backend}: {result.status}{reason}")
     
     # Process all segmentation mappings
     logger.info("=" * 60)
@@ -1159,59 +1163,29 @@ def main():
             logger.info(f"Processing: {seg_map['name']}")
             report_file = seg_map.get('report_file')
             success = map_lesion_to_segmentation(subjects_dir, subject_id, seg_map['input_file'], 
-                                               seg_map['output_file'], report_file, fs_home)
-            if success and report_file:
+                                               seg_map['output_file'], report_file, fs_home, fastsurfer_path)
+            outputs = (seg_map['output_file'],)
+            if success and report_file and (subjects_dir / subject_id / report_file).exists():
                 mapping_reports.append((seg_map['output_file'], report_file))
+                outputs += (report_file,)
+            if not success:
+                unavailable_outputs.add(seg_map['output_file'])
+            record(StepResult(f"Mapping {seg_map['name']}", "succeeded" if success else "skipped",
+                              (seg_map['input_file'],), outputs,
+                              reason="" if success else f"Missing input: {seg_map['input_file']}"))
     
     # Run all segstats calls (unless skipped)
     surface_segstats_calls: list[dict[str, Any]] = []
-    unavailable_segstats_outputs: set[str] = set()
-    if not args.skip_segstats:
-        logger.info("=" * 60)
-        logger.info("STEP 2: Running segstats for all configurations")
-        logger.info("=" * 60)
-        
-        if use_mri_segstats:
-            logger.info("Using FreeSurfer mri_segstats (limited features)")
-        else:
-            logger.info("Using FastSurfer segstats.py (full features)")
-        
-        for raw_segstats_config in config.get('segstats_calls', []):
-            segstats_config = resolve_segstats_input_candidates(subjects_dir, subject_id, raw_segstats_config)
-            # Determine if this specific call needs mri_segstats
-            # (Surface-based calls with --in or --annot are FS-only)
-            call_use_mri_segstats = use_mri_segstats or \
-                                   'annot' in segstats_config or \
-                                   'in_file' in segstats_config or \
-                                   segstats_config.get('use_mri_segstats', False)
-
-            if call_use_mri_segstats:
-                surface_segstats_calls.append(segstats_config)
-                continue
-
-            logger.info("-" * 60)
-            logger.info(f"Running: {segstats_config['name']}")
-            logger.info("-" * 60)
-
-            output_path = _segstats_output_path(segstats_config)
-            missing_inputs = _missing_segstats_dependencies(
-                subjects_dir, subject_id, segstats_config, unavailable_segstats_outputs
-            )
-            if missing_inputs:
-                logger.info(f"  Skipping (missing inputs): {', '.join(missing_inputs)}")
-                if output_path:
-                    unavailable_segstats_outputs.add(output_path)
-                continue
-
-            success = run_segstats(fastsurfer_path, subjects_dir, subject_id, segstats_config,
-                                   fs_home, call_use_mri_segstats, args.python_cmd)
-            if not success and output_path:
-                unavailable_segstats_outputs.add(output_path)
-
-    else:
-        logger.info("=" * 60)
-        logger.info("STEP 2: Skipping segstats (--skip-segstats enabled)")
-        logger.info("=" * 60)
+    logger.info("=" * 60)
+    logger.info("STEP 2: Volume statistics")
+    logger.info("=" * 60)
+    for segstats_config in config.get('segstats_calls', []):
+        if segstats_requires_surfaces(segstats_config):
+            surface_segstats_calls.append(segstats_config)
+            continue
+        record(_run_segstats_step(fastsurfer_path, subjects_dir, subject_id, segstats_config,
+                                 fs_home, default_backend, args.python_cmd, unavailable_outputs,
+                                 "--skip-segstats enabled" if args.skip_segstats else ""))
     
     # Run surface masking (before surface-based statistics)
     surface_reports: list[tuple[str, str]] = []
@@ -1230,55 +1204,56 @@ def main():
                     success = surface_masking(lit_path, subjects_dir, subject_id, hemisphere, 
                                             surf_map['input_file'], surf_map['output_file'], 
                                             report_file, output_ctab)
-                    if success and report_file:
+                    mapped_output = surf_map['output_file'].format(hemi=hemisphere)
+                    outputs = (mapped_output,)
+                    if success and report_file and (subjects_dir / subject_id / report_file.format(hemi=hemisphere)).exists():
                         surface_reports.append((surf_map['output_file'].format(hemi=hemisphere), 
                                               report_file.format(hemi=hemisphere)))
+                        outputs += (report_file.format(hemi=hemisphere),)
+                    if not success:
+                        unavailable_outputs.add(mapped_output)
+                    record(StepResult(f"Masking {hemisphere}.{surf_map['name']}", "succeeded" if success else "skipped",
+                                      (surf_map['input_file'].format(hemi=hemisphere),), outputs,
+                                      reason="" if success else "Input annotation missing"))
 
     # Run surface-related segstats (after surface masking)
-    if not args.skip_surface_masking and surface_segstats_calls:
+    if surface_segstats_calls:
         logger.info("=" * 60)
-        logger.info("STEP 4: Running surface segstats (mri_segstats)")
+        logger.info("STEP 4: Surface segstats")
         logger.info("=" * 60)
 
-        for raw_segstats_config in surface_segstats_calls:
-            segstats_config = resolve_segstats_input_candidates(subjects_dir, subject_id, raw_segstats_config)
-            logger.info("-" * 60)
-            logger.info(f"Running: {segstats_config['name']}")
-            logger.info("-" * 60)
-
-            output_path = _segstats_output_path(segstats_config)
-            missing_inputs = _missing_segstats_dependencies(
-                subjects_dir, subject_id, segstats_config, unavailable_segstats_outputs
-            )
-            if missing_inputs:
-                logger.info(f"  Skipping (missing inputs): {', '.join(missing_inputs)}")
-                if output_path:
-                    unavailable_segstats_outputs.add(output_path)
-                continue
-
-            success = run_segstats(fastsurfer_path, subjects_dir, subject_id, segstats_config,
-                                   fs_home, True, args.python_cmd)
-            if not success and output_path:
-                unavailable_segstats_outputs.add(output_path)
+        for segstats_config in surface_segstats_calls:
+            skip_reason = ""
+            if args.skip_segstats:
+                skip_reason = "--skip-segstats enabled"
+            elif args.skip_surface_masking:
+                skip_reason = "Surface steps disabled by --skip-surface-masking"
+            record(_run_segstats_step(fastsurfer_path, subjects_dir, subject_id, segstats_config,
+                                     fs_home, default_backend, args.python_cmd, unavailable_outputs, skip_reason))
 
     # Run surface-based statistics
-    if not args.skip_surface_masking and surf_config.get("surfstats_calls"):
+    if surf_config.get("surfstats_calls"):
         logger.info("=" * 60)
         logger.info("STEP 5: Running surface statistics")
         logger.info("=" * 60)
 
         for surfstats_call in surf_config.get("surfstats_calls", []):
             for hemisphere in ["lh", "rh"]:
-                run_surfstats(subjects_dir, subject_id, hemisphere, surfstats_call)
+                skip_reason = ""
+                if args.skip_segstats:
+                    skip_reason = "--skip-segstats enabled"
+                elif args.skip_surface_masking:
+                    skip_reason = "Surface steps disabled by --skip-surface-masking"
+                record(run_surfstats(subjects_dir, subject_id, hemisphere, surfstats_call, unavailable_outputs, skip_reason))
 
     logger.info("=" * 60)
-    logger.info("Processing completed successfully.")
+    counts = {status: sum(result.status == status for result in results) for status in ("succeeded", "skipped", "failed")}
+    log = logger.warning if counts['failed'] else logger.info
+    log(f"Processing finished: {counts['succeeded']} succeeded, {counts['skipped']} skipped, {counts['failed']} failed.")
     logger.info("=" * 60)
     
     # List output files with input overview
-    overview = build_stats_overview(subjects_dir, subject_id, config, surf_config)
-    overview.extend(f"{seg} => {report}" for seg, report in mapping_reports)
-    overview.extend(f"{seg} => {report}" for seg, report in surface_reports)
+    overview = build_stats_overview(results)
     
     # Generate impact summary
     summary_path = generate_lesion_impact_summary(subjects_dir, subject_id, mapping_reports, surface_reports)
@@ -1286,10 +1261,11 @@ def main():
         overview.append(f"LESION_IMPACT_SUMMARY => {summary_path.relative_to(subjects_dir / subject_id)}")
 
     if overview:
-        logger.info("Generated statistics files:")
+        logger.info("Generated files in this run:")
         for line in overview:
             logger.info(f" - {line}")
+    return 1 if counts['failed'] else 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
