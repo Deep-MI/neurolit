@@ -4,7 +4,7 @@ import nibabel as nib
 import numpy as np
 import pytest
 
-from neurolit.utils.inference_io import make_inpainting_output, resample_result_to_reference
+from neurolit.utils.inference_io import make_inpainting_output
 
 
 @pytest.mark.parametrize("dtype", [np.uint8, np.float32])
@@ -34,7 +34,10 @@ def test_keepgeom_preserves_native_values_and_restores_generated_scale(tmp_path)
     source = nib.Nifti1Image(np.arange(64, dtype=np.uint8).reshape(4, 4, 4), np.diag([2, 2, 2, 1]))
     mask = np.zeros(source.shape, dtype=np.uint8)
     mask[1:3, 1:3, 1:3] = 1
-    effective_mask = np.asanyarray(resample_result_to_reference(mask, source, reference, order=0).dataobj) > 0
+    # With 2 mm source spacing, nearest-neighbor samples at native indices 1..4
+    # land on source indices 1 or 2 (halfway samples round upward).
+    effective_mask = np.zeros(reference.shape, dtype=bool)
+    effective_mask[1:5, 1:5, 1:5] = True
     path = tmp_path / "native.nii.gz"
 
     nib.save(make_inpainting_output(np.full(source.shape, 0.5), mask, source, reference, (10, 0.5)), path)

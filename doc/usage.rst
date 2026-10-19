@@ -102,11 +102,9 @@ directory, for example:
        └── inpainting_*.lit.png
 
 .. note::
-   The saved result preserves voxels outside the effective lesion mask (including dilation)
-   exactly relative to the conformed image. Conforming can change the grid and robustly rescale
-   intensities. With ``--keepgeom``, native input intensities outside the mask are copied exactly
-   and generated intensities are converted back to the native scale. Changes inside the lesion
-   can still affect downstream segmentations and surfaces elsewhere in the brain.
+   Outside the effective lesion mask (including dilation), saved voxels exactly match the
+   conformed image. Conforming can change geometry and intensity scale; ``--keepgeom`` instead
+   preserves native geometry.
 
 Advanced Usage
 --------------
@@ -247,13 +245,10 @@ Postprocessing
 
 neuroLIT provides tools to integrate lesion masks into FastSurfer/FreeSurfer segmentation and surface outputs.
 
-With FastSurfer 2.6.0, use its Python environment (Python 3.12+, distributed with Python 3.14).
-Standalone neuroLIT continues to support Python 3.10+. The lesion summary is written to
-``stats/lesion_impact_summary.json`` using the actual volume and surface report rows; legacy
-comment-prefixed rows remain supported. FastSurfer 2.6.0 already checks both JSON and legacy
-YAML summary filenames before allowing surface-only continuation.
-To use an older standalone environment for postprocessing, pass
-``--python-cmd /path/to/fastsurfer/python``; the availability check and statistics both use it.
+Use FastSurfer 2.6.0's Python environment (Python 3.12+), or select its interpreter for
+postprocessing with ``--python-cmd /path/to/fastsurfer/python``. Standalone neuroLIT supports Python 3.10+.
+Lesion impact is summarized in ``stats/lesion_impact_summary.json``. For surfaces, run the full
+FastSurfer pipeline with LIT: surface-only continuation after LIT postprocessing is unsupported.
 
 Unified Postprocessing Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -281,11 +276,9 @@ The recommended way to run postprocessing is using the unified ``lit-postprocess
 * **Anatomy Reports:** Automatically generates reports (Replaced, Reduced, and Adjacent labels) for mappings defined in ``segstats_config.json``.
 * **Fine-grained Control:** Flags like ``--skip-segstats`` or ``--skip-surface-masking`` are available.
 
-Corpus callosum statistics use ``stats/aseg.VINN.withCC.stats``, matching current
-FastSurfer. Postprocessing also maintains the older names ``stats/aseg.auto.stats``
-and ``stats/aseg.auto.mgz`` as aliases, or copies when symlinks are unavailable,
-while preserving the first pre-lesion backup when migrating older subjects.
-The historical ``.mgz`` file in ``stats/`` is a text statistics table, not an MRI volume.
+CC statistics use ``stats/aseg.VINN.withCC.stats``; legacy ``stats/aseg.auto.stats`` and
+``stats/aseg.auto.mgz`` remain aliases (or copies), preserving first pre-lesion backups.
+Despite its ``.mgz`` suffix, the legacy statistics file contains text, not an MRI volume.
 
 Individual Postprocessing Tools
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

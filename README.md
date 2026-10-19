@@ -5,7 +5,7 @@
 ## Overview
 
 This repository contains sourcecode and documentation related to our publication [**FastSurfer-LIT: Lesion Inpainting Tool for Whole Brain MRI Segmentation With Tumors, Cavities and Abnormalities**](https://doi.org/10.1162/imag_a_00446).
-This tool can inpaint lesions independent of their shape or appearance for further downstream analysis. This allows subsequent analysis to run as if no lesion were present, enabling for example, FastSurfer's whole brain segmentation in cases with large brain tumors or surgical cavities. The extended documentation is located at [DeepMI.org/neurolit](https://Deep-MI.org/neurolit).
+This tool can inpaint lesions independent of their shape or appearance for further downstream analysis. This allows subsequent analysis to run as if no lesion were present, enabling for example, FastSurfer's whole brain segmentation in cases with large brain tumors or surgical cavities. The extended documentation is located at [DeepMI.org/neurolit](https://Deep-MI.org/neurolit). For integrated usage with FastSurfer see the [FastSurfer documentation](https://deep-mi.org/FastSurfer/dev/overview/modules/LIT.html).
 
 ## Quickstart
 
@@ -86,12 +86,10 @@ With `--fastsurfer_dir`, these outputs are integrated into the FastSurfer subjec
 
 We recommend performing dilation, since undersegmentation can negatively impact the performance of the inpainting, while oversegmentation should not have significant impact.
 
-The saved result preserves every voxel outside the effective lesion mask (including any requested
-dilation) exactly relative to the conformed image. Conforming itself can change the grid and
-robustly rescale intensities. With `--keepgeom`, the output uses the native input grid and copies
-the original input intensities outside the mask exactly; generated intensities are converted
-back to the native intensity scale. This does not guarantee identical downstream segmentations
-or surfaces: a model can respond to changed tissue inside the lesion.
+Outside the effective lesion mask (including dilation), saved voxels exactly match the
+conformed image. Conforming can change geometry and intensity scale; `--keepgeom` instead
+preserves native geometry and outside-mask values, with generated values in native units.
+Downstream segmentations and surfaces can still change outside the lesion.
 
 #### Installation from PyPI
 
@@ -123,15 +121,7 @@ GPU is strongly recommended for interactive use. CPU is feasible for batch/overn
 
 ## Integration with FreeSurfer/FastSurfer
 
-neuroLIT is being integrated into [FastSurfer](https://github.com/deep-mi/FastSurfer) for whole brain segmentation and cortical surface reconstruction of images with lesions.
-
-For FastSurfer 2.6.0, run neuroLIT in the FastSurfer Python environment (Python 3.12 or newer;
-the distributed environment uses Python 3.14). Standalone neuroLIT still supports Python 3.10+.
-If postprocessing runs in an older standalone environment, select FastSurfer's interpreter with
-`--python-cmd /path/to/fastsurfer/python`; both the availability check and statistics use it.
-The summary parser accepts current report rows and legacy comment-prefixed rows, and writes
-`stats/lesion_impact_summary.json`. FastSurfer 2.6.0 already recognizes this filename as well as
-older YAML summaries when preventing unsupported surface-only continuation after LIT.
+neuroLIT is integrated into [FastSurfer](https://github.com/deep-mi/FastSurfer) for whole brain segmentation and cortical surface reconstruction of images with lesions and can be triggered with the `--lesion_mask` argument
 
 For standalone usage with FreeSurfer/FastSurfer, neuroLIT provides post-processing scripts for integrating lesions into FastSurfer/FreeSurfer outputs. We recommend using the unified `lit-postprocessing` script which handles mapping the lesion mask to multiple segmentation files, running volume statistics (segstats), and performing surface masking.
 
@@ -162,11 +152,9 @@ pre-lesion versions as `.lit` backups or mapped backup files, and writes lesion-
 such as `stats/aparc.DKTatlas+aseg.lesion_report.txt`, `stats/aseg.lesion_report.txt`, and
 `stats/lesion_impact_summary.json`.
 
-For corpus callosum outputs, postprocessing updates `stats/aseg.VINN.withCC.stats`,
-matching current FastSurfer. The older names `stats/aseg.auto.stats` and
-`stats/aseg.auto.mgz` remain compatible aliases (or copies when symlinks are unavailable).
-When migrating an older subject, its first pre-lesion statistics backup is preserved.
-The historical `.mgz` file in `stats/` is a text statistics table, not an MRI volume.
+CC statistics use `stats/aseg.VINN.withCC.stats`; legacy `stats/aseg.auto.stats` and
+`stats/aseg.auto.mgz` remain aliases (or copies), preserving first pre-lesion backups.
+Despite its `.mgz` suffix, the legacy statistics file contains text, not an MRI volume.
 
 ## Training
 

@@ -11,22 +11,24 @@ from neurolit.postprocessing.statistics import segstats_requires_surfaces, selec
 from neurolit.scripts import lesion_postprocessing as postprocessing
 
 
-@pytest.mark.parametrize("link_kind", ["same_directory", "relative_directory", "absolute_directory"])
-def test_backup_symlinks_and_reruns_preserve_first_snapshot(tmp_path, link_kind):
+@pytest.mark.parametrize("link_kind", ["regular_file", "same_directory", "relative_directory", "absolute_directory"])
+def test_backups_and_reruns_preserve_first_snapshot(tmp_path, link_kind):
     """A live target may change on reruns, but its first snapshot must not."""
     target_dir = tmp_path if link_kind == "same_directory" else tmp_path / "originals"
     target_dir.mkdir(exist_ok=True)
     target = target_dir / "segmentation.nii.gz"
     target.write_bytes(b"original")
-    source = tmp_path / "alias.nii.gz"
-    link_target = target if link_kind == "absolute_directory" else target.relative_to(tmp_path)
-    try:
-        source.symlink_to(link_target)
-    except OSError as error:
-        pytest.skip(f"Symbolic links are unavailable: {error}")
+    source = target
+    if link_kind != "regular_file":
+        source = tmp_path / "alias.nii.gz"
+        link_target = target if link_kind == "absolute_directory" else target.relative_to(tmp_path)
+        try:
+            source.symlink_to(link_target)
+        except OSError as error:
+            pytest.skip(f"Symbolic links are unavailable: {error}")
 
     backup = ensure_backup(source)
-    assert backup.is_symlink()
+    assert backup.is_symlink() == (link_kind != "regular_file")
     assert backup.resolve() == target.with_name("segmentation.lit.nii.gz")
     assert backup.read_bytes() == b"original"
 
@@ -56,10 +58,15 @@ def test_freesurfer_command_uses_native_flags(tmp_path, monkeypatch):
               "pvfile": "mri/norm.mgz", "lut": "config/FreeSurferColorLUT.txt", "ids": [2, 3], "empty": True}
     command = postprocessing.build_segstats_command(None, tmp_path, "subject", config, tmp_path / "freesurfer", use_mri_segstats=True)
     subject = tmp_path / "subject"
-    assert command == ["mri_segstats", "--sd", str(tmp_path), "--seg", str(subject / "mri/aseg.mgz"),
-                       "--sum", str(subject / "stats/aseg.stats"), "--in", str(subject / "mri/norm.mgz"),
-                       "--pv", str(subject / "mri/norm.mgz"), "--empty", "--id", "2", "3",
-                       "--ctab", str(tmp_path / "freesurfer/FreeSurferColorLUT.txt")]
+    assert command[0] == "mri_segstats"
+    expected = {"--sd": tmp_path, "--seg": subject / "mri/aseg.mgz", "--sum": subject / "stats/aseg.stats",
+                "--in": subject / "mri/norm.mgz", "--pv": subject / "mri/norm.mgz",
+                "--ctab": tmp_path / "freesurfer/FreeSurferColorLUT.txt"}
+    for flag, value in expected.items():
+        assert command[command.index(flag) + 1] == str(value)
+    assert command[command.index("--id") + 1:command.index("--id") + 3] == ["2", "3"]
+    assert "--empty" in command
+    assert not {"--sid", "--threads", "--segfile", "--segstatsfile", "--normfile", "--pvfile", "--lut", "--ids"}.intersection(command)
     with pytest.raises(ValueError, match="requires FastSurfer"):
         postprocessing.build_segstats_command(None, tmp_path, "subject", config | {"measures": {"compute": ["BrainSeg"]}},
                                              use_mri_segstats=True)
@@ -124,14 +131,14 @@ def test_cli_skip_flags_and_freesurfer_volume_scheduling(tmp_path, monkeypatch, 
     monkeypatch.setattr(postprocessing, "build_stats_overview", lambda items: results.extend(items) or [])
     postprocessing.main()
 
-    assert len(results) == 4
-    assert results[1].status == results[2].status == results[3].status == "skipped"
+    by_name = {result.name: result for result in results}
+    assert set(by_name) == {"volume", "surface", "lh.anatomical", "rh.anatomical"}
+    assert all(result.status == "skipped" for name, result in by_name.items() if name != "volume")
     if skip_flag == "--skip-surface-masking":
         assert len(calls) == 1
         assert calls[0][5] is True
-        assert results[0].status == "succeeded"
-        assert results[0]
-        assert results[0].backend == "freesurfer"
+        assert by_name["volume"].status == "succeeded"
+        assert by_name["volume"].backend == "freesurfer"
     else:
         assert calls == []
         assert all(result.status == "skipped" for result in results)

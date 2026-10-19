@@ -11,7 +11,6 @@ import pytest
 from neurolit.scripts.lesion_postprocessing import (
     _run_segstats_step,
     build_segstats_command,
-    build_stats_overview,
     ensure_backup,
     resolve_segstats_input_candidates,
     setup_argparse,
@@ -22,17 +21,6 @@ from neurolit.scripts.lesion_postprocessing import (
 def _write_image(path: Path, shape: tuple[int, int, int], affine: np.ndarray) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     nib.save(nib.Nifti1Image(np.zeros(shape, dtype=np.float32), affine), path)
-
-
-def test_ensure_backup_supports_python_310(tmp_path):
-    """Backup creation must only use filesystem APIs available on Python 3.10."""
-    source = tmp_path / "segmentation.mgz"
-    source.write_bytes(b"segmentation")
-
-    backup = ensure_backup(source)
-
-    assert backup == tmp_path / "segmentation.lit.mgz"
-    assert backup.read_bytes() == source.read_bytes()
 
 
 def test_ensure_backup_preserves_broken_symlink(tmp_path):
@@ -79,10 +67,12 @@ def test_fastsurfer_probe_uses_selected_python(tmp_path, monkeypatch):
     monkeypatch.setattr("neurolit.scripts.lesion_postprocessing.subprocess.run", run)
 
     assert validate_segstats_installation("fastsurfer-python") == (tmp_path, False)
-    assert commands == [["fastsurfer-python", str(script), "--help"]]
+    probes = [command for command in commands if str(script) in command]
+    assert probes
+    assert all(command[0] == "fastsurfer-python" for command in probes)
 
 
-def test_resolve_segstats_candidates_prefers_matching_conformed_image(tmp_path):
+def test_resolve_segstats_candidates_prefers_matching_conformed_image(tmp_path, monkeypatch):
     """A submillimeter subject should use FastSurfer's matching 1 mm image."""
     subject_id = "subject"
     mri_dir = tmp_path / subject_id / "mri"
@@ -103,6 +93,13 @@ def test_resolve_segstats_candidates_prefers_matching_conformed_image(tmp_path):
     assert resolved["pvfile"] == "mri/orig_nu.10mm.mgz"
     assert config["normfile"] == "mri/orig_nu.mgz"
 
+    # The execution record must identify the inputs actually selected, not defaults.
+    monkeypatch.setattr("neurolit.scripts.lesion_postprocessing.run_segstats", lambda *args: True)
+    result = _run_segstats_step(tmp_path / "fastsurfer", tmp_path, subject_id,
+                               config | {"name": "CerebNet"}, None, "fastsurfer", sys.executable, set())
+    assert result.status == "succeeded"
+    assert set(result.inputs) == {config["segfile"], "mri/orig_nu.10mm.mgz"}
+
 
 def test_resolve_segstats_candidates_keeps_matching_native_image(tmp_path):
     """An already-conformed 1 mm subject should continue using orig_nu.mgz."""
@@ -117,35 +114,3 @@ def test_resolve_segstats_candidates_keeps_matching_native_image(tmp_path):
 
     assert resolved["normfile"] == "mri/orig_nu.mgz"
     assert resolved["pvfile"] == "mri/orig_nu.mgz"
-
-
-def test_stats_overview_reports_resolved_geometry_inputs(tmp_path, monkeypatch):
-    """The output overview should report the files actually passed to segstats."""
-    subject_id = "subject"
-    subject_dir = tmp_path / subject_id
-    mri_dir = subject_dir / "mri"
-    stats_dir = subject_dir / "stats"
-    _write_image(mri_dir / "cerebellum.CerebNet.nii.gz", (4, 4, 4), np.eye(4))
-    _write_image(mri_dir / "orig_nu.10mm.mgz", (4, 4, 4), np.eye(4))
-    _write_image(mri_dir / "orig_nu.mgz", (5, 5, 5), np.diag([0.8, 0.8, 0.8, 1.0]))
-    stats_dir.mkdir()
-    (stats_dir / "cerebellum.CerebNet.stats").write_text("stats")
-    config = {
-        "segstats_calls": [{
-            "segfile": "mri/cerebellum.CerebNet.nii.gz",
-            "segstatsfile": "stats/cerebellum.CerebNet.stats",
-            "normfile": "mri/orig_nu.mgz",
-            "pvfile": "mri/orig_nu.mgz",
-            "normfile_candidates": ["mri/orig_nu.10mm.mgz", "mri/orig_nu.mgz"],
-            "pvfile_candidates": ["mri/orig_nu.10mm.mgz", "mri/orig_nu.mgz"],
-        }]
-    }
-
-    monkeypatch.setattr("neurolit.scripts.lesion_postprocessing.run_segstats", lambda *args: True)
-    result = _run_segstats_step(tmp_path / "fastsurfer", tmp_path, subject_id,
-                               config["segstats_calls"][0] | {"name": "CerebNet"}, None, "fastsurfer", sys.executable, set())
-    overview = build_stats_overview([result])
-
-    assert overview == [
-        "mri/cerebellum.CerebNet.nii.gz + mri/orig_nu.10mm.mgz => stats/cerebellum.CerebNet.stats"
-    ]

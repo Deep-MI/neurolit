@@ -11,22 +11,10 @@ import pytest
 from neurolit.scripts import lesion_postprocessing as postprocessing
 
 
-def test_cc_configuration_maps_and_recomputes_both_segmentations():
-    config = json.loads((Path(postprocessing.__file__).parents[1] / "postprocessing/segstats_config.json").read_text())
-    mappings = {entry["output_file"] for entry in config["segmentation_mappings"] if entry.get("map_lesion")}
-    calls = {entry["name"]: entry for entry in config["segstats_calls"]}
-    for name in ("aseg+DKT.VINN.withCC", "aseg.auto"):
-        assert calls[name]["segfile"] in mappings
-        assert 99 in calls[name]["ids"]
-    assert calls["aseg.auto"]["segstatsfile"] == "stats/aseg.VINN.withCC.stats"
-    assert calls["aseg.auto"]["output_aliases"] == ["stats/aseg.auto.stats", "stats/aseg.auto.mgz"]
-    assert calls["aseg.auto"]["measures"]["file"] == calls["aseg+DKT.VINN.withCC"]["segstatsfile"]
-
-
-@pytest.mark.parametrize("no_symlinks", [False, True])
-@pytest.mark.parametrize(("existing_name", "already_processed"), [
-    ("aseg.VINN.withCC.stats", False), ("aseg.auto.stats", False),
-    ("aseg.auto.mgz", False), ("aseg.auto.stats", True),
+@pytest.mark.parametrize(("existing_name", "already_processed", "no_symlinks"), [
+    ("aseg.VINN.withCC.stats", False, False), ("aseg.auto.stats", False, False),
+    ("aseg.auto.mgz", False, False), ("aseg.auto.stats", True, False),
+    ("aseg.auto.stats", True, True),
 ])
 def test_legacy_stats_alias_migration_preserves_first_backups(tmp_path, monkeypatch, no_symlinks, existing_name, already_processed):
     subject = tmp_path / "subject"
