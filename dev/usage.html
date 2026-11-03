@@ -465,7 +465,9 @@ directory, for example:</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>If the source image was isotropic, the output images will have the same resolution as the input image. The area outside of the lesion mask is preserved, except for robust rescaling of intensity values.</p>
+<p>Outside the effective lesion mask (including dilation), saved voxels exactly match the
+conformed image. Conforming can change geometry and intensity scale; <code class="docutils literal notranslate"><span class="pre">--keepgeom</span></code> instead
+preserves native geometry.</p>
 </div>
 </section>
 </section>
@@ -597,6 +599,10 @@ Options:
 <section id="postprocessing">
 <h2>Postprocessing<a class="headerlink" href="#postprocessing" title="Link to this heading"></a></h2>
 <p>neuroLIT provides tools to integrate lesion masks into FastSurfer/FreeSurfer segmentation and surface outputs.</p>
+<p>Use FastSurfer 2.6.0’s Python environment (Python 3.12+), or select its interpreter for
+postprocessing with <code class="docutils literal notranslate"><span class="pre">--python-cmd</span> <span class="pre">/path/to/fastsurfer/python</span></code>. Standalone neuroLIT supports Python 3.10+.
+Lesion impact is summarized in <code class="docutils literal notranslate"><span class="pre">stats/lesion_impact_summary.json</span></code>. For surfaces, run the full
+FastSurfer pipeline with LIT: surface-only continuation after LIT postprocessing is unsupported.</p>
 <section id="unified-postprocessing-script">
 <h3>Unified Postprocessing Script<a class="headerlink" href="#unified-postprocessing-script" title="Link to this heading"></a></h3>
 <p>The recommended way to run postprocessing is using the unified <code class="docutils literal notranslate"><span class="pre">lit-postprocessing</span></code> command. This script handles mapping the lesion mask to multiple segmentation files, running volume statistics (segstats), and performing surface masking.</p>
@@ -620,6 +626,9 @@ lit-postprocessing<span class="w"> </span><span class="se">\\</span>
 <li><p><strong>Anatomy Reports:</strong> Automatically generates reports (Replaced, Reduced, and Adjacent labels) for mappings defined in <code class="docutils literal notranslate"><span class="pre">segstats_config.json</span></code>.</p></li>
 <li><p><strong>Fine-grained Control:</strong> Flags like <code class="docutils literal notranslate"><span class="pre">--skip-segstats</span></code> or <code class="docutils literal notranslate"><span class="pre">--skip-surface-masking</span></code> are available.</p></li>
 </ul>
+<p>CC statistics use <code class="docutils literal notranslate"><span class="pre">stats/aseg.VINN.withCC.stats</span></code>; legacy <code class="docutils literal notranslate"><span class="pre">stats/aseg.auto.stats</span></code> and
+<code class="docutils literal notranslate"><span class="pre">stats/aseg.auto.mgz</span></code> remain aliases (or copies), preserving first pre-lesion backups.
+Despite its <code class="docutils literal notranslate"><span class="pre">.mgz</span></code> suffix, the legacy statistics file contains text, not an MRI volume.</p>
 </section>
 <section id="individual-postprocessing-tools">
 <h3>Individual Postprocessing Tools<a class="headerlink" href="#individual-postprocessing-tools" title="Link to this heading"></a></h3>

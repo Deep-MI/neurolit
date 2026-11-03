@@ -102,7 +102,9 @@ directory, for example:
        └── inpainting_*.lit.png
 
 .. note::
-   If the source image was isotropic, the output images will have the same resolution as the input image. The area outside of the lesion mask is preserved, except for robust rescaling of intensity values.
+   Outside the effective lesion mask (including dilation), saved voxels exactly match the
+   conformed image. Conforming can change geometry and intensity scale; ``--keepgeom`` instead
+   preserves native geometry.
 
 Advanced Usage
 --------------
@@ -243,6 +245,11 @@ Postprocessing
 
 neuroLIT provides tools to integrate lesion masks into FastSurfer/FreeSurfer segmentation and surface outputs.
 
+Use FastSurfer 2.6.0's Python environment (Python 3.12+), or select its interpreter for
+postprocessing with ``--python-cmd /path/to/fastsurfer/python``. Standalone neuroLIT supports Python 3.10+.
+Lesion impact is summarized in ``stats/lesion_impact_summary.json``. For surfaces, run the full
+FastSurfer pipeline with LIT: surface-only continuation after LIT postprocessing is unsupported.
+
 Unified Postprocessing Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -268,6 +275,10 @@ The recommended way to run postprocessing is using the unified ``lit-postprocess
 * **Surface Masking:** Automatically processes both hemispheres.
 * **Anatomy Reports:** Automatically generates reports (Replaced, Reduced, and Adjacent labels) for mappings defined in ``segstats_config.json``.
 * **Fine-grained Control:** Flags like ``--skip-segstats`` or ``--skip-surface-masking`` are available.
+
+CC statistics use ``stats/aseg.VINN.withCC.stats``; legacy ``stats/aseg.auto.stats`` and
+``stats/aseg.auto.mgz`` remain aliases (or copies), preserving first pre-lesion backups.
+Despite its ``.mgz`` suffix, the legacy statistics file contains text, not an MRI volume.
 
 Individual Postprocessing Tools
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

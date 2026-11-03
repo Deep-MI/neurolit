@@ -418,8 +418,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.utils.inference_io</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>  <span class="c1"># noqa: E402</span>
     <span class="n">compute_model_min_size</span><span class="p">,</span>
     <span class="n">crop_after_inference</span><span class="p">,</span>
+    <span class="n">make_inpainting_output</span><span class="p">,</span>
     <span class="n">pad_for_inference</span><span class="p">,</span>
-    <span class="n">resample_result_to_reference</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.utils.log</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>  <span class="c1"># noqa: E402</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">neurolit.utils.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_batch</span><span class="p">,</span> <span class="n">plot_inpainting</span>  <span class="c1"># noqa: E402</span>
@@ -661,6 +661,7 @@
     <span class="n">num_resample_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
     <span class="n">num_resample_jumps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
     <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+    <span class="n">reference_intensity_transform</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Inpaint a volume using the trained diffusion models.</span>
 
@@ -703,6 +704,8 @@
 <span class="sd">        Number of slices processed together, by default ``8``.</span>
 <span class="sd">    val_image_nib : Optional[NiftiImage], optional</span>
 <span class="sd">        Original NIfTI image used for metadata, by default ``None``.</span>
+<span class="sd">    reference_intensity_transform : tuple[float, float], optional</span>
+<span class="sd">        Offset and gain used to conform the native reference image's intensities.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -821,6 +824,8 @@
     <span class="n">val_image_inpainted</span> <span class="o">=</span> <span class="n">crop_after_inference</span><span class="p">(</span><span class="n">val_image_inpainted</span><span class="p">,</span> <span class="n">pad_metadata</span><span class="p">)</span>
     <span class="n">val_image</span> <span class="o">=</span> <span class="n">crop_after_inference</span><span class="p">(</span><span class="n">val_image</span><span class="p">,</span> <span class="n">pad_metadata</span><span class="p">)</span>
     <span class="n">val_image_masked</span> <span class="o">=</span> <span class="n">crop_after_inference</span><span class="p">(</span><span class="n">val_image_masked</span><span class="p">,</span> <span class="n">pad_metadata</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">crop_after_inference</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">pad_metadata</span><span class="p">)</span>
+    <span class="n">val_image_inpainted</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">val_image_inpainted</span><span class="p">,</span> <span class="n">val_image</span><span class="p">)</span>
 
     <span class="c1"># Save results</span>
     <span class="k">if</span> <span class="n">SAVE_IMAGES</span><span class="p">:</span>
@@ -846,11 +851,14 @@
         <span class="c1">#            slice_cut=slice_c)</span>
 
     <span class="k">if</span> <span class="n">SAVE_VOLUMES</span><span class="p">:</span>
-        <span class="n">output_data</span> <span class="o">=</span> <span class="n">val_image_inpainted</span><span class="p">[</span><span class="n">volume_only_slice</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">*</span> <span class="mi">255</span>
-        <span class="k">if</span> <span class="n">reference_image_nib</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">val_image_nib</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">output_nib</span> <span class="o">=</span> <span class="n">resample_result_to_reference</span><span class="p">(</span><span class="n">output_data</span><span class="p">,</span> <span class="n">val_image_nib</span><span class="p">,</span> <span class="n">reference_image_nib</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">output_data</span> <span class="o">=</span> <span class="n">val_image_inpainted</span><span class="p">[</span><span class="n">volume_only_slice</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">val_image_nib</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">output_nib</span> <span class="o">=</span> <span class="n">make_inpainting_output</span><span class="p">(</span>
+                <span class="n">output_data</span><span class="p">,</span> <span class="n">mask</span><span class="p">[</span><span class="n">volume_only_slice</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">val_image_nib</span><span class="p">,</span>
+                <span class="n">reference_image_nib</span><span class="p">,</span> <span class="n">reference_intensity_transform</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">output_nib</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">output_data</span><span class="p">,</span> <span class="o">*</span><span class="n">affine_header</span><span class="p">)</span>
+            <span class="n">output_nib</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">output_data</span> <span class="o">*</span> <span class="mi">255</span><span class="p">,</span> <span class="o">*</span><span class="n">affine_header</span><span class="p">)</span>
         <span class="n">nib</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">output_nib</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="s2">"inpainting_volumes/inpainting_result.nii.gz"</span><span class="p">))</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Saved inpainting result as inpainting_volumes/inpainting_result.nii.gz"</span><span class="p">)</span>
 
@@ -1002,6 +1010,9 @@
 
     <span class="n">val_image_native_nib</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input_image</span><span class="p">)</span>
     <span class="n">val_image_nib</span> <span class="o">=</span> <span class="n">conform_nifti</span><span class="p">(</span><span class="n">val_image_native_nib</span><span class="p">,</span> <span class="n">min_auto_img_size</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">min_auto_img_size</span><span class="p">)</span>
+    <span class="n">reference_intensity_transform</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">keepgeom</span> <span class="ow">and</span> <span class="n">val_image_nib</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">val_image_native_nib</span><span class="p">:</span>
+        <span class="n">reference_intensity_transform</span> <span class="o">=</span> <span class="n">conform</span><span class="o">.</span><span class="n">getscale</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">val_image_native_nib</span><span class="o">.</span><span class="n">dataobj</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span>
 
     <span class="n">val_image</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">val_image_nib</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">())</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
 
@@ -1060,6 +1071,7 @@
         <span class="n">DDIM</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">==</span> <span class="s2">"ddim"</span><span class="p">,</span>
         <span class="n">scheduler_type</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">scheduler</span><span class="p">,</span>
         <span class="n">reference_image_nib</span><span class="o">=</span><span class="n">val_image_native_nib</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">keepgeom</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">reference_intensity_transform</span><span class="o">=</span><span class="n">reference_intensity_transform</span><span class="p">,</span>
         <span class="n">num_inference_steps</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">num_inference_steps</span><span class="p">,</span>
         <span class="n">num_resample_steps</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">num_resample_steps</span><span class="p">,</span>
         <span class="n">num_resample_jumps</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">num_resample_jumps</span><span class="p">,</span>
