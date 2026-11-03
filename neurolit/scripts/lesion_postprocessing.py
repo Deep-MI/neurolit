@@ -271,9 +271,9 @@ def check_required_files(subjects_dir: Path, subject_id: str, config: dict[str, 
 
 
 def _subject_relative_path(path: Path, subject_path: Path) -> str:
-    """Return a subject-relative string when possible."""
+    """Return a subject-relative POSIX string when possible, matching config path notation."""
     try:
-        return str(path.relative_to(subject_path))
+        return path.relative_to(subject_path).as_posix()
     except ValueError:
         return str(path)
 

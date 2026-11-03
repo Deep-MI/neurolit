@@ -1,6 +1,7 @@
 """Focused regressions for statistics scheduling, outcomes, and first backups."""
 
 import sys
+from pathlib import PureWindowsPath
 
 import nibabel as nib
 import numpy as np
@@ -70,6 +71,12 @@ def test_freesurfer_command_uses_native_flags(tmp_path, monkeypatch):
     with pytest.raises(ValueError, match="requires FastSurfer"):
         postprocessing.build_segstats_command(None, tmp_path, "subject", config | {"measures": {"compute": ["BrainSeg"]}},
                                              use_mri_segstats=True)
+
+
+def test_subject_relative_paths_use_config_notation():
+    """Windows separators must not prevent matching against config paths such as stats/aseg.stats."""
+    subject = PureWindowsPath("C:/subjects/subject")
+    assert postprocessing._subject_relative_path(subject / "stats" / "aseg.stats", subject) == "stats/aseg.stats"
 
 
 def test_failed_statistics_block_stale_downstream_files(tmp_path, monkeypatch):
