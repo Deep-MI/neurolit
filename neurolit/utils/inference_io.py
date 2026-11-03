@@ -155,3 +155,60 @@ def resample_result_to_reference(
         cval=0,
     )
     return nib.Nifti1Image(np.asarray(resampled.dataobj), reference_image.affine, reference_image.header)
+
+
+def make_inpainting_output(
+    normalized_result: np.ndarray,
+    mask: np.ndarray,
+    inference_image: nib.analyze.SpatialImage,
+    reference_image: nib.analyze.SpatialImage | None = None,
+    reference_intensity_transform: tuple[float, float] = (0.0, 1.0),
+) -> nib.Nifti1Image:
+    """Restore intensity units and preserve reference voxels outside the effective mask.
+
+    Parameters
+    ----------
+    normalized_result : np.ndarray
+        Model output in the min/max-normalized intensity scale.
+    mask : np.ndarray
+        Effective (possibly dilated) lesion mask in inference space.
+    inference_image : nib.analyze.SpatialImage
+        Conformed image before model intensity normalization.
+    reference_image : nib.analyze.SpatialImage, optional
+        Native image for keepgeom output; otherwise use the conformed image.
+    reference_intensity_transform : tuple[float, float]
+        Offset and gain used by conforming: conformed = gain * (native - offset).
+
+    Returns
+    -------
+    nib.Nifti1Image
+        Image with unchanged reference intensities outside the output mask.
+    """
+    inference_data = np.asanyarray(inference_image.dataobj)
+    low, high = float(inference_data.min()), float(inference_data.max())
+    generated = np.asarray(normalized_result, dtype=np.float64) * (high - low) + low
+    effective_mask = np.asarray(mask) > 0
+    target = inference_image
+    if reference_image is not None:
+        offset, gain = reference_intensity_transform
+        generated = generated / gain + offset
+        generated = np.asanyarray(resample_result_to_reference(generated, inference_image, reference_image).dataobj)
+        effective_mask = np.asanyarray(resample_result_to_reference(
+            effective_mask.astype(np.uint8), inference_image, reference_image, order=0,
+        ).dataobj) > 0
+        target = reference_image
+
+    # Copy the reference *after* resampling: interpolation must not alter untouched tissue.
+    # Scaled integer NIfTI inputs yield floating data here, which must stay floating on disk.
+    output = np.asanyarray(target.dataobj).copy()
+    replacement = generated[effective_mask]
+    if np.issubdtype(output.dtype, np.integer):
+        limits = np.iinfo(output.dtype)
+        replacement = np.clip(np.rint(replacement), limits.min, limits.max)
+    output[effective_mask] = replacement
+    header = nib.Nifti1Header.from_header(target.header)
+    header.set_data_dtype(output.dtype)
+    image = nib.Nifti1Image(output, target.affine, header)
+    # Prevent nibabel from fitting a new global scale when writing an integer header.
+    image.header.set_slope_inter(1.0, 0.0)
+    return image

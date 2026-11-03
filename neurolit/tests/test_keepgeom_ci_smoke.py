@@ -134,6 +134,9 @@ def test_keepgeom_anisotropic_default_and_slow_smoke_ci(tmp_path, monkeypatch):
     # In keepgeom mode, inference runs in conformed/model space, while final
     # output is resampled back to native geometry.
     assert intermediate_img.shape[:3] != src_img.shape[:3]
+    mask_img = nib.load(str(out_dir / "inpainting_volumes" / "inpainting_mask.nii.gz"))
+    native_mask = nib.processing.resample_from_to(mask_img, src_img, order=0).get_fdata() > 0
+    np.testing.assert_array_equal(out_img.get_fdata()[~native_mask], src_img.get_fdata()[~native_mask])
 
     slow_out_dir = tmp_path / "slow-out"
     inpaint_image.main(
@@ -157,3 +160,7 @@ def test_keepgeom_anisotropic_default_and_slow_smoke_ci(tmp_path, monkeypatch):
     assert tracker["steps"] == 1000
     assert tracker["scheduler"] == "DDPMScheduler"
     assert (slow_out_dir / "inpainting_volumes" / "inpainting_result.nii.gz").exists()
+    conformed = inpaint_image.conform_nifti(src_img)
+    result = nib.load(str(slow_out_dir / "inpainting_volumes" / "inpainting_result.nii.gz"))
+    mask = nib.load(str(slow_out_dir / "inpainting_volumes" / "inpainting_mask.nii.gz")).get_fdata() > 0
+    np.testing.assert_array_equal(result.get_fdata()[~mask], conformed.get_fdata()[~mask])

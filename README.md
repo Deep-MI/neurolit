@@ -5,7 +5,7 @@
 ## Overview
 
 This repository contains sourcecode and documentation related to our publication [**FastSurfer-LIT: Lesion Inpainting Tool for Whole Brain MRI Segmentation With Tumors, Cavities and Abnormalities**](https://doi.org/10.1162/imag_a_00446).
-This tool can inpaint lesions independent of their shape or appearance for further downstream analysis. This allows subsequent analysis to run as if no lesion were present, enabling for example, FastSurfer's whole brain segmentation in cases with large brain tumors or surgical cavities. The extended documentation is located at [DeepMI.org/neurolit](https://Deep-MI.org/neurolit).
+This tool can inpaint lesions independent of their shape or appearance for further downstream analysis. This allows subsequent analysis to run as if no lesion were present, enabling for example, FastSurfer's whole brain segmentation in cases with large brain tumors or surgical cavities. The extended documentation is located at [DeepMI.org/neurolit](https://Deep-MI.org/neurolit). For integrated usage with FastSurfer see the [FastSurfer documentation](https://deep-mi.org/FastSurfer/dev/overview/modules/LIT.html).
 
 ## Quickstart
 
@@ -86,7 +86,10 @@ With `--fastsurfer_dir`, these outputs are integrated into the FastSurfer subjec
 
 We recommend performing dilation, since undersegmentation can negatively impact the performance of the inpainting, while oversegmentation should not have significant impact.
 
-If the source image was isotropic, the output images should have the same resolution as the input image and the area outside of the lesion mask should be preserved, except for a robust rescaling of the intensity values.
+Outside the effective lesion mask (including dilation), saved voxels exactly match the
+conformed image. Conforming can change geometry and intensity scale; `--keepgeom` instead
+preserves native geometry and outside-mask values, with generated values in native units.
+Downstream segmentations and surfaces can still change outside the lesion.
 
 #### Installation from PyPI
 
@@ -118,7 +121,7 @@ GPU is strongly recommended for interactive use. CPU is feasible for batch/overn
 
 ## Integration with FreeSurfer/FastSurfer
 
-neuroLIT is being integrated into [FastSurfer](https://github.com/deep-mi/FastSurfer) for whole brain segmentation and cortical surface reconstruction of images with lesions.
+neuroLIT is integrated into [FastSurfer](https://github.com/deep-mi/FastSurfer) for whole brain segmentation and cortical surface reconstruction of images with lesions and can be triggered with the `--lesion_mask` argument
 
 For standalone usage with FreeSurfer/FastSurfer, neuroLIT provides post-processing scripts for integrating lesions into FastSurfer/FreeSurfer outputs. We recommend using the unified `lit-postprocessing` script which handles mapping the lesion mask to multiple segmentation files, running volume statistics (segstats), and performing surface masking.
 
@@ -148,6 +151,10 @@ The current postprocessing workflow updates the primary FastSurfer outputs in pl
 pre-lesion versions as `.lit` backups or mapped backup files, and writes lesion-specific reports
 such as `stats/aparc.DKTatlas+aseg.lesion_report.txt`, `stats/aseg.lesion_report.txt`, and
 `stats/lesion_impact_summary.json`.
+
+CC statistics use `stats/aseg.VINN.withCC.stats`; legacy `stats/aseg.auto.stats` and
+`stats/aseg.auto.mgz` remain aliases (or copies), preserving first pre-lesion backups.
+Despite its `.mgz` suffix, the legacy statistics file contains text, not an MRI volume.
 
 ## Training
 

@@ -6,10 +6,16 @@ on:
   pull_request:
     paths:
       - '**.py'
+      - 'neurolit/postprocessing/**.json'
+      - 'pyproject.toml'
+      - '.github/workflows/pytest.yml'
   push:
     branches: [main]
     paths:
       - '**.py'
+      - 'neurolit/postprocessing/**.json'
+      - 'pyproject.toml'
+      - '.github/workflows/pytest.yml'
   workflow_dispatch:
 
 jobs:
@@ -20,6 +26,9 @@ jobs:
       matrix:
         os: [ubuntu, macos, windows]
         python-version: ["3.10", "3.11", "3.12"]
+        include:
+          - os: ubuntu
+            python-version: "3.14"
     name: ${{ matrix.os }} - py${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}-latest
     defaults:
@@ -38,3 +47,15 @@ jobs:
           python -m pip install --progress-bar off .[test]
       - name: Run pytest
         run: pytest neurolit
+      - name: Checkout FastSurfer release for integration test
+        if: matrix.os == 'ubuntu' && matrix.python-version == '3.14'
+        uses: actions/checkout@v6
+        with:
+          repository: Deep-MI/FastSurfer
+          ref: v2.6.0
+          path: .fastsurfer-test
+      - name: Check FastSurfer segmentation statistics and rerun backups
+        if: matrix.os == 'ubuntu' && matrix.python-version == '3.14'
+        env:
+          NEUROLIT_TEST_FASTSURFER: ${{ github.workspace }}/.fastsurfer-test
+        run: pytest neurolit/tests/test_fastsurfer_integration.py

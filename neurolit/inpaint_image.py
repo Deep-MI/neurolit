@@ -44,8 +44,8 @@ from neurolit.utils.geometry_policy import (  # noqa: E402
 from neurolit.utils.inference_io import (  # noqa: E402
     compute_model_min_size,
     crop_after_inference,
+    make_inpainting_output,
     pad_for_inference,
-    resample_result_to_reference,
 )
 from neurolit.utils.log import get_logger  # noqa: E402
 from neurolit.utils.plotting import plot_batch, plot_inpainting  # noqa: E402
@@ -267,6 +267,7 @@ def inpaint_volume(
     num_resample_steps: int = 10,
     num_resample_jumps: int = 15,
     batch_size: int = 8,
+    reference_intensity_transform: tuple[float, float] = (0.0, 1.0),
 ) -> torch.Tensor:
     """Inpaint a volume using the trained diffusion models.
 
@@ -309,6 +310,8 @@ def inpaint_volume(
         Number of slices processed together, by default ``8``.
     val_image_nib : Optional[NiftiImage], optional
         Original NIfTI image used for metadata, by default ``None``.
+    reference_intensity_transform : tuple[float, float], optional
+        Offset and gain used to conform the native reference image's intensities.
 
     Returns
     -------
@@ -427,6 +430,8 @@ def inpaint_volume(
     val_image_inpainted = crop_after_inference(val_image_inpainted, pad_metadata)
     val_image = crop_after_inference(val_image, pad_metadata)
     val_image_masked = crop_after_inference(val_image_masked, pad_metadata)
+    mask = crop_after_inference(mask, pad_metadata)
+    val_image_inpainted = torch.where(mask, val_image_inpainted, val_image)
 
     # Save results
     if SAVE_IMAGES:
@@ -452,11 +457,14 @@ def inpaint_volume(
         #            slice_cut=slice_c)
 
     if SAVE_VOLUMES:
-        output_data = val_image_inpainted[volume_only_slice].cpu().numpy() * 255
-        if reference_image_nib is not None and val_image_nib is not None:
-            output_nib = resample_result_to_reference(output_data, val_image_nib, reference_image_nib, order=1)
+        output_data = val_image_inpainted[volume_only_slice].cpu().numpy()
+        if val_image_nib is not None:
+            output_nib = make_inpainting_output(
+                output_data, mask[volume_only_slice].cpu().numpy(), val_image_nib,
+                reference_image_nib, reference_intensity_transform,
+            )
         else:
-            output_nib = nib.Nifti1Image(output_data, *affine_header)
+            output_nib = nib.Nifti1Image(output_data * 255, *affine_header)
         nib.save(output_nib, os.path.join(out_dir, "inpainting_volumes/inpainting_result.nii.gz"))
         logger.info("Saved inpainting result as inpainting_volumes/inpainting_result.nii.gz")
 
@@ -605,6 +613,9 @@ def main(argv=None):
 
     val_image_native_nib = nib.load(args.input_image)
     val_image_nib = conform_nifti(val_image_native_nib, min_auto_img_size=args.min_auto_img_size)
+    reference_intensity_transform = (0.0, 1.0)
+    if args.keepgeom and val_image_nib is not val_image_native_nib:
+        reference_intensity_transform = conform.getscale(np.asanyarray(val_image_native_nib.dataobj), 0, 255)
 
     val_image = torch.from_numpy(val_image_nib.get_fdata()).float()
 
@@ -663,6 +674,7 @@ def main(argv=None):
         DDIM=args.scheduler == "ddim",
         scheduler_type=args.scheduler,
         reference_image_nib=val_image_native_nib if args.keepgeom else None,
+        reference_intensity_transform=reference_intensity_transform,
         num_inference_steps=args.num_inference_steps,
         num_resample_steps=args.num_resample_steps,
         num_resample_jumps=args.num_resample_jumps,
