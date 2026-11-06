@@ -1,0 +1,10 @@
+.git
+.venv
+build
+doc-build
+dist
+*.egg-info
+**/__pycache__
+*.sif
+*.simg
+junit-results.xml
