@@ -383,6 +383,8 @@
 <p><strong>Prerequisites:</strong></p>
 <ul class="simple">
 <li><p>Docker or Singularity/Apptainer installed on your system</p></li>
+<li><p>For GPU processing: an NVIDIA driver with CUDA 13 support (driver 580 or newer); the image is built
+on <code class="docutils literal notranslate"><span class="pre">deepmi/fastsurfer:cu132-v2.6.0</span></code>. Without a supported GPU the image runs on the CPU.</p></li>
 </ul>
 <p><strong>Quick Start:</strong></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/Deep-MI/neurolit.git

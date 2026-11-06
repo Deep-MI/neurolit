@@ -11,6 +11,8 @@ The easiest way to use neuroLIT is through containerization, which handles all d
 **Prerequisites:**
 
 * Docker or Singularity/Apptainer installed on your system
+* For GPU processing: an NVIDIA driver with CUDA 13 support (driver 580 or newer); the image is built
+  on ``deepmi/fastsurfer:cu132-v2.6.0``. Without a supported GPU the image runs on the CPU.
 
 **Quick Start:**
 
