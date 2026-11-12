@@ -122,7 +122,7 @@ For programmatic access, call the inpainting entry point directly with an argume
        "--input_image", "T1w.nii.gz",
        "--mask_image", "lesion_mask.nii.gz",
        "--out_dir", "output",
-       "--device", "cuda",  # or 'cpu'
+       "--device", "cuda",  # or 'cpu', 'mps', 'cuda:1', 'xpu', ...
    ])
 
 Batch Processing
@@ -185,7 +185,7 @@ Main command to run the neuroLIT inpainting.
      -o, --sd / --out_dir / --output_directory PATH  Output directory [required]
      --dilate INTEGER                                Number of dilation iterations [default: 0]
      --fastsurfer_dir                                Treat output_directory as a FastSurfer subject directory
-     --device [auto|cpu|cuda]                        Inference device [default: auto]
+     --device [auto|cpu|mps|cuda[:N]|xpu[:N]]        Inference device [default: auto]
      --batch_size INTEGER                            Slices per GPU batch [default: 8]; reduce to lower GPU memory usage
      --slow                                          Use DDPM with 1000 steps and RePaint 10/15
      -h, --help                                      Show this message and exit

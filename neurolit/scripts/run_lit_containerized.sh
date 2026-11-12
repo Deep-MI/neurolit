@@ -18,8 +18,10 @@ FLAGS:
       Print the version number and exit
   --gpus <gpus>
       GPUs to use. Default: all
-  --device <auto|cpu|cuda>
+  --device <auto|cpu|cuda|cuda:N|xpu|xpu:N>
       Inference device inside the container. Default: auto
+      N indexes the GPUs visible inside the container (for cuda: after the --gpus filter).
+      xpu (Intel GPU) requires an XPU-enabled image (see --tag); --gpus does not apply to xpu.
   --cpu
       Shorthand for --device cpu
   -i, --input_image <input_image>
@@ -91,8 +93,8 @@ while [[ $# -gt 0 ]]; do
         usage
         exit 1
       fi
-      if [[ "$2" != "auto" && "$2" != "cpu" && "$2" != "cuda" ]]; then
-        echo "Error: --device must be one of: auto, cpu, cuda"
+      if [[ ! "$2" =~ ^(auto|cpu|cuda|cuda:[0-9]+|xpu|xpu:[0-9]+)$ ]]; then
+        echo "Error: --device must be one of: auto, cpu, cuda, cuda:N, xpu, xpu:N"
         usage
         exit 1
       fi
@@ -238,14 +240,32 @@ if [ -z "$GPUS" ]; then
   GPUS="all"
 fi
 
+# Intel GPU (xpu) detection on Linux: a DRM render node of PCI vendor 0x8086. WSL2 (/dev/dxg) does not
+# expose the vendor, so there xpu must be requested explicitly.
+function has_intel_render_node()
+{
+  local vendor
+  for vendor in /sys/class/drm/renderD*/device/vendor; do
+    [[ -r "$vendor" && "$(cat "$vendor")" == "0x8086" ]] && return 0
+  done
+  return 1
+}
+
+PASS_INTEL_GPU=false
 if [[ "$DEVICE" == "auto" ]]; then
   if command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi >/dev/null 2>&1; then
     RESOLVED_DEVICE="cuda"
+  elif has_intel_render_node; then
+    # Keep "auto" inside the container: it uses the Intel GPU only if the image provides XPU support
+    # and otherwise falls back to the CPU.
+    RESOLVED_DEVICE="auto"
+    PASS_INTEL_GPU=true
   else
     RESOLVED_DEVICE="cpu"
   fi
 else
   RESOLVED_DEVICE="$DEVICE"
+  [[ "$DEVICE" == xpu* ]] && PASS_INTEL_GPU=true
 fi
 
 # Run command based on the containerization tool
@@ -277,8 +297,12 @@ if [ "$USE_SINGULARITY" = true ]; then
 
   # Keep the container isolated from host Python packages and the repo checkout.
   SINGULARITY_ARGS=(--cleanenv --pwd /tmp)
-  if [[ "$RESOLVED_DEVICE" == "cuda" ]]; then
+  if [[ "$RESOLVED_DEVICE" == cuda* ]]; then
     SINGULARITY_ARGS+=(--nv)
+  fi
+  if [[ "$PASS_INTEL_GPU" == true && -e /dev/dxg ]]; then
+    # WSL2: /dev is bound by default, the user-mode driver libraries are not
+    SINGULARITY_ARGS+=(-B /usr/lib/wsl:/usr/lib/wsl:ro)
   fi
 
   SINGULARITYENV_PYTHONNOUSERSITE=1 APPTAINERENV_PYTHONNOUSERSITE=1 \
@@ -296,8 +320,20 @@ else
     -v "${OUT_DIR}":"${OUT_DIR}"
     -u "$(id -u):$(id -g)")
 
-  if [[ "$RESOLVED_DEVICE" == "cuda" ]]; then
+  if [[ "$RESOLVED_DEVICE" == cuda* ]]; then
     DOCKER_ARGS+=(--gpus "device=$GPUS")
+  fi
+  if [[ "$PASS_INTEL_GPU" == true ]]; then
+    if [[ -e /dev/dri ]]; then
+      DOCKER_ARGS+=(--device /dev/dri)
+      # access to the render nodes requires their group (usually "render") inside the container
+      for gid in $(stat -c %g /dev/dri/renderD* 2>/dev/null | sort -u); do
+        DOCKER_ARGS+=(--group-add "$gid")
+      done
+    fi
+    if [[ -e /dev/dxg ]]; then
+      DOCKER_ARGS+=(--device /dev/dxg -v /usr/lib/wsl:/usr/lib/wsl:ro)
+    fi
   fi
 
   docker "${DOCKER_ARGS[@]}" \

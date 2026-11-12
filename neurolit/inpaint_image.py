@@ -107,29 +107,82 @@ def positive_int(value: str) -> int:
     return parsed_value
 
 
+_INDEXED_DEVICE_TYPES = ("cuda", "xpu")
+
+
+def parse_device(value: str) -> str:
+    """Validate a ``--device`` command-line value.
+
+    Parameters
+    ----------
+    value : str
+        Requested device: ``"auto"``, ``"cpu"``, ``"mps"``, ``"cuda"``, ``"cuda:N"``, ``"xpu"``, or ``"xpu:N"``
+        with a device index ``N >= 0``.
+
+    Returns
+    -------
+    str
+        The lower-cased device string.
+    """
+    normalized_device = value.lower()
+    if normalized_device in ("auto", "cpu", "mps", *_INDEXED_DEVICE_TYPES):
+        return normalized_device
+    device_type, sep, index = normalized_device.partition(":")
+    if device_type in _INDEXED_DEVICE_TYPES and sep and index.isdigit():
+        return f"{device_type}:{int(index)}"
+    raise argparse.ArgumentTypeError(f"invalid device '{value}', expected one of: auto, cpu, mps, cuda, cuda:N, xpu, xpu:N")
+
+
+def _xpu_available() -> bool:
+    """Return whether an Intel XPU is usable (``torch.xpu`` is missing in old torch releases)."""
+    return hasattr(torch, "xpu") and torch.xpu.is_available()
+
+
 def resolve_inference_device(device: str) -> torch.device:
     """Resolve the requested inference device.
 
     Parameters
     ----------
     device : str
-        Requested device name: ``"auto"``, ``"cpu"``, or ``"cuda"``.
+        Requested device name: ``"auto"``, ``"cpu"``, ``"mps"``, ``"cuda"``, ``"cuda:N"``, ``"xpu"``, or ``"xpu:N"``.
+        ``"auto"`` prefers CUDA, then XPU (Intel GPU), then MPS (Apple silicon), then CPU.
 
     Returns
     -------
     torch.device
         Resolved torch device.
     """
-    normalized_device = device.lower()
+    try:
+        normalized_device = parse_device(device)
+    except argparse.ArgumentTypeError as e:
+        raise ValueError(str(e)) from None
     if normalized_device == "auto":
-        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    if normalized_device == "cuda":
-        if not torch.cuda.is_available():
-            raise RuntimeError("CUDA was requested for inference, but no CUDA device is available.")
-        return torch.device("cuda")
+        if torch.cuda.is_available():
+            return torch.device("cuda")
+        if _xpu_available():
+            return torch.device("xpu")
+        if torch.backends.mps.is_available():
+            return torch.device("mps")
+        return torch.device("cpu")
     if normalized_device == "cpu":
         return torch.device("cpu")
-    raise ValueError(f"Unsupported device '{device}'. Expected one of: auto, cpu, cuda.")
+    if normalized_device == "mps":
+        if not torch.backends.mps.is_available():
+            raise RuntimeError("MPS was requested for inference, but no MPS device is available.")
+        return torch.device("mps")
+    resolved = torch.device(normalized_device)
+    if resolved.type == "xpu":
+        name, available = "XPU", _xpu_available()
+    else:
+        name, available = "CUDA", torch.cuda.is_available()
+    if not available:
+        raise RuntimeError(f"{name} was requested for inference, but no {name} device is available.")
+    device_count = getattr(torch, resolved.type).device_count()
+    if resolved.index is not None and resolved.index >= device_count:
+        raise RuntimeError(
+            f"{name} device {resolved.index} was requested for inference, but only {device_count} {name} device(s) are visible."
+        )
+    return resolved
 
 
 def dilate_mask(mask: torch.Tensor, num_iterations: int, kernel_size: int = 3) -> torch.Tensor:
@@ -416,7 +469,9 @@ def inpaint_volume(
     Inpainter = OffsetTwoAndHalfDInpaintingInferer(inference_steps=steps, scheduler=scheduler, diffusion_model_dict=models)
 
     # import pdb; pdb.set_trace()
-    with torch.inference_mode(), autocast(device_type=device.type, enabled=device.type == "cuda"):
+    # fp16 mixed precision as on CUDA; MPS and CPU run in fp32
+    use_amp = device.type in ("cuda", "xpu")
+    with torch.inference_mode(), autocast(device_type=device.type, dtype=torch.float16, enabled=use_amp):
         val_image_inpainted = Inpainter(
             mask=mask[0],
             image_masked=val_image_masked[0],
@@ -536,10 +591,9 @@ def main(argv=None):
     )
     parser.add_argument(
         "--device",
-        type=str,
-        choices=["auto", "cpu", "cuda"],
+        type=parse_device,
         default="auto",
-        help="Inference device to use (default: auto)",
+        help="Inference device: auto, cpu, mps, cuda, cuda:N, xpu, or xpu:N (default: auto)",
     )
     parser.add_argument("--seed", type=int, default=None, help="Random seed for reproducible inference")
     args = parser.parse_args(argv)
@@ -558,13 +612,11 @@ def main(argv=None):
 
     if args.seed is not None:
         np.random.seed(args.seed)
-        torch.manual_seed(args.seed)
-        if torch.cuda.is_available():
-            torch.cuda.manual_seed_all(args.seed)
+        torch.manual_seed(args.seed)  # also seeds all CUDA, MPS and XPU devices, no torch.cuda.manual_seed_all needed
 
     # load models
     device = resolve_inference_device(args.device)
-    logger.info(f"Using inference device: {device.type}")
+    logger.info(f"Using inference device: {device}")
 
     model_state_dicts = {}
     if args.checkpoint_coronal is not None:

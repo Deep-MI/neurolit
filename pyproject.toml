@@ -150,7 +150,7 @@ select = [
 "neurolit/train_ddpm.py" = ["E402"]  # Allow warning filter before imports (breaks import block)
 
 [tool.codespell]
-ignore-words-list = "interm"
+ignore-words-list = "interm,renderd"
 check-filenames = true
 check-hidden = true
 skip = "./.git,./build,./.mypy_cache,./.pytest_cache,./doc/images,./Tutorial"
