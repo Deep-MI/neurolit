@@ -1,3 +1,4 @@
+import argparse
 import json
 import subprocess
 import sys
@@ -8,7 +9,7 @@ import numpy as np
 import pytest
 
 import neurolit.cli as cli
-from neurolit.inpaint_image import resolve_inference_device, resolve_inference_settings
+from neurolit.inpaint_image import parse_device, resolve_inference_device, resolve_inference_settings
 from neurolit.postprocessing.lesion_to_segmentation import write_report
 from neurolit.postprocessing.lesion_to_surface import write_surface_report
 from neurolit.scripts.lesion_postprocessing import generate_lesion_impact_summary, resolve_inpainting_mask_path
@@ -36,7 +37,7 @@ def test_lit_inpainting_help():
     assert "--device" in result.stdout
     assert "--slow" in result.stdout
     assert "\n  --fast " not in result.stdout
-    assert "auto, cpu, or cuda" in result.stdout
+    assert "auto, cpu, mps, cuda, or cuda:N" in result.stdout
 
 
 def test_inpaint_image_help():
@@ -104,8 +105,9 @@ def test_resolve_inference_device_auto_prefers_cuda(monkeypatch):
 
 
 def test_resolve_inference_device_auto_falls_back_to_cpu(monkeypatch):
-    """Auto should resolve to CPU when CUDA is unavailable."""
+    """Auto should resolve to CPU when neither CUDA nor MPS is available."""
     monkeypatch.setattr("torch.cuda.is_available", lambda: False)
+    monkeypatch.setattr("torch.backends.mps.is_available", lambda: False)
     assert resolve_inference_device("auto").type == "cpu"
 
 
@@ -114,6 +116,58 @@ def test_resolve_inference_device_rejects_unavailable_cuda(monkeypatch):
     monkeypatch.setattr("torch.cuda.is_available", lambda: False)
     with pytest.raises(RuntimeError, match="CUDA was requested"):
         resolve_inference_device("cuda")
+
+
+def test_resolve_inference_device_auto_uses_mps_without_cuda(monkeypatch):
+    """Auto should resolve to MPS when CUDA is unavailable but MPS is."""
+    monkeypatch.setattr("torch.cuda.is_available", lambda: False)
+    monkeypatch.setattr("torch.backends.mps.is_available", lambda: True)
+    assert resolve_inference_device("auto").type == "mps"
+
+
+def test_resolve_inference_device_rejects_unavailable_mps(monkeypatch):
+    """Explicit MPS should fail when no MPS device is available."""
+    monkeypatch.setattr("torch.backends.mps.is_available", lambda: False)
+    with pytest.raises(RuntimeError, match="MPS was requested"):
+        resolve_inference_device("mps")
+
+
+@pytest.mark.parametrize("value, expected", [("MPS", "mps"), ("cuda:1", "cuda:1"), ("CUDA:0", "cuda:0"), ("cuda:01", "cuda:1"), ("Auto", "auto")])
+def test_parse_device_accepts_indexed_cuda(value, expected):
+    """Device strings including a CUDA index are accepted and normalized."""
+    assert parse_device(value) == expected
+
+
+@pytest.mark.parametrize("value", ["gpu", "mps:0", "cuda:", "cuda:-1", "cuda:a", "cpu:0", "cuda:1:2"])
+def test_parse_device_rejects_invalid(value):
+    """Malformed device strings are rejected at argument parsing."""
+    with pytest.raises(argparse.ArgumentTypeError):
+        parse_device(value)
+
+
+def test_resolve_inference_device_keeps_cuda_index(monkeypatch):
+    """An indexed CUDA device resolves to that index when it is visible."""
+    monkeypatch.setattr("torch.cuda.is_available", lambda: True)
+    monkeypatch.setattr("torch.cuda.device_count", lambda: 2)
+    device = resolve_inference_device("cuda:1")
+    assert (device.type, device.index) == ("cuda", 1)
+
+
+def test_resolve_inference_device_rejects_out_of_range_cuda_index(monkeypatch):
+    """An indexed CUDA device beyond the visible device count fails early."""
+    monkeypatch.setattr("torch.cuda.is_available", lambda: True)
+    monkeypatch.setattr("torch.cuda.device_count", lambda: 1)
+    with pytest.raises(RuntimeError, match="CUDA device 1 was requested"):
+        resolve_inference_device("cuda:1")
+
+
+def test_cli_rejects_invalid_device(monkeypatch, capsys):
+    """lit-inpainting rejects malformed device strings before any work."""
+    monkeypatch.setattr(sys, "argv", ["lit-inpainting", "-i", "x", "-m", "y", "-o", "z", "--device", "cuda:x"])
+    with pytest.raises(SystemExit) as exc:
+        cli.run_lit()
+    assert exc.value.code == 2
+    assert "invalid device" in capsys.readouterr().err
 
 
 def test_postprocessing_resolves_fastsurfer_mask_path_only(tmp_path):

@@ -18,8 +18,9 @@ FLAGS:
       Print the version number and exit
   --gpus <gpus>
       GPUs to use. Default: all
-  --device <auto|cpu|cuda>
+  --device <auto|cpu|cuda|cuda:N>
       Inference device inside the container. Default: auto
+      N indexes the GPUs visible inside the container (after the --gpus filter).
   --cpu
       Shorthand for --device cpu
   -i, --input_image <input_image>
@@ -91,8 +92,8 @@ while [[ $# -gt 0 ]]; do
         usage
         exit 1
       fi
-      if [[ "$2" != "auto" && "$2" != "cpu" && "$2" != "cuda" ]]; then
-        echo "Error: --device must be one of: auto, cpu, cuda"
+      if [[ ! "$2" =~ ^(auto|cpu|cuda|cuda:[0-9]+)$ ]]; then
+        echo "Error: --device must be one of: auto, cpu, cuda, cuda:N"
         usage
         exit 1
       fi
@@ -277,7 +278,7 @@ if [ "$USE_SINGULARITY" = true ]; then
 
   # Keep the container isolated from host Python packages and the repo checkout.
   SINGULARITY_ARGS=(--cleanenv --pwd /tmp)
-  if [[ "$RESOLVED_DEVICE" == "cuda" ]]; then
+  if [[ "$RESOLVED_DEVICE" == cuda* ]]; then
     SINGULARITY_ARGS+=(--nv)
   fi
 
@@ -296,7 +297,7 @@ else
     -v "${OUT_DIR}":"${OUT_DIR}"
     -u "$(id -u):$(id -g)")
 
-  if [[ "$RESOLVED_DEVICE" == "cuda" ]]; then
+  if [[ "$RESOLVED_DEVICE" == cuda* ]]; then
     DOCKER_ARGS+=(--gpus "device=$GPUS")
   fi
 
