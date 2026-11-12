@@ -36,7 +36,7 @@ Entry point for the main ``lit-inpainting`` command. This is the primary interfa
 - ``--output_directory``: Output directory path
 - ``--dilate``: Number of dilation iterations (default: 0)
 - ``--fastsurfer_dir``: Treat the output directory as a FastSurfer subject directory
-- ``--device``: Device to use (auto, cpu, mps, cuda, or cuda:N)
+- ``--device``: Device to use (auto, cpu, mps, cuda, cuda:N, xpu, or xpu:N)
 - ``--slow``: Use the original DDPM preset with 1000 steps and RePaint 10/15
 
 Examples

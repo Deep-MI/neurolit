@@ -90,7 +90,7 @@ def run_lit():
         "--device",
         type=parse_device,
         default="auto",
-        help="Inference device: auto, cpu, mps, cuda, or cuda:N (default: auto)",
+        help="Inference device: auto, cpu, mps, cuda, cuda:N, xpu, or xpu:N (default: auto)",
     )
     parser.add_argument(
         "--batch_size",
@@ -120,7 +120,7 @@ def run_lit():
         print("  --keepgeom            : Preserve native output geometry")
         print("  --min-auto-img-size   : Optional minimum side length for automatic conforming")
         print("  --fastsurfer_dir      : Treat output_directory as a FastSurfer subject directory")
-        print("  --device              : Inference device: auto, cpu, mps, cuda, or cuda:N (default: auto)")
+        print("  --device              : Inference device: auto, cpu, mps, cuda, cuda:N, xpu, or xpu:N (default: auto)")
         print("  --batch_size          : Slices per GPU batch (default: 8); reduce to lower GPU memory usage")
         print("  --slow                : Use DDPM with 1000 steps and RePaint 10/15")
         print("Other arguments:")

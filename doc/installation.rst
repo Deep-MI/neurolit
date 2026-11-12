@@ -13,6 +13,8 @@ The easiest way to use neuroLIT is through containerization, which handles all d
 * Docker or Singularity/Apptainer installed on your system
 * For GPU processing: an NVIDIA driver with CUDA 13 support (driver 580 or newer); the image is built
   on ``deepmi/fastsurfer:cu132-v2.6.0``. Without a supported GPU the image runs on the CPU.
+* For Intel GPUs (``--device xpu``): an XPU-enabled image (select it with ``--tag``) and the Intel GPU
+  driver on the host. The wrapper passes ``/dev/dri`` (Linux) or ``/dev/dxg`` (WSL2) into the container.
 
 **Quick Start:**
 
@@ -91,7 +93,7 @@ System Requirements
 **Minimum Requirements:**
 
 * **RAM:** 8 GB (16 GB recommended)
-* **GPU:** NVIDIA GPU with CUDA support (recommended for faster processing)
+* **GPU:** NVIDIA GPU with CUDA support, Intel GPU (XPU), or Apple silicon (MPS) (recommended for faster processing)
 * **Disk Space:** ~2 GB for models and software
 * **OS:** Linux, macOS, or Windows
 
@@ -141,3 +143,14 @@ If PyTorch doesn't detect your GPU:
 1. Check that CUDA is installed: ``nvidia-smi``
 2. Verify PyTorch CUDA support: ``python -c "import torch; print(torch.cuda.is_available())"``
 3. Install the correct PyTorch version for your CUDA version from `pytorch.org <https://pytorch.org/get-started/locally/>`_
+
+Intel GPU (XPU) Issues
+~~~~~~~~~~~~~~~~~~~~~~
+
+Intel GPUs need the PyTorch XPU build and the Intel GPU driver:
+
+1. Install PyTorch from the XPU index: ``pip install torch --index-url https://download.pytorch.org/whl/xpu``
+   (the default PyPI build on Linux targets CUDA). See the
+   `PyTorch Intel GPU guide <https://docs.pytorch.org/docs/stable/notes/get_start_xpu.html>`_ for supported GPUs.
+2. Verify XPU support: ``python -c "import torch; print(torch.xpu.is_available())"``
+3. On Linux, your user must be in the ``render`` group to access ``/dev/dri/renderD*``.
