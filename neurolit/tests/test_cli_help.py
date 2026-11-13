@@ -160,12 +160,13 @@ def test_resolve_inference_device_keeps_cuda_index(monkeypatch):
     assert (device.type, device.index) == ("cuda", 1)
 
 
-def test_resolve_inference_device_rejects_out_of_range_cuda_index(monkeypatch):
-    """An indexed CUDA device beyond the visible device count fails early."""
+@pytest.mark.parametrize("index", [2, 256])
+def test_resolve_inference_device_rejects_out_of_range_cuda_index(monkeypatch, index):
+    """An indexed CUDA device beyond the visible device count fails early, also past torch's int8 index range."""
     monkeypatch.setattr("torch.cuda.is_available", lambda: True)
-    monkeypatch.setattr("torch.cuda.device_count", lambda: 1)
-    with pytest.raises(RuntimeError, match="CUDA device 1 was requested"):
-        resolve_inference_device("cuda:1")
+    monkeypatch.setattr("torch.cuda.device_count", lambda: 2)
+    with pytest.raises(RuntimeError, match=f"CUDA device {index} was requested"):
+        resolve_inference_device(f"cuda:{index}")
 
 
 def test_cli_rejects_invalid_device(monkeypatch, capsys):

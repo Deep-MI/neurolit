@@ -161,12 +161,16 @@ def resolve_inference_device(device: str) -> torch.device:
         return torch.device("mps")
     if not torch.cuda.is_available():
         raise RuntimeError("CUDA was requested for inference, but no CUDA device is available.")
-    resolved = torch.device(normalized_device)
-    if resolved.index is not None and resolved.index >= torch.cuda.device_count():
-        raise RuntimeError(
-            f"CUDA device {resolved.index} was requested for inference, but only {torch.cuda.device_count()} CUDA device(s) are visible."
-        )
-    return resolved
+    _, _, index = normalized_device.partition(":")
+    # Check the parsed integer, not torch.device(...).index: torch stores the index as int8,
+    # so e.g. "cuda:256" would wrap around to cuda:0.
+    if index:
+        device_count = torch.cuda.device_count()
+        if int(index) >= device_count:
+            raise RuntimeError(
+                f"CUDA device {int(index)} was requested for inference, but only {device_count} CUDA device(s) are visible."
+            )
+    return torch.device(normalized_device)
 
 
 def dilate_mask(mask: torch.Tensor, num_iterations: int, kernel_size: int = 3) -> torch.Tensor:
