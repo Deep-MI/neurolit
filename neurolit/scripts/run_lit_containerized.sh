@@ -17,7 +17,7 @@ FLAGS:
   --version
       Print the version number and exit
   --gpus <gpus>
-      GPUs to use. Default: all
+      Comma-separated host GPU indices to make visible in the container. Default: all
   --device <auto|cpu|cuda|cuda:N>
       Inference device inside the container. Default: auto
       N indexes the GPUs visible inside the container (after the --gpus filter).
@@ -285,6 +285,13 @@ if [ "$USE_SINGULARITY" = true ]; then
   SINGULARITY_ARGS=(--cleanenv --pwd /tmp)
   if [[ "$RESOLVED_DEVICE" == cuda* ]]; then
     SINGULARITY_ARGS+=(--nv)
+    # --nv exposes all host GPUs; restrict CUDA to the --gpus selection so that
+    # cuda:N indexes the selected GPUs, as with docker --gpus. PCI bus order makes
+    # the indices match nvidia-smi (and docker), not CUDA's default fastest-first order.
+    if [[ "$GPUS" != "all" ]]; then
+      export SINGULARITYENV_CUDA_VISIBLE_DEVICES="$GPUS" APPTAINERENV_CUDA_VISIBLE_DEVICES="$GPUS"
+      export SINGULARITYENV_CUDA_DEVICE_ORDER=PCI_BUS_ID APPTAINERENV_CUDA_DEVICE_ORDER=PCI_BUS_ID
+    fi
   fi
 
   SINGULARITYENV_PYTHONNOUSERSITE=1 APPTAINERENV_PYTHONNOUSERSITE=1 \
