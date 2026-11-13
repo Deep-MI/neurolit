@@ -138,7 +138,7 @@ def test_parse_device_accepts_indexed_cuda(value, expected):
     assert parse_device(value) == expected
 
 
-@pytest.mark.parametrize("value", ["gpu", "mps:0", "cuda:", "cuda:-1", "cuda:a", "cpu:0", "cuda:1:2"])
+@pytest.mark.parametrize("value", ["gpu", "mps:0", "cuda:", "cuda:-1", "cuda:a", "cpu:0", "cuda:1:2", "cuda:\u00b2"])
 def test_parse_device_rejects_invalid(value):
     """Malformed device strings are rejected at argument parsing."""
     with pytest.raises(argparse.ArgumentTypeError):

@@ -124,7 +124,7 @@ def parse_device(value: str) -> str:
     if normalized_device in ("auto", "cpu", "mps", "cuda"):
         return normalized_device
     device_type, sep, index = normalized_device.partition(":")
-    if device_type == "cuda" and sep and index.isdigit():
+    if device_type == "cuda" and sep and index.isascii() and index.isdigit():
         return f"cuda:{int(index)}"
     raise argparse.ArgumentTypeError(f"invalid device '{value}', expected one of: auto, cpu, mps, cuda, cuda:N")
 
