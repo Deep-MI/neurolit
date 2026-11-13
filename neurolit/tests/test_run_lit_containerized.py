@@ -87,7 +87,7 @@ def test_wrapper_lowercases_device(wrapper):
     assert code == 0, out
     lines = out.splitlines()
     assert "tool=docker" in lines
-    assert "arg=device=1,2" in lines
+    assert 'arg="device=1,2"' in lines
     assert lines[lines.index("arg=--device") + 1] == "arg=cuda:1"
 
 
@@ -109,3 +109,11 @@ def test_wrapper_singularity_keeps_all_gpus_by_default(wrapper):
     code, out = wrapper("--singularity_image", wrapper.sif, "--device", "cuda")
     assert code == 0, out
     assert "cuda_visible=unset" in out.splitlines()
+
+
+def test_wrapper_docker_all_gpus(wrapper):
+    """Without a --gpus selection, docker gets --gpus all."""
+    code, out = wrapper("--device", "cuda")
+    assert code == 0, out
+    lines = out.splitlines()
+    assert lines[lines.index("arg=--gpus") + 1] == "arg=all"

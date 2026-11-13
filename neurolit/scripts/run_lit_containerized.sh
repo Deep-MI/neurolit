@@ -310,7 +310,13 @@ else
     -u "$(id -u):$(id -g)")
 
   if [[ "$RESOLVED_DEVICE" == cuda* ]]; then
-    DOCKER_ARGS+=(--gpus "device=$GPUS")
+    if [[ "$GPUS" == "all" ]]; then
+      DOCKER_ARGS+=(--gpus all)
+    else
+      # docker parses --gpus as CSV: the inner quotes keep "device=1,2" one field;
+      # unquoted, it becomes device=1 plus count=2, which the daemon rejects.
+      DOCKER_ARGS+=(--gpus "\"device=$GPUS\"")
+    fi
   fi
 
   docker "${DOCKER_ARGS[@]}" \
