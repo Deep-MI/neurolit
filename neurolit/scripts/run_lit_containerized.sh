@@ -19,8 +19,9 @@ FLAGS:
   --gpus <gpus>
       Comma-separated host GPU indices to make visible in the container. Default: all
   --device <auto|cpu|cuda|cuda:N>
-      Inference device inside the container. Default: auto
-      N indexes the GPUs visible inside the container (after the --gpus filter).
+      Inference device. Default: auto
+      cuda:N runs on the N-th GPU of the --gpus list (0-based), or on host GPU N if
+      --gpus is all. Only that GPU is made visible in the container.
   --cpu
       Shorthand for --device cpu
   -i, --input_image <input_image>
@@ -252,6 +253,24 @@ if [[ "$DEVICE" == "auto" ]]; then
   fi
 else
   RESOLVED_DEVICE="$DEVICE"
+fi
+
+# Turn cuda:N into a GPU selection: the container sees only the chosen GPU and runs
+# with plain --device cuda. This also works with images that predate cuda:N support.
+if [[ "$RESOLVED_DEVICE" == cuda:* ]]; then
+  GPU_INDEX=$((10#${RESOLVED_DEVICE#cuda:}))
+  if [[ "$GPUS" == "all" ]]; then
+    GPUS="$GPU_INDEX"
+  else
+    IFS=',' read -r -a GPU_LIST <<< "$GPUS"
+    if (( GPU_INDEX >= ${#GPU_LIST[@]} )); then
+      echo "Error: --device $RESOLVED_DEVICE selects entry $GPU_INDEX of --gpus $GPUS, which lists only ${#GPU_LIST[@]} GPU(s)"
+      usage
+      exit 2
+    fi
+    GPUS="${GPU_LIST[$GPU_INDEX]}"
+  fi
+  RESOLVED_DEVICE="cuda"
 fi
 
 # Run command based on the containerization tool
