@@ -68,7 +68,7 @@ def wrapper(tmp_path):
 def test_wrapper_rejects_invalid_device(wrapper, device):
     """Malformed device strings are rejected before any container tool runs."""
     code, out = wrapper("--device", device)
-    assert code != 0
+    assert code == 2
     assert "--device must be one of" in out
     assert "tool=" not in out
 
@@ -76,7 +76,7 @@ def test_wrapper_rejects_invalid_device(wrapper, device):
 def test_wrapper_rejects_mps_with_hint(wrapper):
     """MPS is not offered inside containers and the error says why."""
     code, out = wrapper("--device", "MPS")
-    assert code != 0
+    assert code == 2
     assert "not available inside containers" in out
     assert "tool=" not in out
 

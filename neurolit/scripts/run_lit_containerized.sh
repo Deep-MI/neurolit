@@ -58,7 +58,7 @@ EOF
 # Validate required parameters
 if [[ $# -eq 0 ]]; then
   usage
-  exit 1
+  exit 2
 fi
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
@@ -81,7 +81,7 @@ while [[ $# -gt 0 ]]; do
       if [[ -z "$2" || "$2" == -* ]]; then
         echo "Error: --gpus requires a value"
         usage
-        exit 1
+        exit 2
       fi
       GPUS="$2"
       shift 2
@@ -90,18 +90,18 @@ while [[ $# -gt 0 ]]; do
       if [[ -z "$2" || "$2" == -* ]]; then
         echo "Error: --device requires a value"
         usage
-        exit 1
+        exit 2
       fi
       # Match lit-inpainting, which accepts device names in any case.
       DEVICE=$(printf '%s' "$2" | tr '[:upper:]' '[:lower:]')
       if [[ "$DEVICE" == "mps" ]]; then
         echo "Error: --device mps is not available inside containers; run lit-inpainting natively on macOS instead"
-        exit 1
+        exit 2
       fi
       if [[ ! "$DEVICE" =~ ^(auto|cpu|cuda|cuda:[0-9]+)$ ]]; then
         echo "Error: --device must be one of: auto, cpu, cuda, cuda:N"
         usage
-        exit 1
+        exit 2
       fi
       shift 2
       ;;
@@ -113,7 +113,7 @@ while [[ $# -gt 0 ]]; do
       if [[ -z "$2" || "$2" == -* ]]; then
         echo "Error: --input_image requires a value"
         usage
-        exit 1
+        exit 2
       fi
       INPUT_IMAGE="$2"
       shift 2
@@ -122,7 +122,7 @@ while [[ $# -gt 0 ]]; do
       if [[ -z "$2" || "$2" == -* ]]; then
         echo "Error: --mask_image/--lesion_mask requires a value"
         usage
-        exit 1
+        exit 2
       fi
       MASK_IMAGE="$2"
       shift 2
@@ -131,7 +131,7 @@ while [[ $# -gt 0 ]]; do
       if [[ -z "$2" || "$2" == -* ]]; then
         echo "Error: --output_directory requires a value"
         usage
-        exit 1
+        exit 2
       fi
       OUT_DIR="$2"
       shift 2
@@ -171,7 +171,7 @@ while [[ $# -gt 0 ]]; do
       if [[ -z "$2" || "$2" == -* ]]; then
         echo "Error: --singularity_image requires a value"
         usage
-        exit 1
+        exit 2
       fi
       SINGULARITY_IMAGE="$2"
       USE_SINGULARITY=true
@@ -181,7 +181,7 @@ while [[ $# -gt 0 ]]; do
       if [[ -z "$2" || "$2" == -* ]]; then
         echo "Error: --tag requires a value"
         usage
-        exit 1
+        exit 2
       fi
       VERSION="$2"
       shift 2
@@ -219,7 +219,7 @@ set -- "${POSITIONAL_ARGS[@]}"
 if [ -z "$INPUT_IMAGE" ] || [ -z "$MASK_IMAGE" ] || [ -z "$OUT_DIR" ]; then
   echo "Error: input_image, mask_image, and output_directory are required parameters"
   usage
-  exit 1
+  exit 2
 fi
 
 if [ ! -f "$INPUT_IMAGE" ]; then
