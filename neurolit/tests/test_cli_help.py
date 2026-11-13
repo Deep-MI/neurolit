@@ -132,6 +132,13 @@ def test_resolve_inference_device_rejects_unavailable_mps(monkeypatch):
         resolve_inference_device("mps")
 
 
+def test_resolve_inference_device_explicit_mps(monkeypatch):
+    """Explicit MPS resolves to MPS when available, even if CUDA is available too."""
+    monkeypatch.setattr("torch.cuda.is_available", lambda: True)
+    monkeypatch.setattr("torch.backends.mps.is_available", lambda: True)
+    assert resolve_inference_device("MPS").type == "mps"
+
+
 @pytest.mark.parametrize("value, expected", [("MPS", "mps"), ("cuda:1", "cuda:1"), ("CUDA:0", "cuda:0"), ("cuda:01", "cuda:1"), ("Auto", "auto")])
 def test_parse_device_accepts_indexed_cuda(value, expected):
     """Device strings including a CUDA index are accepted and normalized."""
