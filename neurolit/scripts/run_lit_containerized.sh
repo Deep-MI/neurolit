@@ -92,12 +92,17 @@ while [[ $# -gt 0 ]]; do
         usage
         exit 1
       fi
-      if [[ ! "$2" =~ ^(auto|cpu|cuda|cuda:[0-9]+)$ ]]; then
+      # Match lit-inpainting, which accepts device names in any case.
+      DEVICE=$(printf '%s' "$2" | tr '[:upper:]' '[:lower:]')
+      if [[ "$DEVICE" == "mps" ]]; then
+        echo "Error: --device mps is not available inside containers; run lit-inpainting natively on macOS instead"
+        exit 1
+      fi
+      if [[ ! "$DEVICE" =~ ^(auto|cpu|cuda|cuda:[0-9]+)$ ]]; then
         echo "Error: --device must be one of: auto, cpu, cuda, cuda:N"
         usage
         exit 1
       fi
-      DEVICE="$2"
       shift 2
       ;;
     --cpu)
