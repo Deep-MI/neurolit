@@ -107,29 +107,70 @@ def positive_int(value: str) -> int:
     return parsed_value
 
 
+def parse_device(value: str) -> str:
+    """Validate a ``--device`` command-line value.
+
+    Parameters
+    ----------
+    value : str
+        Requested device: ``"auto"``, ``"cpu"``, ``"mps"``, ``"cuda"``, or ``"cuda:N"`` with a device index ``N >= 0``.
+
+    Returns
+    -------
+    str
+        The lower-cased device string.
+    """
+    normalized_device = value.lower()
+    if normalized_device in ("auto", "cpu", "mps", "cuda"):
+        return normalized_device
+    device_type, sep, index = normalized_device.partition(":")
+    if device_type == "cuda" and sep and index.isascii() and index.isdigit():
+        return f"cuda:{int(index)}"
+    raise argparse.ArgumentTypeError(f"invalid device '{value}', expected one of: auto, cpu, mps, cuda, cuda:N")
+
+
 def resolve_inference_device(device: str) -> torch.device:
     """Resolve the requested inference device.
 
     Parameters
     ----------
     device : str
-        Requested device name: ``"auto"``, ``"cpu"``, or ``"cuda"``.
+        Requested device name: ``"auto"``, ``"cpu"``, ``"mps"``, ``"cuda"``, or ``"cuda:N"``.
+        ``"auto"`` prefers CUDA, then MPS (Apple silicon), then CPU.
 
     Returns
     -------
     torch.device
         Resolved torch device.
     """
-    normalized_device = device.lower()
+    try:
+        normalized_device = parse_device(device)
+    except argparse.ArgumentTypeError as e:
+        raise ValueError(str(e)) from None
     if normalized_device == "auto":
-        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    if normalized_device == "cuda":
-        if not torch.cuda.is_available():
-            raise RuntimeError("CUDA was requested for inference, but no CUDA device is available.")
-        return torch.device("cuda")
+        if torch.cuda.is_available():
+            return torch.device("cuda")
+        if torch.backends.mps.is_available():
+            return torch.device("mps")
+        return torch.device("cpu")
     if normalized_device == "cpu":
         return torch.device("cpu")
-    raise ValueError(f"Unsupported device '{device}'. Expected one of: auto, cpu, cuda.")
+    if normalized_device == "mps":
+        if not torch.backends.mps.is_available():
+            raise RuntimeError("MPS was requested for inference, but no MPS device is available.")
+        return torch.device("mps")
+    if not torch.cuda.is_available():
+        raise RuntimeError("CUDA was requested for inference, but no CUDA device is available.")
+    _, _, index = normalized_device.partition(":")
+    # Check the parsed integer, not torch.device(...).index: torch stores the index as int8,
+    # so e.g. "cuda:256" would wrap around to cuda:0.
+    if index:
+        device_count = torch.cuda.device_count()
+        if int(index) >= device_count:
+            raise RuntimeError(
+                f"CUDA device {int(index)} was requested for inference, but only {device_count} CUDA device(s) are visible."
+            )
+    return torch.device(normalized_device)
 
 
 def dilate_mask(mask: torch.Tensor, num_iterations: int, kernel_size: int = 3) -> torch.Tensor:
@@ -536,10 +577,9 @@ def main(argv=None):
     )
     parser.add_argument(
         "--device",
-        type=str,
-        choices=["auto", "cpu", "cuda"],
+        type=parse_device,
         default="auto",
-        help="Inference device to use (default: auto)",
+        help="Inference device: auto, cpu, mps, cuda, or cuda:N (default: auto)",
     )
     parser.add_argument("--seed", type=int, default=None, help="Random seed for reproducible inference")
     args = parser.parse_args(argv)
@@ -564,7 +604,7 @@ def main(argv=None):
 
     # load models
     device = resolve_inference_device(args.device)
-    logger.info(f"Using inference device: {device.type}")
+    logger.info(f"Using inference device: {device}")
 
     model_state_dicts = {}
     if args.checkpoint_coronal is not None:
