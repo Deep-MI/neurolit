@@ -17,9 +17,11 @@ FLAGS:
   --version
       Print the version number and exit
   --gpus <gpus>
-      GPUs to use. Default: all
-  --device <auto|cpu|cuda>
-      Inference device inside the container. Default: auto
+      Comma-separated host GPU indices to make visible in the container. Default: all
+  --device <auto|cpu|cuda|cuda:N>
+      Inference device. Default: auto
+      cuda:N runs on the N-th GPU of the --gpus list (0-based), or on host GPU N if
+      --gpus is all. Only that GPU is made visible in the container.
   --cpu
       Shorthand for --device cpu
   -i, --input_image <input_image>
@@ -57,7 +59,7 @@ EOF
 # Validate required parameters
 if [[ $# -eq 0 ]]; then
   usage
-  exit 1
+  exit 2
 fi
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
@@ -80,7 +82,7 @@ while [[ $# -gt 0 ]]; do
       if [[ -z "$2" || "$2" == -* ]]; then
         echo "Error: --gpus requires a value"
         usage
-        exit 1
+        exit 2
       fi
       GPUS="$2"
       shift 2
@@ -89,14 +91,19 @@ while [[ $# -gt 0 ]]; do
       if [[ -z "$2" || "$2" == -* ]]; then
         echo "Error: --device requires a value"
         usage
-        exit 1
+        exit 2
       fi
-      if [[ "$2" != "auto" && "$2" != "cpu" && "$2" != "cuda" ]]; then
-        echo "Error: --device must be one of: auto, cpu, cuda"
+      # Match lit-inpainting, which accepts device names in any case.
+      DEVICE=$(printf '%s' "$2" | tr '[:upper:]' '[:lower:]')
+      if [[ "$DEVICE" == "mps" ]]; then
+        echo "Error: --device mps is not available inside containers; run lit-inpainting natively on macOS instead"
+        exit 2
+      fi
+      if [[ ! "$DEVICE" =~ ^(auto|cpu|cuda|cuda:[0-9]+)$ ]]; then
+        echo "Error: --device must be one of: auto, cpu, cuda, cuda:N"
         usage
-        exit 1
+        exit 2
       fi
-      DEVICE="$2"
       shift 2
       ;;
     --cpu)
@@ -107,7 +114,7 @@ while [[ $# -gt 0 ]]; do
       if [[ -z "$2" || "$2" == -* ]]; then
         echo "Error: --input_image requires a value"
         usage
-        exit 1
+        exit 2
       fi
       INPUT_IMAGE="$2"
       shift 2
@@ -116,7 +123,7 @@ while [[ $# -gt 0 ]]; do
       if [[ -z "$2" || "$2" == -* ]]; then
         echo "Error: --mask_image/--lesion_mask requires a value"
         usage
-        exit 1
+        exit 2
       fi
       MASK_IMAGE="$2"
       shift 2
@@ -125,7 +132,7 @@ while [[ $# -gt 0 ]]; do
       if [[ -z "$2" || "$2" == -* ]]; then
         echo "Error: --output_directory requires a value"
         usage
-        exit 1
+        exit 2
       fi
       OUT_DIR="$2"
       shift 2
@@ -165,7 +172,7 @@ while [[ $# -gt 0 ]]; do
       if [[ -z "$2" || "$2" == -* ]]; then
         echo "Error: --singularity_image requires a value"
         usage
-        exit 1
+        exit 2
       fi
       SINGULARITY_IMAGE="$2"
       USE_SINGULARITY=true
@@ -175,7 +182,7 @@ while [[ $# -gt 0 ]]; do
       if [[ -z "$2" || "$2" == -* ]]; then
         echo "Error: --tag requires a value"
         usage
-        exit 1
+        exit 2
       fi
       VERSION="$2"
       shift 2
@@ -213,7 +220,7 @@ set -- "${POSITIONAL_ARGS[@]}"
 if [ -z "$INPUT_IMAGE" ] || [ -z "$MASK_IMAGE" ] || [ -z "$OUT_DIR" ]; then
   echo "Error: input_image, mask_image, and output_directory are required parameters"
   usage
-  exit 1
+  exit 2
 fi
 
 if [ ! -f "$INPUT_IMAGE" ]; then
@@ -248,6 +255,24 @@ else
   RESOLVED_DEVICE="$DEVICE"
 fi
 
+# Turn cuda:N into a GPU selection: the container sees only the chosen GPU and runs
+# with plain --device cuda. This also works with images that predate cuda:N support.
+if [[ "$RESOLVED_DEVICE" == cuda:* ]]; then
+  GPU_INDEX=$((10#${RESOLVED_DEVICE#cuda:}))
+  if [[ "$GPUS" == "all" ]]; then
+    GPUS="$GPU_INDEX"
+  else
+    IFS=',' read -r -a GPU_LIST <<< "$GPUS"
+    if (( GPU_INDEX >= ${#GPU_LIST[@]} )); then
+      echo "Error: --device $RESOLVED_DEVICE selects entry $GPU_INDEX of --gpus $GPUS, which lists only ${#GPU_LIST[@]} GPU(s)"
+      usage
+      exit 2
+    fi
+    GPUS="${GPU_LIST[$GPU_INDEX]}"
+  fi
+  RESOLVED_DEVICE="cuda"
+fi
+
 # Run command based on the containerization tool
 if [ "$USE_SINGULARITY" = true ]; then
   # Resolve singularity/apptainer binary
@@ -277,8 +302,15 @@ if [ "$USE_SINGULARITY" = true ]; then
 
   # Keep the container isolated from host Python packages and the repo checkout.
   SINGULARITY_ARGS=(--cleanenv --pwd /tmp)
-  if [[ "$RESOLVED_DEVICE" == "cuda" ]]; then
+  if [[ "$RESOLVED_DEVICE" == cuda* ]]; then
     SINGULARITY_ARGS+=(--nv)
+    # --nv exposes all host GPUs; restrict CUDA to the --gpus selection so that
+    # cuda:N indexes the selected GPUs, as with docker --gpus. PCI bus order makes
+    # the indices match nvidia-smi (and docker), not CUDA's default fastest-first order.
+    if [[ "$GPUS" != "all" ]]; then
+      export SINGULARITYENV_CUDA_VISIBLE_DEVICES="$GPUS" APPTAINERENV_CUDA_VISIBLE_DEVICES="$GPUS"
+      export SINGULARITYENV_CUDA_DEVICE_ORDER=PCI_BUS_ID APPTAINERENV_CUDA_DEVICE_ORDER=PCI_BUS_ID
+    fi
   fi
 
   SINGULARITYENV_PYTHONNOUSERSITE=1 APPTAINERENV_PYTHONNOUSERSITE=1 \
@@ -296,8 +328,14 @@ else
     -v "${OUT_DIR}":"${OUT_DIR}"
     -u "$(id -u):$(id -g)")
 
-  if [[ "$RESOLVED_DEVICE" == "cuda" ]]; then
-    DOCKER_ARGS+=(--gpus "device=$GPUS")
+  if [[ "$RESOLVED_DEVICE" == cuda* ]]; then
+    if [[ "$GPUS" == "all" ]]; then
+      DOCKER_ARGS+=(--gpus all)
+    else
+      # docker parses --gpus as CSV: the inner quotes keep "device=1,2" one field;
+      # unquoted, it becomes device=1 plus count=2, which the daemon rejects.
+      DOCKER_ARGS+=(--gpus "\"device=$GPUS\"")
+    fi
   fi
 
   docker "${DOCKER_ARGS[@]}" \

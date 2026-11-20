@@ -11,7 +11,7 @@ from platformdirs import user_data_dir
 
 from neurolit._version import get_version_with_hash
 from neurolit.inpaint_image import main as inpaint_main
-from neurolit.inpaint_image import positive_int
+from neurolit.inpaint_image import parse_device, positive_int
 from neurolit.utils.download_checkpoints import main as download_main
 from neurolit.utils.geometry_policy import FASTSURFER_MIN_AUTO_IMG_SIZE
 
@@ -88,9 +88,9 @@ def run_lit():
     )
     parser.add_argument(
         "--device",
-        choices=["auto", "cpu", "cuda"],
+        type=parse_device,
         default="auto",
-        help="Inference device to use (default: auto)",
+        help="Inference device: auto, cpu, mps, cuda, or cuda:N (default: auto)",
     )
     parser.add_argument(
         "--batch_size",
@@ -120,7 +120,7 @@ def run_lit():
         print("  --keepgeom            : Preserve native output geometry")
         print("  --min-auto-img-size   : Optional minimum side length for automatic conforming")
         print("  --fastsurfer_dir      : Treat output_directory as a FastSurfer subject directory")
-        print("  --device              : Inference device: auto, cpu, or cuda (default: auto)")
+        print("  --device              : Inference device: auto, cpu, mps, cuda, or cuda:N (default: auto)")
         print("  --batch_size          : Slices per GPU batch (default: 8); reduce to lower GPU memory usage")
         print("  --slow                : Use DDPM with 1000 steps and RePaint 10/15")
         print("Other arguments:")
