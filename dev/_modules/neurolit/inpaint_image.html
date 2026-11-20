@@ -224,6 +224,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../api/inpainting.html">Inpainting Module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.resolve_inference_settings"><code class="docutils literal notranslate"><span class="pre">resolve_inference_settings()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.positive_int"><code class="docutils literal notranslate"><span class="pre">positive_int()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.parse_device"><code class="docutils literal notranslate"><span class="pre">parse_device()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.resolve_inference_device"><code class="docutils literal notranslate"><span class="pre">resolve_inference_device()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/inpainting.html#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
@@ -487,6 +488,31 @@
 
 
 
+<div class="viewcode-block" id="parse_device">
+<a class="viewcode-back" href="../../api/inpainting.html#neurolit.inpaint_image.parse_device">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_device</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Validate a ``--device`` command-line value.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    value : str</span>
+<span class="sd">        Requested device: ``"auto"``, ``"cpu"``, ``"mps"``, ``"cuda"``, or ``"cuda:N"`` with a device index ``N &gt;= 0``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        The lower-cased device string.</span>
+<span class="sd">    """</span>
+    <span class="n">normalized_device</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">normalized_device</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"auto"</span><span class="p">,</span> <span class="s2">"cpu"</span><span class="p">,</span> <span class="s2">"mps"</span><span class="p">,</span> <span class="s2">"cuda"</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">normalized_device</span>
+    <span class="n">device_type</span><span class="p">,</span> <span class="n">sep</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="n">normalized_device</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">":"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">device_type</span> <span class="o">==</span> <span class="s2">"cuda"</span> <span class="ow">and</span> <span class="n">sep</span> <span class="ow">and</span> <span class="n">index</span><span class="o">.</span><span class="n">isascii</span><span class="p">()</span> <span class="ow">and</span> <span class="n">index</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"cuda:</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">index</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"invalid device '</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">', expected one of: auto, cpu, mps, cuda, cuda:N"</span><span class="p">)</span></div>
+
+
+
 <div class="viewcode-block" id="resolve_inference_device">
 <a class="viewcode-back" href="../../api/inpainting.html#neurolit.inpaint_image.resolve_inference_device">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">resolve_inference_device</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">:</span>
@@ -495,23 +521,42 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    device : str</span>
-<span class="sd">        Requested device name: ``"auto"``, ``"cpu"``, or ``"cuda"``.</span>
+<span class="sd">        Requested device name: ``"auto"``, ``"cpu"``, ``"mps"``, ``"cuda"``, or ``"cuda:N"``.</span>
+<span class="sd">        ``"auto"`` prefers CUDA, then MPS (Apple silicon), then CPU.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    torch.device</span>
 <span class="sd">        Resolved torch device.</span>
 <span class="sd">    """</span>
-    <span class="n">normalized_device</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">normalized_device</span> <span class="o">=</span> <span class="n">parse_device</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
     <span class="k">if</span> <span class="n">normalized_device</span> <span class="o">==</span> <span class="s2">"auto"</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">normalized_device</span> <span class="o">==</span> <span class="s2">"cuda"</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"CUDA was requested for inference, but no CUDA device is available."</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">mps</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"mps"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">normalized_device</span> <span class="o">==</span> <span class="s2">"cpu"</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported device '</span><span class="si">{</span><span class="n">device</span><span class="si">}</span><span class="s2">'. Expected one of: auto, cpu, cuda."</span><span class="p">)</span></div>
+    <span class="k">if</span> <span class="n">normalized_device</span> <span class="o">==</span> <span class="s2">"mps"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">mps</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"MPS was requested for inference, but no MPS device is available."</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"mps"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"CUDA was requested for inference, but no CUDA device is available."</span><span class="p">)</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="n">normalized_device</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">":"</span><span class="p">)</span>
+    <span class="c1"># Check the parsed integer, not torch.device(...).index: torch stores the index as int8,</span>
+    <span class="c1"># so e.g. "cuda:256" would wrap around to cuda:0.</span>
+    <span class="k">if</span> <span class="n">index</span><span class="p">:</span>
+        <span class="n">device_count</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">device_count</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"CUDA device </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">index</span><span class="p">)</span><span class="si">}</span><span class="s2"> was requested for inference, but only </span><span class="si">{</span><span class="n">device_count</span><span class="si">}</span><span class="s2"> CUDA device(s) are visible."</span>
+            <span class="p">)</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="n">normalized_device</span><span class="p">)</span></div>
 
 
 
@@ -933,10 +978,9 @@
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"--device"</span><span class="p">,</span>
-        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-        <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">"auto"</span><span class="p">,</span> <span class="s2">"cpu"</span><span class="p">,</span> <span class="s2">"cuda"</span><span class="p">],</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">parse_device</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">"Inference device to use (default: auto)"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Inference device: auto, cpu, mps, cuda, or cuda:N (default: auto)"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--seed"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"Random seed for reproducible inference"</span><span class="p">)</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
@@ -961,7 +1005,7 @@
 
     <span class="c1"># load models</span>
     <span class="n">device</span> <span class="o">=</span> <span class="n">resolve_inference_device</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Using inference device: </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Using inference device: </span><span class="si">{</span><span class="n">device</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="n">model_state_dicts</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">checkpoint_coronal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>

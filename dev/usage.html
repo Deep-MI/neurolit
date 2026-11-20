@@ -227,6 +227,7 @@
 <li class="toctree-l2"><a class="reference internal" href="api/inpainting.html">Inpainting Module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.resolve_inference_settings"><code class="docutils literal notranslate"><span class="pre">resolve_inference_settings()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.positive_int"><code class="docutils literal notranslate"><span class="pre">positive_int()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.parse_device"><code class="docutils literal notranslate"><span class="pre">parse_device()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.resolve_inference_device"><code class="docutils literal notranslate"><span class="pre">resolve_inference_device()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.dilate_mask"><code class="docutils literal notranslate"><span class="pre">dilate_mask()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/inpainting.html#neurolit.inpaint_image.conform_nifti"><code class="docutils literal notranslate"><span class="pre">conform_nifti()</span></code></a></li>
@@ -482,7 +483,7 @@ preserves native geometry.</p>
     <span class="s2">"--input_image"</span><span class="p">,</span> <span class="s2">"T1w.nii.gz"</span><span class="p">,</span>
     <span class="s2">"--mask_image"</span><span class="p">,</span> <span class="s2">"lesion_mask.nii.gz"</span><span class="p">,</span>
     <span class="s2">"--out_dir"</span><span class="p">,</span> <span class="s2">"output"</span><span class="p">,</span>
-    <span class="s2">"--device"</span><span class="p">,</span> <span class="s2">"cuda"</span><span class="p">,</span>  <span class="c1"># or 'cpu'</span>
+    <span class="s2">"--device"</span><span class="p">,</span> <span class="s2">"cuda"</span><span class="p">,</span>  <span class="c1"># or 'cpu', 'mps', 'cuda:1', ...</span>
 <span class="p">])</span>
 </pre></div>
 </div>
@@ -539,7 +540,7 @@ Options:
   -o, --sd / --out_dir / --output_directory PATH  Output directory [required]
   --dilate INTEGER                                Number of dilation iterations [default: 0]
   --fastsurfer_dir                                Treat output_directory as a FastSurfer subject directory
-  --device [auto|cpu|cuda]                        Inference device [default: auto]
+  --device [auto|cpu|mps|cuda|cuda:N]             Inference device [default: auto]
   --batch_size INTEGER                            Slices per GPU batch [default: 8]; reduce to lower GPU memory usage
   --slow                                          Use DDPM with 1000 steps and RePaint 10/15
   -h, --help                                      Show this message and exit
